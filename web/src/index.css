@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   TMistan design tokens — sampled from the approved UI mock-up + logo
+   ────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* brand green (buttons, links, accents) */
+  --color-brand-50:  #eef8ee;   /* icon circles */
+  --color-brand-100: #d6eeda;   /* active toggle bg */
+  --color-brand-200: #b5dfbd;
+  --color-brand-500: #1c8c45;
+  --color-brand-600: #067133;   /* buttons */
+  --color-brand-700: #056d30;   /* sidebar active, hover */
+  --color-brand-800: #045a27;
+
+  /* logo inks */
+  --color-logo-black: #0c0e0d;
+  --color-logo-red:   #d51417;
+  --color-logo-green: #028537;
+
+  /* neutrals */
+  --color-ink-50:  #f8f9fa;     /* page background */
+  --color-ink-100: #f1f3f4;
+  --color-ink-200: #e6e8ea;     /* card borders */
+  --color-ink-300: #d3d7db;
+  --color-ink-400: #9aa3ab;
+  --color-ink-500: #6b7680;     /* muted labels */
+  --color-ink-600: #4b5561;
+  --color-ink-700: #333b44;
+  --color-ink-800: #1f262c;
+  --color-ink-900: #111417;     /* headings */
+
+  --color-dark-900: #141b1e;    /* footer */
+  --color-dark-950: #0e1519;    /* admin sidebar */
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-ink-50 text-ink-900 antialiased;
+    font-feature-settings: "cv11", "ss01", "tnum";
+  }
+  [dir="rtl"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Vazirmatn", Tahoma, var(--font-sans); }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-brand-600; }
+  ::selection { @apply bg-brand-100 text-brand-800; }
+  table { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-[1180px] px-4 sm:px-6; }
+
+  /* cards: white, hairline border, generous radius — the mock-up's base surface */
+  .card { @apply rounded-xl border border-ink-200 bg-white; }
+
+  /* small uppercase-free grey label used everywhere in the mock-up */
+  .muted { @apply text-[13px] text-ink-500; }
+
+  .field {
+    @apply h-10 w-full rounded-md border border-ink-200 bg-white px-3 text-sm text-ink-900 placeholder:text-ink-400
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none disabled:opacity-60;
+  }
+
+  .btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-outline-green {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition-colors
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary { @apply border-brand-600 bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply border-ink-200 bg-white text-ink-800 hover:bg-ink-100; }
+  .btn-ghost { @apply border-transparent bg-transparent text-ink-700 hover:bg-ink-100; }
+  .btn-outline-green { @apply border-brand-200 bg-white text-brand-600 hover:bg-brand-50; }
+
+  /* pill toggle (Grid | Table) */
+  .toggle { @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-ink-200 bg-white px-3 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100; }
+  .toggle-on { @apply border-brand-200 bg-brand-100 text-brand-700 hover:bg-brand-100; }
+
+  /* filter dropdown chip */
+  .chip { @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-ink-200 bg-white px-3 text-[13px] font-medium text-ink-700; }
+
+  /* light green circle behind an icon */
+  .icon-circle { @apply flex shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600; }
+
+  .link-green { @apply text-[13px] font-semibold text-brand-600 hover:underline; }
+
+  .checker {
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, #f3f4f5 25%, transparent 25%),
+      linear-gradient(-45deg, #f3f4f5 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #f3f4f5 75%),
+      linear-gradient(-45deg, transparent 75%, #f3f4f5 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  }
+}
+
+/* Keep mixed-direction data (Latin marks inside RTL UI, Arabic-script names
+   inside LTR UI) legible without letting it flip the block's alignment. */
+.bidi-auto { unicode-bidi: plaintext; }
+[dir="ltr"] .bidi-auto { text-align: left; }
+[dir="rtl"] .bidi-auto { text-align: right; }
+
+/* Hero background image fades into white from the left */
+.hero-art {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
+          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
+}

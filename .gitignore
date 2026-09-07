@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+web/.env.local
+*.log
+__pycache__/
+.venv/
+local-storage/
+scripts/local-stack/*.pid
+importers/.env
+scripts/local-stack/keys.env
