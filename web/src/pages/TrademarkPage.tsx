@@ -3,13 +3,14 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, BadgeCheck, ChevronRight, CircleDashed, Download, Maximize2, ShieldCheck } from 'lucide-react'
-import { trademarkBySerialQuery, similarTrademarksQuery } from '@/lib/queries'
+import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
 import { cn, formatDate, gazettePath, trademarkPath } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
 import { TrademarkCard, classText } from '@/components/ResultCards'
 import type { TrademarkRow } from '@/lib/database.types'
+import { ErrorState, LoadingState } from '@/components/AsyncState'
 
 type Tab = 'images' | 'goods' | 'history' | 'notes'
 
@@ -18,7 +19,7 @@ export function TrademarkPage() {
   const [sp] = useSearchParams()
   const gazetteHint = sp.get('g')
   const { t, i18n } = useTranslation()
-  const { data, isLoading, isError, error } = useQuery(trademarkBySerialQuery(serial, gazetteHint))
+  const { data, isLoading, isError, error, refetch } = useQuery(trademarkBySerialQuery(serial, gazetteHint))
 
   const tm = data?.trademark
   const images = data?.images ?? []
@@ -34,8 +35,8 @@ export function TrademarkPage() {
     : undefined
   useDocumentTitle(title, description)
 
-  if (isLoading) return <div className="container-x py-10 text-sm text-ink-500">{t('common.loading')}</div>
-  if (isError) return <div className="container-x py-10 text-sm text-red-700">{(error as Error).message}</div>
+  if (isLoading) return <div className="container-x py-10"><LoadingState lines={6} /></div>
+  if (isError) return <div className="container-x py-10"><ErrorState error={error} onRetry={() => void refetch()} /></div>
   if (!tm) {
     return (
       <div className="container-x py-10">

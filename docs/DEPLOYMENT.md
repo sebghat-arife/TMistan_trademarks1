@@ -63,24 +63,26 @@ insert into public.user_roles (user_id, role) values ('<auth.users.id>', 'admin'
 `public.is_admin()` drives every admin RLS policy **and** gates the `/admin` routes in the web app
 (the dashboard calls the RPC after sign-in; anyone without a `user_roles` row is sent back to the login page).
 
-## 4. Web app
+## 4. Web app (Docker → Railway or Render)
+
+The web app is a static SPA served by nginx from a single Docker image. Public settings are
+baked in at build time as build-args (they are public by design; the build rejects secret keys):
 
 ```bash
-cd web
-cat > .env.local <<EOF
-VITE_SUPABASE_URL=https://<PROJECT_REF>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon key>
-EOF
-npm run build     # output in web/dist
+docker build --build-arg SUPABASE_URL=https://<PROJECT_REF>.supabase.co \
+             --build-arg SUPABASE_PUBLISHABLE_KEY=<publishable key> -t tmistan .
+docker run --rm -p 8080:8080 -e PORT=8080 tmistan     # http://localhost:8080/healthz → ok
 ```
 
-### Vercel
-Import the repo, set **Root Directory** = `web`, framework = Vite, add the two `VITE_*`
-env vars. `web/vercel.json` already rewrites all routes to `index.html`.
+**Railway (preferred):** New Project → Deploy from GitHub → this repo. `railway.toml` selects the
+Dockerfile + `/healthz`. Variables tab → `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (optionally
+`SITE_*`) → redeploy → Networking → Generate domain.
 
-### Cloudflare Pages
-Build command `npm run build`, output `dist`, root `web`. `web/public/_redirects`
-handles SPA routing. Add the two `VITE_*` env vars.
+**Render:** New → Blueprint → this repo (`render.yaml`). Environment → the same two variables →
+Manual Deploy.
+
+Before the first deploy run the readiness check with the same public key:
+`SUPABASE_URL=… SUPABASE_PUBLISHABLE_KEY=… python3 scripts/check_supabase.py`.
 
 Add the deployed origin to Supabase → Authentication → URL configuration (needed later
 for admin login; harmless now).

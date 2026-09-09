@@ -3,7 +3,7 @@ import * as Popover from '@radix-ui/react-popover'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
-import { filterOptionsQuery } from '@/lib/queries'
+import { filterOptionsQuery } from '@/services'
 import { countActiveFilters, type SearchState } from '@/lib/searchParams'
 import { cn } from '@/lib/utils'
 

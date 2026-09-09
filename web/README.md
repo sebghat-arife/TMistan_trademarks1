@@ -4,9 +4,13 @@ React 19 · TypeScript · Vite · Tailwind v4 · Radix primitives (shadcn-style)
 
 ```
 src/
-  lib/supabase.ts        single Supabase client (anon key only) + storagePublicUrl()
+  lib/supabase.ts        single Supabase client (publishable key only; config injected at build time) + storagePublicUrl()
   lib/database.types.ts  typed schema subset (regenerate with `supabase gen types`)
-  lib/queries.ts         every data access, as TanStack queryOptions
+  services/              THE data-access layer: trademark_service (search/list/filter/detail/similar/recent),
+                         gazette_service, image_service, stats_service, admin_service; DataError codes
+                         (`schema_missing`, `auth`, …) drive the shared error states. UI never calls supabase-js directly.
+  lib/queries.ts         deprecated alias of services/ (kept for old imports)
+  components/AsyncState  LoadingState / EmptyState / ErrorState used by every page; ConfigScreen when env is missing
   lib/searchParams.ts    URL ⇄ search state (the URL is the source of truth)
   i18n/                  en / fa (Dari) / ps (Pashto); RTL handled on <html dir>
   lib/auth.ts            useAuth(): Supabase Auth session + server-side is_admin() check
@@ -19,7 +23,7 @@ public/
   img/                   hero-mosque.png · about-lineart.png (decorative illustrations)
 ```
 
-Env (`.env.local`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (+ `VITE_LOCAL_STORAGE_BASE` for the local stack).
+Env (`.env.local`, git-ignored): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (+ `VITE_LOCAL_STORAGE_BASE` for the local stack). Values are inlined by `vite.config.ts` at build time; the build refuses a secret key. Missing values render a configuration screen instead of a blank page.
 
 `npm run dev` · `npm run build` · `npm run preview`
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Session } from '@supabase/supabase-js'
 import { LOCAL_ADMIN_TOKEN_KEY, isLocalStack, localAdminToken, supabase } from './supabase'
+import { isAdmin as checkIsAdmin } from '@/services'
 
 export interface AuthState {
   /** Undefined while the initial session is being resolved. */
@@ -43,11 +44,7 @@ export function useAuth(): AuthState {
   const hasToken = isLocalStack ? !!localAdminToken : !!session
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['is_admin', isLocalStack ? localAdminToken : session?.access_token],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('is_admin')
-      if (error) throw new Error(error.message)
-      return data === true
-    },
+    queryFn: checkIsAdmin,
     enabled: hasToken,
     staleTime: 60_000,
   })

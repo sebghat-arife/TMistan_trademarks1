@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, BookOpen, Search } from 'lucide-react'
-import { gazettesQuery } from '@/lib/queries'
+import { gazettesQuery } from '@/services'
 import { formatDate, formatNumber, gazettePath } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { EmptyState, ErrorState, LoadingState } from '@/components/AsyncState'
 
 export function GazettesPage() {
   const { t, i18n } = useTranslation()
-  const { data, isLoading, isError, error } = useQuery(gazettesQuery())
+  const { data, isLoading, isError, error, refetch } = useQuery(gazettesQuery())
   const [filter, setFilter] = useState('')
   useDocumentTitle(`${t('gazettes.title')} · ${t('app.shortName')}`)
   const lng = i18n.resolvedLanguage
@@ -45,9 +46,9 @@ export function GazettesPage() {
         <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('filters.gazette')} aria-label={t('filters.gazette')} className="h-full w-full bg-transparent text-[15px] outline-none placeholder:text-ink-400" inputMode="numeric" dir="ltr" />
       </div>
 
-      {isLoading && <p className="mt-6 text-sm text-ink-500">{t('common.loading')}</p>}
-      {isError && <p className="mt-6 text-sm text-red-700">{(error as Error).message}</p>}
-      {data && rows.length === 0 && <p className="mt-6 text-sm text-ink-500">{t('gazettes.empty')}</p>}
+      {isLoading && <LoadingState className="mt-6" lines={4} />}
+      {isError && <ErrorState className="mt-6" error={error} onRetry={() => void refetch()} />}
+      {data && rows.length === 0 && <EmptyState className="mt-6" title={t('gazettes.empty')} />}
 
       {rows.length > 0 && (
         <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

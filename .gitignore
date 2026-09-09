@@ -1,12 +1,29 @@
+# dependencies / build output
 node_modules/
 dist/
-.env
-.env.local
-web/.env.local
-*.log
-__pycache__/
+web/dist/
 .venv/
+__pycache__/
+*.pyc
+
+# environment files — never commit real keys (examples are tracked)
+.env
+.env.*
+!.env.example
+web/.env
+web/.env.*
+!web/.env.example
+importers/.env
+importers/.env.*
+!importers/.env.example
+
+# local dev stack state
 local-storage/
 scripts/local-stack/*.pid
-importers/.env
 scripts/local-stack/keys.env
+*.log
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/

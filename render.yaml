@@ -1,0 +1,19 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# After "New → Blueprint" fill in SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in
+# the service's Environment tab (they are passed to the Docker build).
+services:
+  - type: web
+    name: tmistan
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        sync: false          # set in dashboard
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false          # set in dashboard (public key, NOT the secret key)
+      - key: PORT
+        value: "8080"

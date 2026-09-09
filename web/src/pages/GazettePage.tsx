@@ -3,11 +3,12 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid, Search, Table2 } from 'lucide-react'
-import { gazetteQuery, searchQuery } from '@/lib/queries'
+import { gazetteQuery, searchTrademarksQuery } from '@/services'
 import { parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatDate, formatNumber } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
+import { EmptyState, ErrorState } from '@/components/AsyncState'
 
 /** /gazette/:number — the same server-side search, pinned to one gazette. */
 export function GazettePage() {
@@ -22,8 +23,9 @@ export function GazettePage() {
   }, [sp, number])
   const [draftQ, setDraftQ] = useState(state.q)
 
-  const { data: gazette, isLoading: gLoading } = useQuery(gazetteQuery(number))
-  const { data, isFetching, isError, error } = useQuery(searchQuery(toRpcArgs(state)))
+  const { data: gazette, isLoading: gLoading, isError: gError, error: gErr, refetch: gRefetch } = useQuery(gazetteQuery(number))
+  const { data: page, isFetching, isError, error } = useQuery(searchTrademarksQuery(toRpcArgs(state)))
+  const data = page?.items
 
   useDocumentTitle(`${t('gazettes.gazetteN', { number })} · ${t('app.shortName')}`)
 
@@ -37,10 +39,11 @@ export function GazettePage() {
     [state, setSp],
   )
 
-  const total = data?.[0]?.total_count ?? 0
+  const total = page?.total ?? 0
   const pages = Math.max(1, Math.ceil(total / state.perPage))
   const lng = i18n.resolvedLanguage
 
+  if (gError) return <div className="container-x py-10"><ErrorState error={gErr} onRetry={() => void gRefetch()} /></div>
   if (!gLoading && gazette === null) {
     return (
       <div className="container-x py-10">
@@ -116,11 +119,11 @@ export function GazettePage() {
       {/* Results */}
       <div className={cn('mt-4 transition-opacity', isFetching && 'opacity-60')}>
         {isError ? (
-          <div className="card p-5 text-[14px] text-red-700">{(error as Error).message}</div>
+          <ErrorState error={error} />
         ) : !data ? (
           <div className="card h-64 animate-pulse bg-ink-50" aria-hidden />
         ) : data.length === 0 ? (
-          <div className="card p-10 text-center text-[15px] text-ink-700">{t('search.noResults')}</div>
+          <EmptyState title={t('search.noResults')} />
         ) : state.view === 'grid' ? (
           <ResultGrid results={data} query={state.q} />
         ) : (

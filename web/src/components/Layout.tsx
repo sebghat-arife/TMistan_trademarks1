@@ -5,6 +5,7 @@ import { Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
+import { SITE_CONTACT } from '@/lib/site'
 
 const NAV = [
   { to: '/search', key: 'nav.search' },
@@ -14,12 +15,13 @@ const NAV = [
   { to: '/help', key: 'nav.help' },
 ] as const
 
-// Brand glyphs (lucide no longer ships brand icons)
+// Brand glyphs (lucide no longer ships brand icons). Links come from the
+// SITE_*_URL build variables; a network without a URL is simply not rendered.
 const SOCIAL = [
-  { label: 'Facebook', href: 'https://facebook.com', d: 'M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.4v3.2h2.8V22h3.3z' },
-  { label: 'Twitter', href: 'https://twitter.com', d: 'M22 5.9c-.7.3-1.5.5-2.4.6.9-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 0 0-7 3.7A11.6 11.6 0 0 1 3.4 4.6a4.1 4.1 0 0 0 1.3 5.5c-.7 0-1.3-.2-1.9-.5 0 2 1.4 3.7 3.3 4-.6.2-1.2.2-1.8.1.5 1.6 2 2.8 3.8 2.8A8.3 8.3 0 0 1 2 18.3 11.6 11.6 0 0 0 8.3 20c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2z' },
-  { label: 'LinkedIn', href: 'https://linkedin.com', d: 'M6.9 21H3.3V9h3.6v12zM5.1 7.4a2.1 2.1 0 1 1 0-4.2 2.1 2.1 0 0 1 0 4.2zM21 21h-3.6v-5.8c0-1.4 0-3.2-1.9-3.2s-2.2 1.5-2.2 3.1V21H9.7V9h3.4v1.6h.1c.5-.9 1.7-1.9 3.4-1.9 3.7 0 4.4 2.4 4.4 5.5V21z' },
-]
+  { label: 'Facebook', href: SITE_CONTACT.facebook, d: 'M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.4v3.2h2.8V22h3.3z' },
+  { label: 'Twitter', href: SITE_CONTACT.twitter, d: 'M22 5.9c-.7.3-1.5.5-2.4.6.9-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 0 0-7 3.7A11.6 11.6 0 0 1 3.4 4.6a4.1 4.1 0 0 0 1.3 5.5c-.7 0-1.3-.2-1.9-.5 0 2 1.4 3.7 3.3 4-.6.2-1.2.2-1.8.1.5 1.6 2 2.8 3.8 2.8A8.3 8.3 0 0 1 2 18.3 11.6 11.6 0 0 0 8.3 20c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2z' },
+  { label: 'LinkedIn', href: SITE_CONTACT.linkedin, d: 'M6.9 21H3.3V9h3.6v12zM5.1 7.4a2.1 2.1 0 1 1 0-4.2 2.1 2.1 0 0 1 0 4.2zM21 21h-3.6v-5.8c0-1.4 0-3.2-1.9-3.2s-2.2 1.5-2.2 3.1V21H9.7V9h3.4v1.6h.1c.5-.9 1.7-1.9 3.4-1.9 3.7 0 4.4 2.4 4.4 5.5V21z' },
+].filter((s) => s.href)
 
 export function Layout() {
   const { t } = useTranslation()
@@ -102,11 +104,11 @@ export function Layout() {
           <div>
             <h3 className="text-[15px] font-semibold">{t('footer.contact')}</h3>
             <ul className="mt-4 space-y-2.5 text-[14px] text-white/85">
-              <li>{t('footer.email')}: <a href="mailto:info@tmistan.af" className="hover:underline">info@tmistan.af</a></li>
-              <li>{t('footer.phone')}: <a href="tel:+93201234567" className="hover:underline" dir="ltr">+93 20 123 4567</a></li>
-              <li>{t('footer.address')}</li>
+              {SITE_CONTACT.email && <li>{t('footer.email')}: <a href={`mailto:${SITE_CONTACT.email}`} className="hover:underline">{SITE_CONTACT.email}</a></li>}
+              {SITE_CONTACT.phone && <li>{t('footer.phone')}: <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:underline" dir="ltr">{SITE_CONTACT.phone}</a></li>}
+              <li>{SITE_CONTACT.address || t('footer.address')}</li>
             </ul>
-            <div className="mt-5 flex items-center gap-3">
+            <div className={cn('mt-5 flex items-center gap-3', SOCIAL.length === 0 && 'hidden')}>
               {SOCIAL.map(({ label, href, d }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden><path d={d} /></svg>

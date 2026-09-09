@@ -56,7 +56,9 @@
       "searchSub": "Powerful search with multiple filters",
       "images": "High Quality Images",
       "imagesSub": "View trademark logos in high resolution"
-    }
+    },
+    "noRecent": "No trademarks have been published yet.",
+    "noRecentHint": "Records appear here as soon as the Excel importer loads a gazette."
   },
   "search": {
     "title": "Search Results",
@@ -69,7 +71,10 @@
     "startPrompt": "Enter a mark name, applicant, serial number, gazette or class to begin.",
     "error": "The search could not be completed.",
     "retry": "Retry",
-    "view": { "grid": "Grid", "table": "Table" },
+    "view": {
+      "grid": "Grid",
+      "table": "Table"
+    },
     "sortBy": "Sort by:",
     "sort": {
       "relevance": "Relevance",
@@ -280,6 +285,7 @@
     "copied": "Link copied",
     "copyLink": "Copy link",
     "openInNewTab": "Open in new tab",
-    "notAvailable": "—"
+    "notAvailable": "—",
+    "schemaMissing": "Database not ready"
   }
 }

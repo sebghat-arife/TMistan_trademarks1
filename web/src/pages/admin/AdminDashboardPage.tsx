@@ -2,17 +2,18 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, BookOpen, Image as ImageIcon, Tag } from 'lucide-react'
-import { importJobsQuery, registryStatsQuery, trademarksByClassQuery } from '@/lib/queries'
+import { importJobsQuery, registryStatsQuery, trademarksByClassQuery } from '@/services'
 import { cn, formatDate, formatNumber } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import type { ImportJobRow } from '@/lib/database.types'
+import { ErrorState } from '@/components/AsyncState'
 
 export function AdminDashboardPage() {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
-  const { data: stats } = useQuery(registryStatsQuery())
-  const { data: byClass } = useQuery(trademarksByClassQuery())
-  const { data: jobs, isLoading: jobsLoading } = useQuery(importJobsQuery(8))
+  const { data: stats, isError: statsError, error: statsErr } = useQuery(registryStatsQuery())
+  const { data: byClass, isError: classError, error: classErr } = useQuery(trademarksByClassQuery())
+  const { data: jobs, isLoading: jobsLoading, isError: jobsError, error: jobsErr } = useQuery(importJobsQuery(8))
   useDocumentTitle(`${t('admin.dashboard')} · ${t('app.shortName')}`)
 
   const max = Math.max(1, ...(byClass ?? []).map((c) => c.count))
@@ -20,6 +21,7 @@ export function AdminDashboardPage() {
   return (
     <div>
       <h1 className="text-[24px] font-bold text-ink-900">{t('admin.dashboard')}</h1>
+      {statsError && <ErrorState className="mt-5" error={statsErr} />}
 
       <div className="mt-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Stat icon={Tag} label={t('admin.totalTrademarks')} value={formatNumber(stats?.trademarks, lng)} />
@@ -31,6 +33,8 @@ export function AdminDashboardPage() {
       {/* Trademarks by class */}
       <section className="card mt-5 p-5">
         <h2 className="text-[16px] font-semibold text-ink-900">{t('admin.byClass')}</h2>
+        {classError && <ErrorState className="mt-3" error={classErr} />}
+        {byClass && byClass.length === 0 && <p className="muted mt-3">{t('admin.noImports')}</p>}
         <div className="mt-4 flex h-44 items-end gap-[3px]" role="img" aria-label={t('admin.byClass')}>
           {(byClass ?? []).map((c) => (
             <div key={c.class} className="group relative flex h-full flex-1 flex-col items-center justify-end" title={`${t('fields.class')} ${c.class}: ${c.count}`}>
@@ -73,7 +77,10 @@ export function AdminDashboardPage() {
                 <td className="px-5 py-3 tabular-nums text-ink-600">{formatDate(j.completed_at ?? j.created_at, lng)}</td>
               </tr>
             ))}
-            {!jobsLoading && (jobs ?? []).length === 0 && (
+            {jobsError && (
+              <tr><td colSpan={6} className="px-5 py-4"><ErrorState error={jobsErr} /></td></tr>
+            )}
+            {!jobsLoading && !jobsError && (jobs ?? []).length === 0 && (
               <tr><td colSpan={6} className="px-5 py-8 text-center text-ink-500">{t('admin.noImports')}</td></tr>
             )}
           </tbody>

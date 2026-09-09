@@ -3,17 +3,18 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, BookOpen, FileText, Image as ImageIcon, Search, ShieldCheck, SlidersHorizontal, User, Users } from 'lucide-react'
-import { recentTrademarksQuery, registryStatsQuery } from '@/lib/queries'
+import { recentTrademarksQuery, registryStatsQuery } from '@/services'
 import { formatNumber } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkCard } from '@/components/ResultCards'
+import { EmptyState, ErrorState } from '@/components/AsyncState'
 
 export function HomePage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [q, setQ] = useState('')
-  const { data: stats } = useQuery(registryStatsQuery())
-  const { data: recent } = useQuery(recentTrademarksQuery(8))
+  const stats = useQuery(registryStatsQuery())
+  const recent = useQuery(recentTrademarksQuery(8))
   useDocumentTitle(t('app.name'))
 
   const submit = (e: React.FormEvent) => {
@@ -72,12 +73,16 @@ export function HomePage() {
 
       <div className="container-x space-y-6 py-8">
         {/* ── Stats ─────────────────────────────────────────────────────── */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Registry statistics">
-          <StatCard icon={User} value={formatNumber(stats?.trademarks, lng)} label={t('home.stats.trademarks')} sub={t('home.stats.trademarksSub')} />
-          <StatCard icon={BookOpen} value={formatNumber(stats?.gazettes, lng)} label={t('home.stats.gazettes')} sub={t('home.stats.gazettesSub')} />
-          <StatCard icon={ImageIcon} value={formatNumber(stats?.images, lng)} label={t('home.stats.images')} sub={t('home.stats.imagesSub')} />
-          <StatCard icon={Users} value={formatNumber(stats?.applicants, lng)} label={t('home.stats.applicants')} sub={t('home.stats.applicantsSub')} />
-        </section>
+        {stats.isError ? (
+          <ErrorState error={stats.error} onRetry={() => void stats.refetch()} />
+        ) : (
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Registry statistics" aria-busy={stats.isPending}>
+            <StatCard icon={User} loading={stats.isPending} value={formatNumber(stats.data?.trademarks, lng)} label={t('home.stats.trademarks')} sub={t('home.stats.trademarksSub')} />
+            <StatCard icon={BookOpen} loading={stats.isPending} value={formatNumber(stats.data?.gazettes, lng)} label={t('home.stats.gazettes')} sub={t('home.stats.gazettesSub')} />
+            <StatCard icon={ImageIcon} loading={stats.isPending} value={formatNumber(stats.data?.images, lng)} label={t('home.stats.images')} sub={t('home.stats.imagesSub')} />
+            <StatCard icon={Users} loading={stats.isPending} value={formatNumber(stats.data?.applicants, lng)} label={t('home.stats.applicants')} sub={t('home.stats.applicantsSub')} />
+          </section>
+        )}
 
         {/* ── Recently added ────────────────────────────────────────────── */}
         <section className="card p-5 md:p-6">
@@ -87,15 +92,21 @@ export function HomePage() {
               {t('home.viewAll')} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           </div>
-          <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {(recent ?? Array.from({ length: 8 }).map(() => null)).map((r, i) =>
-              r ? (
+          {recent.isError ? (
+            <ErrorState className="mt-5" error={recent.error} onRetry={() => void recent.refetch()} />
+          ) : recent.isPending ? (
+            <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4" aria-busy="true" aria-label={t('common.loading')}>
+              {Array.from({ length: 8 }).map((_, i) => <li key={i} className="card h-[250px] animate-pulse bg-ink-50" aria-hidden />)}
+            </ul>
+          ) : recent.data.length === 0 ? (
+            <EmptyState className="mt-5" title={t('home.noRecent')} hint={t('home.noRecentHint')} />
+          ) : (
+            <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+              {recent.data.map((r) => (
                 <li key={r.id} className="flex"><TrademarkCard r={r} className="w-full" /></li>
-              ) : (
-                <li key={i} className="card h-[250px] animate-pulse bg-ink-50" aria-hidden />
-              ),
-            )}
-          </ul>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* ── Features ──────────────────────────────────────────────────── */}
@@ -110,12 +121,12 @@ export function HomePage() {
   )
 }
 
-function StatCard({ icon: Icon, value, label, sub }: { icon: React.ComponentType<{ className?: string }>; value: string; label: string; sub: string }) {
+function StatCard({ icon: Icon, value, label, sub, loading }: { icon: React.ComponentType<{ className?: string }>; value: string; label: string; sub: string; loading?: boolean }) {
   return (
     <div className="card flex items-center gap-4 p-5">
       <span className="icon-circle h-14 w-14"><Icon className="h-6 w-6" /></span>
       <div className="min-w-0">
-        <div className="text-[24px] font-bold leading-tight tabular-nums text-ink-900">{value}</div>
+        {loading ? <div className="mb-1 h-6 w-16 animate-pulse rounded bg-ink-100" /> : <div className="text-[24px] font-bold leading-tight tabular-nums text-ink-900">{value}</div>}
         <div className="text-[15px] font-semibold text-ink-900">{label}</div>
         <div className="muted">{sub}</div>
       </div>

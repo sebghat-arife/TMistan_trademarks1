@@ -1,14 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+/* Build-time constants injected by vite.config.ts from SUPABASE_URL /
+ * SUPABASE_PUBLISHABLE_KEY (or their VITE_ aliases). Nothing else from the
+ * environment reaches the browser bundle. */
+declare const __SUPABASE_URL__: string
+declare const __SUPABASE_PUBLISHABLE_KEY__: string
+declare const __LOCAL_STORAGE_BASE__: string
 
-if (!url || !anonKey) {
-  throw new Error(
-    'Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. Copy web/.env.example to web/.env.local.',
-  )
-}
+const url = __SUPABASE_URL__
+const publishableKey = __SUPABASE_PUBLISHABLE_KEY__
+
+/** Set when the build was produced without Supabase settings — the app shows a configuration screen instead of fake data. */
+export const supabaseConfigError: string | null =
+  !url || !publishableKey
+    ? 'SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY must be set when the web app is built.'
+    : !/^https?:\/\/|^\//.test(url)
+      ? `SUPABASE_URL "${url}" is not a valid URL.`
+      : null
 
 /**
  * True when pointing at the local PostgreSQL + PostgREST stack (a relative
@@ -19,7 +28,7 @@ export const isLocalStack = url.startsWith('/')
 // supabase-js needs an absolute URL; for the local proxy build one from the page origin.
 const resolvedUrl = isLocalStack
   ? new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost').toString().replace(/\/$/, '')
-  : url
+  : url.replace(/\/$/, '')
 
 /**
  * DEV ONLY — the local stack has no GoTrue, so an administrator session is
@@ -31,10 +40,11 @@ export const LOCAL_ADMIN_TOKEN_KEY = 'tmistan.localAdminToken'
 export const localAdminToken = isLocalStack && typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LOCAL_ADMIN_TOKEN_KEY) : null
 
 /**
- * Single Supabase client for the whole app — anon key only, RLS enforced.
- * The service-role key must never appear anywhere in this bundle.
+ * Single Supabase client for the whole app — publishable (anon) key only,
+ * Row Level Security enforced by the database. The service-role key is never
+ * read by the frontend build and must never appear in this bundle.
  */
-export const supabase = createClient<Database>(resolvedUrl, anonKey, {
+export const supabase = createClient<Database>(resolvedUrl || 'http://unconfigured.invalid', publishableKey || 'unconfigured', {
   auth: { persistSession: !isLocalStack, autoRefreshToken: !isLocalStack },
   global: {
     headers: {
@@ -48,7 +58,7 @@ export const supabase = createClient<Database>(resolvedUrl, anonKey, {
 export function storagePublicUrl(bucket: string | null | undefined, path: string | null | undefined): string | null {
   if (!bucket || !path) return null
   if (isLocalStack) {
-    const base = (import.meta.env.VITE_LOCAL_STORAGE_BASE as string | undefined) ?? '/local-storage'
+    const base = __LOCAL_STORAGE_BASE__ || '/local-storage'
     return `${base}/${bucket}/${path.split('/').map(encodeURIComponent).join('/')}`
   }
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl

@@ -1,0 +1,12 @@
+# Only web/ (minus its build output) and deploy/ enter the build context.
+*
+!web/
+!deploy/
+web/node_modules/
+web/dist/
+web/.env*
+web/*.log
+**/.env
+**/.env.*
+!**/.env.example
+.git/

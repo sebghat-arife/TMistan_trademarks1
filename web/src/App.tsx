@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
+import { ConfigScreen } from '@/components/ConfigScreen'
+import { supabaseConfigError } from '@/lib/supabase'
 import { HomePage } from '@/pages/HomePage'
 
 // Route-level code splitting: the home page ships in the main bundle, the
@@ -49,6 +51,7 @@ const ADMIN_SECTIONS: [string, string][] = [
 ]
 
 export default function App() {
+  if (supabaseConfigError) return <ConfigScreen message={supabaseConfigError} />
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

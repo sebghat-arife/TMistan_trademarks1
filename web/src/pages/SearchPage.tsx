@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, ChevronDown, LayoutGrid, Search, Table2 } from 'lucide-react'
-import { searchQuery } from '@/lib/queries'
+import { ChevronDown, LayoutGrid, Search, Table2 } from 'lucide-react'
+import { searchTrademarksQuery } from '@/services'
 import { hasAnyCriteria, parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatNumber } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { FilterBar } from '@/components/FilterBar'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
+import { EmptyState, ErrorState } from '@/components/AsyncState'
 
 interface Props {
   /** `/trademarks`: list the whole registry (newest gazette first) even with no criteria. */
@@ -41,9 +42,10 @@ export function SearchPage({ browseAll = false }: Props) {
   )
 
   const enabled = browseAll || hasAnyCriteria(state)
-  const { data, isFetching, isError, error, refetch } = useQuery({ ...searchQuery(toRpcArgs(state)), enabled })
+  const { data: page, isFetching, isError, error, refetch } = useQuery({ ...searchTrademarksQuery(toRpcArgs(state)), enabled })
+  const data = page?.items
 
-  const total = data?.[0]?.total_count ?? 0
+  const total = page?.total ?? 0
   const pages = Math.max(1, Math.ceil(total / state.perPage))
 
   const pageTitle = browseAll ? t('trademarksPage.title') : t('search.title')
@@ -130,20 +132,13 @@ export function SearchPage({ browseAll = false }: Props) {
       {/* ── Results ────────────────────────────────────────────────────── */}
       <div className={cn('mt-4 transition-opacity', isFetching && 'opacity-60')}>
         {isError ? (
-          <div className="card flex items-center gap-3 p-5 text-[14px] text-ink-800">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <span>{t('search.error')} {(error as Error)?.message}</span>
-            <button type="button" className="btn-secondary ms-auto h-8 px-3 text-[13px]" onClick={() => void refetch()}>{t('search.retry')}</button>
-          </div>
+          <ErrorState error={error} onRetry={() => void refetch()} />
         ) : !enabled ? null : !data ? (
           <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" aria-hidden>
             {Array.from({ length: 8 }).map((_, i) => <li key={i} className="card h-[250px] animate-pulse bg-ink-50" />)}
           </ul>
         ) : data.length === 0 ? (
-          <div className="card p-10 text-center">
-            <p className="text-[15px] font-medium text-ink-900">{t('search.noResults')}</p>
-            <p className="muted mt-1">{t('search.noResultsHint')}</p>
-          </div>
+          <EmptyState title={t('search.noResults')} hint={t('search.noResultsHint')} />
         ) : state.view === 'table' ? (
           <ResultTable results={data} query={state.q} />
         ) : (
