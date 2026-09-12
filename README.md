@@ -202,3 +202,5 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
 - Images: bytes in Storage, metadata in `trademark_images`, matched only by gazette + serial.
 - Every trademark shows gazette / page / file / sheet / row provenance.
 - Schema changes only via explicit migrations; existing records and the gazette+serial uniqueness are preserved.
+#   T M i s t a n _ t r a d e m a r k s _ d r a f t 1  
+ 
