@@ -184,8 +184,8 @@ begin
        and (n_goods  is null or t.goods_and_services_normalized ilike '%' || n_goods || '%')
        and (n_type   is null or lower(t.application_type) = lower(n_type))
        and (n_att    is null or t.attorney_normalized ilike '%' || n_att || '%')
-       and (p_date_from is null or t.publication_date >= p_date_from)
-       and (p_date_to   is null or t.publication_date <= p_date_to)
+       and (p_date_from is null or public.to_gregorian_date(t.publication_date) >= p_date_from)
+       and (p_date_to   is null or public.to_gregorian_date(t.publication_date) <= p_date_to)
   ),
   page as (
     select b.*,
@@ -193,8 +193,8 @@ begin
            row_number() over (
              order by
                case when v_sort = 'relevance' then b.rank end desc nulls last,
-               case when v_sort = 'newest'    then b.publication_date end desc nulls last,
-               case when v_sort = 'oldest'    then b.publication_date end asc  nulls last,
+               case when v_sort = 'newest'    then public.to_gregorian_date(b.publication_date) end desc nulls last,
+               case when v_sort = 'oldest'    then public.to_gregorian_date(b.publication_date) end asc  nulls last,
                case when v_sort = 'mark_asc'  then b.mark_name_normalized end asc  nulls last,
                case when v_sort = 'mark_desc' then b.mark_name_normalized end desc nulls last,
                public.gazette_sort_key(b.official_gazette_number) desc nulls last,
@@ -243,7 +243,7 @@ as $$
        and (t.mark_name_normalized % s.mark_name_normalized
             or t.mark_name_normalized like s.mark_name_normalized || '%'
             or s.mark_name_normalized like t.mark_name_normalized || '%')
-     order by sim desc, t.publication_date desc nulls last
+     order by sim desc, public.to_gregorian_date(t.publication_date) desc nulls last
      limit least(greatest(coalesce(p_limit, 8), 1), 50)
   )
   select h.id, h.serial_number, h.record_number, h.mark_name, h.applicant_name, h.applicant_address,
@@ -337,7 +337,7 @@ as $$
     left join public.trademark_primary_images img on img.trademark_id = t.id
    where t.is_published
    order by public.gazette_sort_key(t.official_gazette_number) desc nulls last,
-            t.publication_date desc nulls last, t.created_at desc, t.serial_number
+            public.to_gregorian_date(t.publication_date) desc nulls last, t.created_at desc, t.serial_number
    limit least(greatest(coalesce(p_limit, 8), 1), 48);
 $$;
 

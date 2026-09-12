@@ -1,19 +1,48 @@
-# Render Blueprint — https://render.com/docs/blueprint-spec
-# After "New → Blueprint" fill in SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in
-# the service's Environment tab (they are passed to the Docker build).
+# Render Blueprint — TMistan (Vite/React SPA, no server) → Render STATIC SITE.
+# https://render.com/docs/blueprint-spec
+#
+# Dashboard equivalent (if you create the service by hand instead of via Blueprint):
+#   Service type ....... Static Site
+#   Root Directory ..... web
+#   Build Command ...... npm ci && npm run build
+#   Publish Directory .. dist
+#   Redirects/Rewrites . /*  →  /index.html   (Rewrite)
+#   Environment ........ SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY   (public values; NEVER the secret key)
+#
+# The two Supabase values are read at BUILD time by web/vite.config.ts and
+# inlined into the JS bundle (Vite apps have no runtime environment).
 services:
   - type: web
     name: tmistan
-    runtime: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    healthCheckPath: /healthz
-    autoDeploy: true
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - web/**
     envVars:
       - key: SUPABASE_URL
-        sync: false          # set in dashboard
+        sync: false                       # prompt in dashboard: https://<ref>.supabase.co
       - key: SUPABASE_PUBLISHABLE_KEY
-        sync: false          # set in dashboard (public key, NOT the secret key)
-      - key: PORT
-        value: "8080"
+        sync: false                       # prompt in dashboard: sb_publishable_... (public)
+      - key: NODE_VERSION
+        value: "22.12.0"                  # matches web/.node-version (Vite 8 needs 20.19+ / 22.12+)
+    routes:
+      - type: rewrite                     # client-side routing: every path serves the SPA
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

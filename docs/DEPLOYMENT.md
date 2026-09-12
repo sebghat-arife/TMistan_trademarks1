@@ -27,21 +27,19 @@
 
 ## 1. Apply migrations
 
-Using the Supabase CLI (recommended, gives you history in `supabase_migrations.schema_migrations`):
+SQL Editor → New query → paste **`supabase/APPLY_ALL.sql`** (0100 + 0200 + 0300 concatenated, wrapped
+in one transaction) → Run. Idempotent; re-run any time after editing a migration and regenerating the
+file with `python3 scripts/build_apply_all.py`.
 
-```bash
-supabase login
-supabase link --project-ref <PROJECT_REF>
-# The baseline is for local only — move it out of the way:
-mv supabase/migrations/20260905000000_baseline_existing_trademarks.sql supabase/dev/
-supabase db push            # applies 0100, 0200, 0300 in order
-```
+Applied to project `tzzslhpqbfjklazihssc` on 2026-09-12 — post-checks: trademarks 732, gazettes 12,
+policies 11, anon can read 732.
 
-Or paste each file into the SQL editor in order (0100 → 0200 → 0300).
+Supabase CLI alternative: `supabase link --project-ref <ref>` then `supabase db push` after moving
+`…0000_baseline…` out of `supabase/migrations/` (it is local-only).
 
 Post-checks:
 ```sql
-select count(*) from trademarks;                          -- unchanged (≈732)
+select count(*) from trademarks;                          -- unchanged (732)
 select gazette_number, trademark_count from gazette_summaries order by sort_key;  -- 12 rows
 select registry_stats();
 select * from search_trademarks(p_query => 'caravell', p_limit => 5);
@@ -49,10 +47,12 @@ select * from search_trademarks(p_query => 'caravell', p_limit => 5);
 
 ## 2. Storage
 
-`0300` creates the buckets when run on Supabase. Verify in Dashboard → Storage:
+Buckets are created with the Storage API (the SQL editor role cannot manage `storage.objects`
+policies on hosted Supabase any more): `python3 scripts/setup_storage.py` with `importers/.env`
+filled in. Result on the production project:
 
-- `trademark-images` — public, 10 MB limit, image MIME types only
-- `source-documents` — private
+- `trademark-images` — public read, 10 MB limit, image MIME types only, writes only via service role
+- `source-documents` — private, 50 MB limit
 
 ## 3. Admin users
 
@@ -63,26 +63,13 @@ insert into public.user_roles (user_id, role) values ('<auth.users.id>', 'admin'
 `public.is_admin()` drives every admin RLS policy **and** gates the `/admin` routes in the web app
 (the dashboard calls the RPC after sign-in; anyone without a `user_roles` row is sent back to the login page).
 
-## 4. Web app (Docker → Railway or Render)
+## 4. Web app — Render Static Site
 
-The web app is a static SPA served by nginx from a single Docker image. Public settings are
-baked in at build time as build-args (they are public by design; the build rejects secret keys):
+`render.yaml` (Blueprint) = Static Site, root `web`, build `npm ci && npm run build`, publish `dist`,
+rewrite `/* → /index.html`, Node 22.12.0. Environment: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
+Exact click-by-click steps are in the README ("Deploying to Render").
 
-```bash
-docker build --build-arg SUPABASE_URL=https://<PROJECT_REF>.supabase.co \
-             --build-arg SUPABASE_PUBLISHABLE_KEY=<publishable key> -t tmistan .
-docker run --rm -p 8080:8080 -e PORT=8080 tmistan     # http://localhost:8080/healthz → ok
-```
-
-**Railway (preferred):** New Project → Deploy from GitHub → this repo. `railway.toml` selects the
-Dockerfile + `/healthz`. Variables tab → `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (optionally
-`SITE_*`) → redeploy → Networking → Generate domain.
-
-**Render:** New → Blueprint → this repo (`render.yaml`). Environment → the same two variables →
-Manual Deploy.
-
-Before the first deploy run the readiness check with the same public key:
-`SUPABASE_URL=… SUPABASE_PUBLISHABLE_KEY=… python3 scripts/check_supabase.py`.
+Before the first deploy: `python3 scripts/check_supabase.py --expect-rows 732`.
 
 Add the deployed origin to Supabase → Authentication → URL configuration (needed later
 for admin login; harmless now).

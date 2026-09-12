@@ -14,16 +14,69 @@ function intlLocale(locale?: string): string {
 }
 
 /**
- * Locale-aware date. The stored value is an ISO (Gregorian) date; in Dari and
- * Pashto it is rendered in the Solar Hijri calendar as Afghan readers expect.
+ * Registry dates are recorded exactly as printed in the Official Gazette — in
+ * the Afghan Solar Hijri calendar (e.g. "1389-12-29"). A year below 1500 is
+ * therefore Solar Hijri; anything else is treated as Gregorian. Mirrors
+ * public.to_gregorian_date() in the database.
+ */
+export function parseRegistryDate(value: string | null | undefined): { gregorian: Date; solar: { y: number; m: number; d: number } | null } | null {
+  if (!value) return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
+  if (!m) {
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : { gregorian: d, solar: null }
+  }
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  if (y < 1500) {
+    const g = solarHijriToGregorian(y, mo, d)
+    return g ? { gregorian: g, solar: { y, m: mo, d } } : null
+  }
+  const g = new Date(Date.UTC(y, mo - 1, d))
+  return Number.isNaN(g.getTime()) ? null : { gregorian: g, solar: null }
+}
+
+/** Solar Hijri (Jalali) → Gregorian, same algorithm as the SQL function. */
+export function solarHijriToGregorian(jy: number, jm: number, jd: number): Date | null {
+  if (jm < 1 || jm > 12 || jd < 1 || jd > 31) return null
+  const y = jy + 1595
+  let days = -355668 + 365 * y + Math.floor(y / 33) * 8 + Math.floor(((y % 33) + 3) / 4) + jd + (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186)
+  let gy = 400 * Math.floor(days / 146097)
+  days %= 146097
+  if (days > 36524) {
+    days -= 1
+    gy += 100 * Math.floor(days / 36524)
+    days %= 36524
+    if (days >= 365) days += 1
+  }
+  gy += 4 * Math.floor(days / 1461)
+  days %= 1461
+  if (days > 365) {
+    gy += Math.floor((days - 1) / 365)
+    days = (days - 1) % 365
+  }
+  let gd = days + 1
+  const leap = (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0
+  const sal = [0, 31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  let gm = 1
+  while (gm <= 12 && gd > sal[gm]) {
+    gd -= sal[gm]
+    gm += 1
+  }
+  return new Date(Date.UTC(gy, gm - 1, gd))
+}
+
+/**
+ * Locale-aware date. In English the Gregorian equivalent is shown with the
+ * original Solar Hijri value in brackets (the registry is Afghan, readers
+ * expect both); in Dari/Pashto the Solar Hijri calendar is used natively.
  * Falls back to the raw stored string if unparsable — never invents a date.
  */
 export function formatDate(value: string | null | undefined, locale = 'en'): string {
   if (!value) return '—'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
+  const parsed = parseRegistryDate(value)
+  if (!parsed) return value
   try {
-    const parts = new Intl.DateTimeFormat(intlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(d)
+    const parts = new Intl.DateTimeFormat(intlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(parsed.gregorian)
     // Drop the era designator ("AP") some locales emit for the Persian calendar.
     const out: string[] = []
     for (let i = 0; i < parts.length; i++) {
@@ -34,17 +87,21 @@ export function formatDate(value: string | null | undefined, locale = 'en'): str
       }
       out.push(p.value)
     }
-    return out.join('').trim()
+    const text = out.join('').trim()
+    if (parsed.solar && (locale ?? 'en').startsWith('en')) {
+      return `${text} (${parsed.solar.y}/${String(parsed.solar.m).padStart(2, '0')}/${String(parsed.solar.d).padStart(2, '0')} SH)`
+    }
+    return text
   } catch {
     return value
   }
 }
 
-/** ISO form of a stored date, for title attributes / machine-readable output. */
+/** ISO (Gregorian) form of a stored date, for title attributes / machine-readable output. */
 export function isoDate(value: string | null | undefined): string {
   if (!value) return ''
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 10)
+  const parsed = parseRegistryDate(value)
+  return parsed ? parsed.gregorian.toISOString().slice(0, 10) : value
 }
 
 export function formatNumber(n: number | null | undefined, locale = 'en'): string {

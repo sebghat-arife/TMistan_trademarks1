@@ -1,4 +1,5 @@
-# Only web/ (minus its build output) and deploy/ enter the build context.
+# OPTIONAL Docker path (Render Static Site is the primary deployment).
+# Only web/ (minus build output) and deploy/ enter the build context.
 *
 !web/
 !deploy/

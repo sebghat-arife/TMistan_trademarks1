@@ -96,6 +96,20 @@ create policy "read own role"
   using (user_id = auth.uid() or public.is_admin());
 
 -- Grants (Supabase default roles) -------------------------------------------
+-- Hosted Supabase grants anon/authenticated ALL privileges on new public
+-- tables through default privileges; RLS is what protects the data. Revoke the
+-- privileges the browser roles must never have so protection does not rely on
+-- RLS alone (harmless where the grant never existed, e.g. the local stack).
+revoke all on public.import_jobs, public.import_job_items, public.audit_logs, public.user_roles
+  from anon, authenticated;
+revoke insert, update, delete, truncate, references, trigger
+  on public.trademarks, public.gazettes, public.trademark_images
+  from anon;
+revoke delete, truncate, references, trigger
+  on public.trademarks, public.gazettes, public.trademark_images
+  from authenticated;
+revoke all on all sequences in schema public from anon;
+
 grant usage on schema public to anon, authenticated;
 grant select on public.trademarks, public.gazettes, public.trademark_images,
                 public.gazette_summaries, public.trademark_primary_images
@@ -111,60 +125,29 @@ grant execute on function
   public.recent_trademarks(int),
   public.trademarks_by_class(),
   public.normalize_text(text),
-  public.gazette_sort_key(text)
+  public.gazette_sort_key(text),
+  public.to_gregorian_date(date),
+  public.solar_hijri_to_gregorian(int, int, int)
   to anon, authenticated;
 grant execute on function public.is_admin() to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
--- Storage buckets (skipped automatically when storage schema is absent,
--- e.g. on the local PostgREST-only dev stack)
+-- Storage
+--
+-- Buckets are created with the Storage API / Dashboard, NOT here: since
+-- April 2025 the SQL editor role on hosted Supabase is not the owner of
+-- storage.objects, so `create policy ... on storage.objects` fails with
+-- "must be owner of table objects", and inserting into storage.buckets from
+-- SQL bypasses the Storage service's own bookkeeping.
+--
+-- Required configuration (done by scripts/setup_storage.py, idempotent):
+--   • bucket  trademark-images   PUBLIC   (10 MB, image/* only)
+--       - anyone may GET /storage/v1/object/public/trademark-images/<path>
+--       - uploads/deletes only with the service-role key (importers) —
+--         no storage.objects policy grants anon/authenticated any write
+--   • bucket  source-documents   PRIVATE  (50 MB)
+--       - readable/writable only with the service-role key
+--
+-- Because no policy on storage.objects is created for anon/authenticated, the
+-- browser can only read public-bucket objects — exactly what the app needs.
 -- ---------------------------------------------------------------------------
-do $$
-begin
-  if exists (select 1 from information_schema.tables where table_schema = 'storage' and table_name = 'buckets') then
-
-    insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-    values ('trademark-images', 'trademark-images', true, 10485760,
-            array['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/tiff'])
-    on conflict (id) do update set public = excluded.public;
-
-    insert into storage.buckets (id, name, public, file_size_limit)
-    values ('source-documents', 'source-documents', false, 104857600)
-    on conflict (id) do nothing;
-
-    -- Public read of published logos
-    drop policy if exists "public read trademark images" on storage.objects;
-    create policy "public read trademark images"
-      on storage.objects for select
-      to anon, authenticated
-      using (bucket_id = 'trademark-images');
-
-    -- Admins may upload/replace images from the admin UI (importer uses service role)
-    drop policy if exists "admin write trademark images" on storage.objects;
-    create policy "admin write trademark images"
-      on storage.objects for insert
-      to authenticated
-      with check (bucket_id = 'trademark-images' and public.is_admin());
-
-    drop policy if exists "admin update trademark images" on storage.objects;
-    create policy "admin update trademark images"
-      on storage.objects for update
-      to authenticated
-      using (bucket_id = 'trademark-images' and public.is_admin());
-
-    -- Source documents: admin only
-    drop policy if exists "admin read source documents" on storage.objects;
-    create policy "admin read source documents"
-      on storage.objects for select
-      to authenticated
-      using (bucket_id = 'source-documents' and public.is_admin());
-
-    drop policy if exists "admin write source documents" on storage.objects;
-    create policy "admin write source documents"
-      on storage.objects for insert
-      to authenticated
-      with check (bucket_id = 'source-documents' and public.is_admin());
-  else
-    raise notice 'storage schema not present — skipping bucket/policy setup (local dev stack)';
-  end if;
-end $$;

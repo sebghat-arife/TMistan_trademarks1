@@ -86,18 +86,91 @@ comment on function public.normalize_text(text) is
   'Canonical lower-cased, unaccented, punctuation-free form used for all matching.';
 
 -- Nice classification numbers (1–45) parsed out of free-text class fields
--- such as "25", "25, 35", "Class 9 & 42".
+-- such as "25", "25, 35", "Class 9 & 42", "4 (as printed)" and ranges "1-45"
+-- (a range expands to every class it covers).
 create or replace function public.parse_class_numbers(p text)
 returns int[]
 language sql immutable parallel safe
 as $$
+  with src as (
+    -- Persian/Arabic-Indic digits → ASCII, then keep only digits, '-' and separators
+    select translate(coalesce(p, ''), '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹', '01234567890123456789') as v
+  ),
+  ranges as (
+    select generate_series(m[1]::int, m[2]::int) as c
+      from src, regexp_matches(src.v, '(\d{1,2})\s*[-–—]\s*(\d{1,2})', 'g') m
+     where m[1]::int <= m[2]::int
+  ),
+  singles as (
+    select m[1]::int as c
+      from src, regexp_matches(regexp_replace(src.v, '\d{1,2}\s*[-–—]\s*\d{1,2}', ' ', 'g'), '(\d{1,2})', 'g') m
+  )
   select coalesce(
-    (select array_agg(distinct m[1]::int order by m[1]::int)
-       from regexp_matches(coalesce(p, ''), '(\d{1,2})', 'g') m
-      where m[1]::int between 1 and 45),
+    (select array_agg(distinct c order by c) from (select c from ranges union all select c from singles) x where c between 1 and 45),
     '{}'::int[]
   );
 $$;
+
+-- Dates in the registry are recorded exactly as printed in the Official
+-- Gazette, i.e. in the Afghan Solar Hijri calendar (e.g. 1389-12-29). They are
+-- stored unchanged in `date` columns. For comparisons with calendar input and
+-- for sorting alongside any future Gregorian values, convert on the fly:
+-- a year below 1500 is Solar Hijri, anything else is already Gregorian.
+create or replace function public.solar_hijri_to_gregorian(jy int, jm int, jd int)
+returns date
+language plpgsql immutable parallel safe
+as $$
+declare
+  y    int := jy + 1595;
+  days int;
+  gy   int;
+  gm   int := 0;
+  gd   int;
+  sal  int[];
+begin
+  if jy is null or jm is null or jd is null or jm < 1 or jm > 12 or jd < 1 or jd > 31 then
+    return null;
+  end if;
+  days := -355668 + 365 * y + (y / 33) * 8 + ((y % 33) + 3) / 4 + jd
+          + case when jm < 7 then (jm - 1) * 31 else (jm - 7) * 30 + 186 end;
+  gy   := 400 * (days / 146097);
+  days := days % 146097;
+  if days > 36524 then
+    days := days - 1;
+    gy   := gy + 100 * (days / 36524);
+    days := days % 36524;
+    if days >= 365 then days := days + 1; end if;
+  end if;
+  gy   := gy + 4 * (days / 1461);
+  days := days % 1461;
+  if days > 365 then
+    gy   := gy + (days - 1) / 365;
+    days := (days - 1) % 365;
+  end if;
+  gd  := days + 1;
+  sal := array[0, 31, case when (gy % 4 = 0 and gy % 100 <> 0) or gy % 400 = 0 then 29 else 28 end,
+               31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  while gm < 13 and gd > sal[gm + 1] loop
+    gd := gd - sal[gm + 1];
+    gm := gm + 1;
+  end loop;
+  return make_date(gy, gm, gd);
+end $$;
+
+create or replace function public.to_gregorian_date(d date)
+returns date
+language sql immutable parallel safe
+as $$
+  select case
+    when d is null then null
+    when extract(year from d) < 1500
+      then public.solar_hijri_to_gregorian(extract(year from d)::int, extract(month from d)::int, extract(day from d)::int)
+    else d
+  end;
+$$;
+
+comment on function public.to_gregorian_date(date) is
+  'Gregorian equivalent of a stored registry date (Solar Hijri when year < 1500, otherwise unchanged). Used for date filters and sorting.';
 
 -- Prefix full-text query: "coca col" → 'coca':* & 'col':*
 create or replace function public.to_prefix_tsquery(p text)
@@ -244,6 +317,8 @@ create index if not exists trademarks_gazette_idx
   on public.trademarks (official_gazette_number);
 create index if not exists trademarks_publication_date_idx
   on public.trademarks (publication_date desc nulls last);
+create index if not exists trademarks_publication_gregorian_idx
+  on public.trademarks (public.to_gregorian_date(publication_date) desc nulls last);
 create index if not exists trademarks_application_type_idx
   on public.trademarks (application_type);
 create index if not exists trademarks_review_status_idx

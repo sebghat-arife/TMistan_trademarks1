@@ -1,6 +1,6 @@
-# syntax=docker/dockerfile:1.7
 # ─────────────────────────────────────────────────────────────────────────────
-# TMistan — production image
+# TMistan — OPTIONAL container image (the primary deployment is a Render
+# Static Site — see render.yaml). Use this for Railway/Fly/any Docker host.
 #
 #   Stage 1 (build)  Node 20: compile the Vite/React SPA.
 #   Stage 2 (run)    nginx (unprivileged): serve /web/dist with SPA fallback,
@@ -20,7 +20,7 @@ WORKDIR /app/web
 
 # Install dependencies first so they are cached between source changes.
 COPY web/package.json web/package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 COPY web/ ./
 
