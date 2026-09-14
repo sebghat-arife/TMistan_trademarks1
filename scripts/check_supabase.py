@@ -38,6 +38,9 @@ RPCS = {
     "is_admin": {},
 }
 ADMIN_ONLY_TABLES = ["import_jobs", "import_job_items", "audit_logs", "user_roles"]
+# Migration 0400 — Admin Import Center. SECURITY DEFINER functions; anon must be refused (42501), not "not found".
+IMPORT_RPCS = ["admin_assert", "admin_create_import_job", "admin_import_trademark_rows", "admin_resolve_serials",
+               "admin_register_images", "admin_trademarks_without_images"]
 
 
 def _load_dotenv() -> None:
@@ -136,6 +139,22 @@ def main() -> int:
     if missing:
         print(f"\n{missing} schema object(s) missing — the app shows 'Database not ready' until the migrations are applied.")
         return 1
+    print("\n2b. Admin Import Center (migration 0400)")
+    # The OpenAPI document is not always exposed to anon, so probe the functions directly:
+    # PGRST202 (404) = function missing → migration not applied; 401/403/42501 = present and refusing anon.
+    import_missing = []
+    for fn in IMPORT_RPCS:
+        status, body, _ = c.call("POST", f"/rest/v1/rpc/{fn}", {})
+        code = body.get("code") if isinstance(body, dict) else None
+        if status == 404 and code == "PGRST202":
+            import_missing.append(fn)
+        elif status in (401, 403) or code == "42501":
+            ok(f"rpc {fn}() present, anonymous call refused ({status})")
+        else:
+            bad(f"rpc {fn}() for anon → {status} {str(body)[:70]}", "Admin functions must refuse non-admins (APPLY_0400.sql grants execute to 'authenticated' only).")
+    if import_missing:
+        bad(f"missing admin import functions: {', '.join(import_missing)}",
+            "Run supabase/APPLY_0400.sql in the Supabase SQL editor — the Import Center shows 'not available' until then.")
 
     print("\n3. Real data through the public key")
     _, _, hdrs = c.call("GET", "/rest/v1/trademarks?select=id", headers={"Prefer": "count=exact", "Range": "0-0"})

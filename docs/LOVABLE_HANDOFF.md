@@ -12,8 +12,9 @@ database. Preserve the existing trademark records and the uniqueness rule
 under Row Level Security. Any schema change must be an explicit, reviewable SQL migration added to
 `supabase/migrations/` — never an ad-hoc change.
 
-The database currently holds ~732 real trademark records from 12 official-gazette Excel files and
-will grow to 200+ gazettes. Design for continuous ingestion, not a fixed dataset.
+The database holds only what administrators import through Admin → Import Center (real gazette
+Excel/CSV files + images) and will grow to 200+ gazettes. Design for continuous ingestion, not a
+fixed dataset — never assume a record count.
 
 **What already exists (do not recreate):**
 
@@ -30,7 +31,13 @@ will grow to 200+ gazettes. Design for continuous ingestion, not a fixed dataset
 - Frontend (React + TS + Vite + Tailwind + shadcn-style components + TanStack Query + React Router + i18next):
   `/`, `/search`, `/trademark/:serial`, `/gazettes`, `/gazette/:number`, `/about`. URL is the search
   state. EN / Dari / Pashto with RTL. Images render via `storagePublicUrl(bucket, path)`.
-- Bulk ingestion is Python (`importers/image_importer.py` + the existing Excel importer). The browser never ingests.
+- Ingestion: **Admin → Import Center** in the browser (`web/src/pages/admin/ImportCenterPage.tsx`,
+  `docs/IMPORT_CENTER.md`) through admin-only `SECURITY DEFINER` RPCs (migration 0400:
+  `admin_import_trademark_rows`, `admin_resolve_serials`, `admin_register_images`, job bookkeeping) and
+  admin-only Storage policies; images are matched by the serial number in the file name. An optional
+  Python folder importer (`importers/image_importer.py`) exists for operator machines.
+- Auth + `/admin` shell + dashboard + Import Center are done; the remaining admin screens
+  (trademark editing, review queue, users) are still to build.
 
 **Phase 2 scope (build in this order, one PR each):**
 

@@ -27,19 +27,20 @@
 
 ## 1. Apply migrations
 
-SQL Editor → New query → paste **`supabase/APPLY_ALL.sql`** (0100 + 0200 + 0300 concatenated, wrapped
-in one transaction) → Run. Idempotent; re-run any time after editing a migration and regenerating the
-file with `python3 scripts/build_apply_all.py`.
+SQL Editor → New query → paste **`supabase/APPLY_ALL.sql`** (0100 + 0200 + 0300 + 0400 concatenated,
+wrapped in one transaction) → Run. Idempotent; re-run any time after editing a migration and
+regenerating the file with `python3 scripts/build_apply_all.py` (which also emits `APPLY_0400.sql`).
 
-Applied to project `tzzslhpqbfjklazihssc` on 2026-09-12 — post-checks: trademarks 732, gazettes 12,
-policies 11, anon can read 732.
+Project `tzzslhpqbfjklazihssc`: 0100–0300 applied 2026-09-12 (post-checks: gazettes 12, policies 11,
+anon can read every published row). **0400 (Import Center) is pending** — paste
+`supabase/APPLY_0400.sql`; it only adds functions, two indexes and four Storage policies.
 
 Supabase CLI alternative: `supabase link --project-ref <ref>` then `supabase db push` after moving
 `…0000_baseline…` out of `supabase/migrations/` (it is local-only).
 
 Post-checks:
 ```sql
-select count(*) from trademarks;                          -- unchanged (732)
+select count(*) from trademarks;                          -- unchanged by any migration
 select gazette_number, trademark_count from gazette_summaries order by sort_key;  -- 12 rows
 select registry_stats();
 select * from search_trademarks(p_query => 'caravell', p_limit => 5);
@@ -51,14 +52,16 @@ Buckets are created with the Storage API (the SQL editor role cannot manage `sto
 policies on hosted Supabase any more): `python3 scripts/setup_storage.py` with `importers/.env`
 filled in. Result on the production project:
 
-- `trademark-images` — public read, 10 MB limit, image MIME types only, writes only via service role
+- `trademark-images` — public read, 10 MB limit, image MIME types only; writes by the service role
+  and — after 0400 — by signed-in administrators (`is_admin()`) from the Import Center
 - `source-documents` — private, 50 MB limit
 
 ## 3. Admin users
 
-Auth → Users → invite the administrators. Then:
+Auth → Users → *Add user* (e-mail + password, auto-confirm). Then:
 ```sql
-insert into public.user_roles (user_id, role) values ('<auth.users.id>', 'admin');
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = '<e-mail>' on conflict do nothing;
 ```
 `public.is_admin()` drives every admin RLS policy **and** gates the `/admin` routes in the web app
 (the dashboard calls the RPC after sign-in; anyone without a `user_roles` row is sent back to the login page).
@@ -69,13 +72,20 @@ insert into public.user_roles (user_id, role) values ('<auth.users.id>', 'admin'
 rewrite `/* → /index.html`, Node 22.12.0. Environment: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
 Exact click-by-click steps are in the README ("Deploying to Render").
 
-Before the first deploy: `python3 scripts/check_supabase.py --expect-rows 732`.
+Before the first deploy: `python3 scripts/check_supabase.py` (add `--expect-rows N` once you know
+how many records your files contain).
 
-Add the deployed origin to Supabase → Authentication → URL configuration (needed later
-for admin login; harmless now).
+Add the deployed origin to Supabase → Authentication → URL configuration (needed for admin login).
 
-## 5. Image import (one gazette first)
+## 4b. Loading the registry — Admin → Import Center
 
+This is the normal path (`docs/IMPORT_CENTER.md`): sign in at `/admin/login`, drop the Excel/CSV,
+review validation, import, then drop the images / ZIP named `<serial>.<ext>`. Every run is an
+`import_jobs` row; re-running is idempotent. The public site shows the real images immediately.
+
+## 5. Optional: bulk image import from a folder (Python)
+
+Only when a whole gazette folder is easier to load from a machine than through the browser.
 On a trusted machine (never in the browser, never in CI logs):
 
 ```bash
@@ -112,15 +122,29 @@ python image_importer.py --root /path/to/images            # again: everything "
 
 `import_jobs` records every run; `trademark_images where status <> 'matched'` is the review queue.
 
-## 6. Existing Excel importer — one optional line
+## 6. Spreadsheet imports
 
-The existing Python importer keeps working unchanged (the gazette FK is on the natural key and
-the `gazettes` row is auto-created by trigger). Optionally, to get import history, have it
-insert one `import_jobs` row per file and set `trademarks.import_job_id`.
+Spreadsheets are imported through the Import Center (`admin_import_trademark_rows`, keyed on
+`serial_number`, whitelisted columns, provenance in `source_file/source_sheet/source_row`,
+`import_job_id`). A legacy Python Excel importer keeps working unchanged if you still have one —
+the gazette FK is on the natural key and the `gazettes` row is auto-created by trigger.
 
 ## 7. Roll-back
 
-All objects added by 0100–0300 can be removed without touching the original columns:
+0400 first (functions, indexes, storage policies — no data):
+
+```sql
+drop function if exists admin_import_trademark_rows, admin_resolve_serials, admin_register_images,
+  admin_trademarks_without_images, admin_add_import_items, admin_finish_import_job,
+  admin_create_import_job, admin_assert, serial_canonical cascade;
+drop index if exists trademarks_serial_number_key, trademarks_serial_canonical_idx;
+drop policy if exists "tmistan admin insert trademark images" on storage.objects;
+drop policy if exists "tmistan admin update trademark images" on storage.objects;
+drop policy if exists "tmistan admin delete trademark images" on storage.objects;
+drop policy if exists "tmistan admin select trademark images" on storage.objects;
+```
+
+Then, if needed, everything added by 0100–0300 can be removed without touching the original columns:
 
 ```sql
 drop function if exists search_trademarks, similar_trademarks, trademark_filter_options, registry_stats cascade;

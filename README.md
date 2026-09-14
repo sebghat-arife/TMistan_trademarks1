@@ -11,13 +11,21 @@ search, filter and statistic is a database query.
 │  React SPA (web/)          │   PostgREST  /rest/v1/rpc/*       │  Postgres  public.trademarks │
 │  static files on           │   Storage    /storage/v1/object   │            gazettes, images… │
 │  Render Static Site (CDN)  │ ◀──────────────────────────────── │  Storage   trademark-images  │
-└────────────────────────────┘                                   └──────────────▲───────────────┘
+│  Admin → Import Center     │   admin JWT → SECURITY DEFINER    │  admin_* RPCs (0400)         │
+└────────────────────────────┘   RPCs + RLS storage policies     └──────────────▲───────────────┘
                                                                                  │ service-role key
                                                     ┌────────────────────────────┴───────────────┐
                                                     │  Operator tools (never deployed, never in   │
-                                                    │  the browser): importers/*.py, migrations   │
+                                                    │  the browser): setup_storage, check script, │
+                                                    │  optional Python importers, migrations      │
                                                     └─────────────────────────────────────────────┘
 ```
+
+**Data gets in through Admin → Import Center** (`docs/IMPORT_CENTER.md`): an administrator drops
+the registry Excel/CSV, reviews the validation, imports, then drops the trademark images (or a ZIP)
+named `<serial>.png`; they are matched by serial number, stored in Supabase Storage, linked in
+`trademark_images` and visible in the public search immediately. The record count is whatever the
+imported files contain — nothing is assumed or seeded.
 
 There is **no application server** — nothing to keep running, no `PORT`, no health endpoint. The
 build output (`web/dist`) is plain static files served by Render's CDN; authorisation is decided by
@@ -32,9 +40,11 @@ service-role key exists only on the machine that runs importers / the storage se
 | `web/src/services/` | the centralised data-access layer — the *only* place that talks to Supabase | yes |
 | `render.yaml` | **Render Blueprint — Static Site** (root `web`, `npm ci && npm run build`, publish `dist`, SPA rewrite) | — |
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
-| `supabase/APPLY_ALL.sql` | the three migrations concatenated — paste once into the Supabase SQL editor | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants | no |
-| `importers/` | Python bulk-import tools (Excel records, gazette images) — use the service-role key | no |
+| `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation, image intake (ZIP, sniffing, hashing), serial matching | yes |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0400) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import | no |
+| `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
 | `scripts/local-stack/` | offline dev stack: PostgreSQL + PostgREST + static image server, no Supabase account needed | no |
@@ -51,8 +61,10 @@ Discovered from the live project + `supabase/migrations`:
 | `trademark_images`, `trademark_primary_images` | table + view (0100) | images per trademark, card thumbnails |
 | `search_trademarks(...)` | RPC (0200) — trigram + full-text, case/diacritic-insensitive, partial match, Arabic-Indic digits, paginated, sorted, returns `total_count` | search page, all list/filter helpers |
 | `registry_stats()`, `recent_trademarks()`, `trademarks_by_class()`, `trademark_filter_options()`, `similar_trademarks()` | RPCs (0200) | home stats, recent list, admin chart, filter dropdowns, "similar" strip |
-| `import_jobs`, `audit_logs`, `user_roles`, `is_admin()` | admin-only under RLS (0100/0300) | admin dashboard |
-| Storage bucket `trademark-images` (public read, admin write) | (0300) | image URLs |
+| `import_jobs`, `import_job_items`, `audit_logs`, `user_roles`, `is_admin()` | admin-only under RLS (0100/0300) | admin dashboard, Recent Imports |
+| `admin_import_trademark_rows()`, `admin_resolve_serials()`, `admin_register_images()`, `admin_create/finish_import_job()`, `admin_add_import_items()`, `admin_trademarks_without_images()` | SECURITY DEFINER RPCs (0400), admin-only | Import Center |
+| `trademarks_serial_number_key` (unique `serial_number`, guarded), `serial_canonical()` | (0400) | idempotent imports, image matching |
+| Storage bucket `trademark-images` (public read, admin write via 0400 policies) | (0300/0400) | image URLs, Import Center uploads |
 
 Dates are stored exactly as printed in the gazette — Afghan **Solar Hijri** (e.g. `1389-12-29`).
 `public.to_gregorian_date()` converts for date filters/sorting; the UI shows both calendars in
@@ -101,7 +113,7 @@ SUPABASE_URL=https://<ref>.supabase.co SUPABASE_PUBLISHABLE_KEY=sb_publishable_.
 scripts/local-stack/start.sh                                   # DB on 54329, applies ALL migrations, writes keys.env
 ~/.local/bin/postgrest scripts/local-stack/postgrest.conf &      # API on 54321
 python3 scripts/local-stack/static_storage.py local-storage 54322 &
-python3 scripts/local-stack/seed_dev_fixtures.py --no-images   # optional synthetic rows (refuses to run if real rows exist)
+# data: sign in to /admin (see keys.env / mint_jwt.py) and use the Import Center, exactly like production
 # web/.env.local:  SUPABASE_URL=/supabase  SUPABASE_PUBLISHABLE_KEY=<LOCAL_ANON_KEY from keys.env>  VITE_LOCAL_STORAGE_BASE=/local-storage
 cd web && npm run dev
 ```
@@ -112,23 +124,31 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 
 1. **Backup** (Dashboard → Database → Backups).
 2. **Schema** — SQL Editor → New query → paste the whole of `supabase/APPLY_ALL.sql` → Run.
-   It is the concatenation of `supabase/migrations/…0100`, `…0200`, `…0300`; additive and
+   It is the concatenation of `supabase/migrations/…0100` … `…0400`; additive and
    idempotent (safe to re-run), it never drops or rewrites `public.trademarks` rows and keeps the
    `(official_gazette_number, serial_number)` uniqueness. The result panel prints the post-checks
-   (`trademarks 732 · gazettes 12 · policies 11 · anon can read 732`).
+   (trademark count, gazettes, policies, anon-readable rows). A project that already has 0100–0300
+   only needs **`supabase/APPLY_0400.sql`** (Import Center). Read the *Messages* tab: a WARNING about
+   `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
    `python3 scripts/setup_storage.py` (creates `trademark-images` public + `source-documents` private).
    Buckets are created through the Storage API because the SQL editor role can no longer create
    `storage.objects` policies on hosted Supabase.
-4. **Verify** — `python3 scripts/check_supabase.py --expect-rows 732` must print *All checks passed*.
-5. **Admin users** (Phase 2): Authentication → Add user, then
-   `insert into public.user_roles (user_id, role) values ('<auth uid>', 'admin');`
+4. **Verify** — `python3 scripts/check_supabase.py` must print *All checks passed* (section 2b
+   confirms the Import Center functions; `--expect-rows N` pins the count you expect after your imports).
+5. **Admin users**: Authentication → Add user (auto-confirm), then
+   `insert into public.user_roles (user_id, role) select id, 'admin' from auth.users where email = '<e-mail>';`
 6. **Auth → URL configuration**: add the deployed origin (needed for admin login).
+7. **Load the data** — sign in, Admin → Import Center, follow `docs/IMPORT_CENTER.md`.
 
-Status of the production project `tzzslhpqbfjklazihssc`: steps 2–4 done on 2026-09-12 (732 rows, 12 gazettes, RLS verified).
+Status of the production project `tzzslhpqbfjklazihssc`: 0100–0300 applied 2026-09-12, 12 gazette
+files loaded, RLS verified; **0400 must be pasted by the project owner** (see `docs/IMPORT_CENTER.md` §1).
 
-## Importers (operator machine, service-role key)
+## Optional Python importer (operator machine, service-role key)
+
+Normal operation does not need this — the Import Center covers spreadsheets and images from the
+browser. `image_importer.py` remains for bulk-loading whole gazette image folders from a machine:
 
 ```bash
 cd importers && cp .env.example .env         # SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY + SUPABASE_BUCKET
@@ -137,9 +157,9 @@ python3 image_importer.py --root /path/to/images --gazette 1011 --dry-run --verb
 python3 image_importer.py --root /path/to/images                                      # idempotent; re-run = "skipped"
 ```
 
-Images are matched **only** by `<gazette>/<gazette>-<serial>.<ext>`; unmatched/ambiguous files go
-to `trademark_images.status ∈ {unmatched, ambiguous}` for review and are never shown publicly.
-Every run is recorded in `import_jobs` / `import_job_items`. See `docs/DEPLOYMENT.md §5`.
+Images are matched **only** by serial number (`<serial>.<ext>`, same rule as the Import Center);
+unmatched/ambiguous files are parked for review and never shown publicly. Every run is recorded in
+`import_jobs` / `import_job_items`. See `docs/DEPLOYMENT.md §5`.
 
 ## Deploying to Render (Static Site) — exact steps
 
@@ -165,9 +185,10 @@ Every run is recorded in `import_jobs` / `import_job_items`. See `docs/DEPLOYMEN
 5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /index.html`).
    For a hand-made service: Redirects/Rewrites → Add rule → Source `/*`, Destination `/index.html`, Action **Rewrite**.
 6. **Verify** — open `https://tmistan.onrender.com` (or your name): the home page shows the real
-   counts (732 trademarks · 12 gazettes · 607 applicants); reload `/search?q=caravell`,
-   `/gazettes`, `/trademark/1011-002` directly (no 404 thanks to the rewrite).
-7. Add the Render URL to Supabase → Authentication → URL configuration (for the admin login).
+   counts from the database; reload `/search?q=<a mark you imported>`, `/gazettes`,
+   `/trademark/<serial>` directly (no 404 thanks to the rewrite).
+7. Add the Render URL to Supabase → Authentication → URL configuration (for the admin login), then
+   sign in at `/admin/login` and load the registry through the Import Center.
 
 Changing a variable later → Render rebuilds automatically (values are inlined at build time).
 
@@ -186,8 +207,10 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
 - `0300` also **revokes** the default hosted-Supabase grants: `anon` has no INSERT/UPDATE/DELETE on any
   table and no access at all to `import_jobs`, `audit_logs`, `user_roles`; `authenticated` can never DELETE.
   Verified live: anon INSERT/UPDATE/DELETE → 401, `user_roles` self-promotion → 401, admin-only tables → 401.
-- Storage: `trademark-images` is a public-read bucket; no `storage.objects` policy grants anon/authenticated
-  writes, so uploads are only possible with the service-role key (verified: anonymous upload → 400/403).
+- Storage: `trademark-images` is a public-read bucket; the only write policies (0400) require the
+  `authenticated` role **and** `is_admin()`, so anonymous/non-admin uploads are refused (verified: anonymous upload → 400/403).
+- Import Center: every privileged step is a `SECURITY DEFINER` RPC that calls `admin_assert()` first
+  (whitelisted columns, capped batch sizes, per-row error isolation); `EXECUTE` is revoked from `anon`.
 - `vite.config.ts` and the `Dockerfile` reject `sb_secret_*` / service-role JWTs as the public key; the built
   bundle is grepped for `sb_secret_`, `service_role`, `SUPABASE_SERVICE_ROLE_KEY` (zero hits).
 - `.gitignore` excludes every `.env*` except `*.example`; `render.yaml` never references the secret key.
@@ -199,6 +222,7 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
 - No mock data, no second database, no client-side filtering of the dataset — `search_trademarks` does the work server-side.
 - Every screen has explicit **loading / empty / error** states; a missing schema is reported as "Database not ready", never hidden.
 - Detail page renders only fields that exist and are non-null; images come from `trademark_images` or a neutral placeholder — never a fabricated logo.
-- Images: bytes in Storage, metadata in `trademark_images`, matched only by gazette + serial.
+- Images: bytes in Storage, metadata in `trademark_images`, matched only by the serial number in the file name — never guessed (ambiguous = not uploaded).
+- No demo/seed dataset anywhere: the registry contains exactly what administrators import.
 - Every trademark shows gazette / page / file / sheet / row provenance.
 - Schema changes only via explicit migrations; existing records and the gazette+serial uniqueness are preserved.

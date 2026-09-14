@@ -18,6 +18,7 @@ const LegalPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: 
 const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })))
+const ImportCenterPage = lazy(() => import('@/pages/admin/ImportCenterPage').then((m) => ({ default: m.ImportCenterPage })))
 const AdminSectionPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminSectionPage })))
 
 const queryClient = new QueryClient({
@@ -43,7 +44,6 @@ const ADMIN_SECTIONS: [string, string][] = [
   ['gazettes', 'admin.gazettes'],
   ['images', 'admin.images'],
   ['applicants', 'admin.applicants'],
-  ['imports', 'admin.importJobs'],
   ['reviews', 'admin.reviews'],
   ['users', 'admin.users'],
   ['audit', 'admin.auditLogs'],
@@ -74,6 +74,7 @@ export default function App() {
             </Route>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
+              <Route path="imports" element={<ImportCenterPage />} />
               {ADMIN_SECTIONS.map(([path, key]) => (
                 <Route key={path} path={path} element={<AdminSectionPage titleKey={key} />} />
               ))}
