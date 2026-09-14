@@ -75,6 +75,7 @@ export default function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
               <Route path="imports" element={<ImportCenterPage />} />
+              <Route path="import" element={<Navigate to="/admin/imports" replace />} />
               {ADMIN_SECTIONS.map(([path, key]) => (
                 <Route key={path} path={path} element={<AdminSectionPage titleKey={key} />} />
               ))}

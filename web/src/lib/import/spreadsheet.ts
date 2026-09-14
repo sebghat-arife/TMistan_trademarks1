@@ -184,7 +184,7 @@ export async function parseSpreadsheet(file: File, preferredSheet?: string): Pro
  * 1389/1/31, 31/01/1389, 2010-04-20, Excel dates and Persian digits.
  * Returns an ISO string or `{ error }`.
  */
-export function cleanDate(v: unknown): { value: string | null; error?: string } {
+export function cleanDate(v: unknown): { value: string | null; error?: string; warning?: string } {
   if (v === null || v === undefined || v === '') return { value: null }
   if (v instanceof Date) return isNaN(v.getTime()) ? { value: null, error: 'invalid date' } : { value: isoFromDate(v) }
   const s = asciiDigits(String(v)).trim()
@@ -210,6 +210,16 @@ export function cleanDate(v: unknown): { value: string | null; error?: string } 
   if (y < 1500) {
     // Solar Hijri: months 1–6 have 31 days, 7–11 have 30, month 12 has 29 (30 in leap years).
     if ((m <= 6 && d > 31) || (m > 6 && d > 30) || (m === 12 && d === 30 && !isSolarLeap(y))) return { value: null, error: `invalid Solar Hijri date "${String(v)}"` }
+    // The registry keeps Solar Hijri dates verbatim in a Gregorian `date` column. Day 31 of
+    // months 2/4/6 (and 12/30) has no Gregorian slot, so those few are stored as the exact
+    // Gregorian equivalent; the UI shows both calendars either way.
+    const gregorianMonthLength = new Date(Date.UTC(y, m, 0)).getUTCDate() // month `m` of (proleptic) year `y`
+    if (d > gregorianMonthLength) {
+      const g = solarHijriToGregorian(y, m, d)
+      if (!g) return { value: null, error: `invalid Solar Hijri date "${String(v)}"` }
+      const iso = g.toISOString().slice(0, 10)
+      return { value: iso, warning: `${String(v)} (Solar Hijri) has no Gregorian calendar slot — stored as ${iso}` }
+    }
   } else if (y > 2200) {
     return { value: null, error: `implausible year in "${String(v)}"` }
   } else if (d > new Date(Date.UTC(y, m, 0)).getUTCDate()) {
@@ -314,7 +324,7 @@ export function validateRows(sheet: ParsedSheet, mapping: ColumnMapping, opts: {
         if (r.error) {
           push('error', `${col.replace(/_/g, ' ')}: ${r.error}`)
           bad = true
-        }
+        } else if (r.warning) push('warning', `${col.replace(/_/g, ' ')}: ${r.warning}`)
         row[col] = r.value
       } else if (col === 'official_gazette_number') {
         const g = cleanSerial(v)

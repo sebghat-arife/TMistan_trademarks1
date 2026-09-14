@@ -97,6 +97,38 @@ export function formatDate(value: string | null | undefined, locale = 'en'): str
   }
 }
 
+/** Gregorian → Solar Hijri (Jalali); exact inverse of `solarHijriToGregorian` (same 33-year-cycle algorithm). */
+export function gregorianToSolarHijri(gy: number, gm: number, gd: number): { y: number; m: number; d: number } {
+  const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+  const gy2 = gm > 2 ? gy + 1 : gy
+  let days = 355666 + 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) + gd + gdm[gm - 1]
+  let jy = -1595 + 33 * Math.floor(days / 12053)
+  days %= 12053
+  jy += 4 * Math.floor(days / 1461)
+  days %= 1461
+  if (days > 365) {
+    jy += Math.floor((days - 1) / 365)
+    days = (days - 1) % 365
+  }
+  return days < 186 ? { y: jy, m: 1 + Math.floor(days / 31), d: 1 + (days % 31) } : { y: jy, m: 7 + Math.floor((days - 186) / 30), d: 1 + ((days - 186) % 30) }
+}
+
+/**
+ * Registry dates (publication, objection deadline) are printed in Solar Hijri.
+ * Most rows store the printed value (`1389-11-30`); the few printed dates that
+ * have no slot in a Gregorian `date` column (day 31 of months 2/4/6) are stored
+ * as their Gregorian equivalent. Both forms render identically here: Gregorian
+ * text plus the Solar Hijri date in English, the Persian calendar in Dari/Pashto.
+ */
+export function formatRegistryDate(value: string | null | undefined, locale = 'en'): string {
+  if (!value) return '—'
+  const parsed = parseRegistryDate(value)
+  if (!parsed || parsed.solar || !(locale ?? 'en').startsWith('en')) return formatDate(value, locale)
+  const g = parsed.gregorian
+  const sh = gregorianToSolarHijri(g.getUTCFullYear(), g.getUTCMonth() + 1, g.getUTCDate())
+  return `${formatDate(value, locale)} (${sh.y}/${String(sh.m).padStart(2, '0')}/${String(sh.d).padStart(2, '0')} SH)`
+}
+
 /** ISO (Gregorian) form of a stored date, for title attributes / machine-readable output. */
 export function isoDate(value: string | null | undefined): string {
   if (!value) return ''

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid, Search, Table2 } from 'lucide-react'
 import { gazetteQuery, searchTrademarksQuery } from '@/services'
 import { parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
-import { cn, formatDate, formatNumber } from '@/lib/utils'
+import { cn, formatNumber, formatRegistryDate } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
 import { EmptyState, ErrorState } from '@/components/AsyncState'
@@ -71,7 +71,7 @@ export function GazettePage() {
 
       <h1 className="mt-3 text-[30px] font-bold text-ink-900">{t('gazettes.gazetteN', { number })}</h1>
       <dl className="mt-1 space-y-0.5 text-[15px] text-ink-700">
-        <div className="flex gap-1.5"><dt>{t('gazettes.publicationDate')}:</dt><dd className="text-ink-900">{formatDate(pubDate, lng) || '—'}</dd></div>
+        <div className="flex gap-1.5"><dt>{t('gazettes.publicationDate')}:</dt><dd className="text-ink-900">{formatRegistryDate(pubDate, lng) || '—'}</dd></div>
         <div className="flex gap-1.5"><dt>{t('gazettes.totalTrademarks')}:</dt><dd className="font-medium tabular-nums text-ink-900">{formatNumber(totalCount, lng)}</dd></div>
         {gazette?.source_file && <div className="flex gap-1.5 text-[13px] text-ink-500" dir="ltr"><dt>{t('gazettes.sourceFile')}:</dt><dd className="break-all">{gazette.source_file}</dd></div>}
       </dl>

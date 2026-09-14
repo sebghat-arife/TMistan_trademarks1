@@ -67,6 +67,10 @@ Sign in at `/admin/login`, open **Import Center** in the sidebar.
    * empty / missing serial → *error* (row skipped)
    * the same serial twice in the file → *error* on the later row (first occurrence wins)
    * unparsable date (`31/13/1389`, `1389-12-30` in a non-leap year) → *error*
+   * Solar Hijri dates are stored as printed (`1389-11-30`). The few printed dates that have no
+     slot in a Gregorian `date` column (day 31 of months 2, 4, 6 and 12/30) are stored as their exact
+     Gregorian equivalent (`1389-06-31` → `2010-09-22`) with a *warning*; the site shows both
+     calendars for every row either way (`22 Sept 2010 (1389/06/31 SH)`).
    * non-numeric record/page/row number → *warning* (kept as text)
    * required column missing / no header row / no rows → import blocked with an explanation
    *Download issues CSV* lists every problem with its sheet row number.
@@ -149,6 +153,17 @@ missing work.
 Nothing else — the Import Center uses no extra variables, no serverless function and no third-party service.
 
 ## 5. Verifying an import (operator machine)
+
+Acceptance run of 2026-09-14 against the production project (production build served with the
+SPA rewrite, real admin account, fixtures generated from the live 732 rows): `dirty.xlsx` → 4 issues
+flagged, 1 inserted / 2 updated / 3 rejected; `trademark_records_1011 (1).xlsx` twice → 2 updated /
+69 unchanged, then 71 unchanged; `trademark_records_1046.csv` → 41 updated (provenance only,
+classes `"9, 11"` intact); 9 dropped files → 5 matched (exact / normalized / numeric tiers), 1 unmatched,
+1 duplicate, 2 invalid; `images_1045.zip` twice → 5 linked, then 5 already up to date; public
+`/trademark/1011-002` and `/search?q=1011-00` rendered the uploaded files from
+`…/object/public/trademark-images/1011/…`; `trademark_images.content_hash` equalled the SHA-256 of
+the object served by Storage. All test artefacts were removed afterwards (rows byte-identical to the
+pre-run snapshot).
 
 ```bash
 python3 scripts/check_supabase.py            # publishable key: schema, 0400 functions, RLS, storage

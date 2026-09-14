@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { TrademarkSearchResult } from '@/lib/database.types'
-import { cn, formatDate, gazettePath, splitHighlight, trademarkPath } from '@/lib/utils'
+import { cn, formatRegistryDate, gazettePath, splitHighlight, trademarkPath } from '@/lib/utils'
 import { TrademarkImage } from './TrademarkImage'
 
 export function Highlight({ text, query }: { text: string | null | undefined; query?: string | null }) {
@@ -118,7 +118,7 @@ export function ResultTable({ results, query, compact }: { results: TrademarkSea
               ) : (
                 <>
                   <td className="px-4 py-3"><Link to={gazettePath(r.official_gazette_number)} className="text-ink-800 hover:text-brand-600">{r.official_gazette_number}</Link></td>
-                  <td className="px-4 py-3 tabular-nums text-ink-700">{formatDate(r.publication_date, i18n.resolvedLanguage)}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-700">{formatRegistryDate(r.publication_date, i18n.resolvedLanguage)}</td>
                 </>
               )}
             </tr>

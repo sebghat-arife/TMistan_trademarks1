@@ -312,7 +312,6 @@
       "warning": "Warning",
       "downloadIssues": "Download issues CSV",
       "preview": "Preview — first {{count}} valid rows as they will be imported",
-      "importRows": "Import {{count}} trademarks",
       "invalidWillBeSkipped": "{{count}} invalid row(s) will be skipped and listed in the report.",
       "idempotentHint": "Idempotent: existing serial numbers are updated, unchanged rows are left as they are.",
       "processed": "Processed",
@@ -347,7 +346,6 @@
       "noTrademarkForSerial": "no trademark with serial number {{serial}} — import the spreadsheet first",
       "noSerialInName": "file name contains no serial number",
       "downloadUnmatched": "Download unmatched CSV",
-      "uploadMatched": "Upload {{count}} matched images",
       "nothingToUpload": "No image matched a trademark. Check the file names and import the spreadsheet first.",
       "imageIdempotentHint": "Re-uploading the same image is a no-op; a new image for the same serial replaces the old one.",
       "uploaded": "Uploaded",
@@ -407,7 +405,11 @@
       "notReadyHint": "Paste supabase/APPLY_0400.sql into the Supabase SQL editor (see docs/IMPORT_CENTER.md), then reload this page.",
       "candidates": "{{count}} trademarks share this serial",
       "moreRows": "+{{count}} more — download the CSV for the full list",
-      "retryHint": "To retry, drop the same file(s) again: rows and images that were already imported are recognised and left unchanged."
+      "retryHint": "To retry, drop the same file(s) again: rows and images that were already imported are recognised and left unchanged.",
+      "uploadMatched_one": "Upload 1 matched image",
+      "uploadMatched_other": "Upload {{count}} matched images",
+      "importRows_one": "Import 1 trademark",
+      "importRows_other": "Import {{count}} trademarks"
     }
   },
   "common": {
