@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, BookOpen, Search } from 'lucide-react'
 import { gazettesQuery } from '@/services'
-import { formatDate, formatNumber, gazettePath } from '@/lib/utils'
+import { formatNumber, formatRegistryDate, gazettePath } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { EmptyState, ErrorState, LoadingState } from '@/components/AsyncState'
 
@@ -59,7 +59,7 @@ export function GazettesPage() {
                   <span className="icon-circle h-11 w-11"><BookOpen className="h-5 w-5" /></span>
                   <div>
                     <div className="text-[17px] font-semibold text-ink-900">{t('gazettes.gazetteN', { number: g.gazette_number })}</div>
-                    <div className="muted tabular-nums">{formatDate(g.publication_date ?? g.first_publication_date, lng) || '—'}</div>
+                    <div className="muted tabular-nums">{formatRegistryDate(g.publication_date ?? g.first_publication_date, lng) || '—'}</div>
                   </div>
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-2 text-[13px]">

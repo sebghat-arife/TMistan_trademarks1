@@ -118,8 +118,8 @@ function StatusPill({ status }: { status: ImportJobRow['status'] }) {
     processing: 'bg-blue-50 text-blue-700',
     queued: 'bg-ink-100 text-ink-600',
   }
-  const label = status === 'completed_with_warnings' ? 'Completed · warnings' : status.charAt(0).toUpperCase() + status.slice(1)
-  return <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-semibold', map[status])}>{label}</span>
+  const { t } = useTranslation()
+  return <span className={cn('inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold', map[status])}>{t(`admin.import.status.${status}`)}</span>
 }
 
 /** Placeholder for the remaining admin sections (Phase 2). */

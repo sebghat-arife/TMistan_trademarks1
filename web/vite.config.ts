@@ -55,6 +55,13 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // Local dev stack only: the Supabase-compatible API is proxied under
         // /supabase so the browser never talks to localhost:54321 directly.
+        // supabase-js Storage calls <url>/storage/v1/...; the local stand-in
+        // (scripts/local-stack/static_storage.py) serves the same routes.
+        '/supabase/storage/v1': {
+          target: 'http://127.0.0.1:54322',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/supabase\/storage\/v1/, ''),
+        },
         '/supabase': {
           target: 'http://127.0.0.1:54321',
           changeOrigin: true,

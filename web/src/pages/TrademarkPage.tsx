@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, BadgeCheck, ChevronRight, CircleDashed, Download, Maximize2, ShieldCheck } from 'lucide-react'
 import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
-import { cn, formatDate, gazettePath, trademarkPath } from '@/lib/utils'
+import { cn, formatRegistryDate, gazettePath, trademarkPath } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
@@ -129,9 +129,9 @@ export function TrademarkPage() {
             <Fact label={t('fields.gazetteNumber')}>
               <Link to={gazettePath(tm.official_gazette_number)} className="text-brand-600 hover:underline">{tm.official_gazette_number}</Link>
             </Fact>
-            <Fact label={t('fields.publicationDate')}>{formatDate(tm.publication_date, lng) || t('fields.notProvided')}</Fact>
+            <Fact label={t('fields.publicationDate')}>{formatRegistryDate(tm.publication_date, lng) || t('fields.notProvided')}</Fact>
             <Fact label={t('fields.class')}>{classText(tm.class_numbers, tm.trademark_class)}</Fact>
-            {tm.objection_deadline && <Fact label={t('fields.objectionDeadline')}>{formatDate(tm.objection_deadline, lng)}</Fact>}
+            {tm.objection_deadline && <Fact label={t('fields.objectionDeadline')}>{formatRegistryDate(tm.objection_deadline, lng)}</Fact>}
             {tm.record_number && <Fact label={t('fields.recordNumber')} mono>{tm.record_number}</Fact>}
           </dl>
 

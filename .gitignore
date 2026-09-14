@@ -27,3 +27,6 @@ scripts/local-stack/keys.env
 .DS_Store
 .idea/
 .vscode/
+
+# Local source-data archives
+afg-trademark-registry.zip

@@ -152,6 +152,18 @@ export type ImportJobRow = {
   skipped_rows: number
   failed_rows: number
   error_message: string | null
+  summary: Record<string, unknown>
+  created_by: string | null
+  created_at: string
+}
+
+export type ImportJobItemRow = {
+  id: number
+  job_id: string
+  item_ref: string | null
+  status: 'inserted' | 'updated' | 'skipped' | 'failed' | 'unmatched' | 'ambiguous'
+  message: string | null
+  payload: Record<string, unknown> | null
   created_at: string
 }
 
@@ -174,6 +186,7 @@ export type Database = {
       trademark_images: { Row: TrademarkImageRow; Insert: Partial<TrademarkImageRow>; Update: Partial<TrademarkImageRow>; Relationships: [] }
       gazettes: { Row: GazetteRow; Insert: Partial<GazetteRow>; Update: Partial<GazetteRow>; Relationships: [] }
       import_jobs: { Row: ImportJobRow; Insert: Partial<ImportJobRow>; Update: Partial<ImportJobRow>; Relationships: [] }
+      import_job_items: { Row: ImportJobItemRow; Insert: Partial<ImportJobItemRow>; Update: Partial<ImportJobItemRow>; Relationships: [] }
     }
     Views: {
       gazette_summaries: { Row: GazetteSummaryRow; Relationships: [] }
