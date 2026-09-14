@@ -151,8 +151,8 @@ def main() -> int:
     # The OpenAPI document is not always exposed to anon, so probe the functions directly:
     # PGRST202 (404) = function missing → migration not applied; 401/403/42501 = present and refusing anon.
     import_missing = []
-    for fn, args in IMPORT_RPCS.items():
-        status, body, _ = c.call("POST", f"/rest/v1/rpc/{fn}", args)
+    for fn, rpc_args in IMPORT_RPCS.items():
+        status, body, _ = c.call("POST", f"/rest/v1/rpc/{fn}", rpc_args)
         code = body.get("code") if isinstance(body, dict) else None
         if status == 404 and code == "PGRST202":
             import_missing.append(fn)
