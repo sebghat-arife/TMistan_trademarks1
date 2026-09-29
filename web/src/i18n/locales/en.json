@@ -1,20 +1,18 @@
 {
   "app": {
-    "name": "TMistan — Afghanistan Trademark Registry",
+    "name": "TMistan — Search Trademarks in Afghanistan",
     "shortName": "TMistan",
     "skipToContent": "Skip to content"
   },
   "nav": {
     "search": "Search",
-    "gazettes": "Gazettes",
-    "trademarks": "Trademarks",
     "about": "About",
     "help": "Help",
     "login": "Login",
     "language": "Language"
   },
   "footer": {
-    "blurb": "TMistan is the official platform to search and explore trademark records published in Afghanistan Official Gazette.",
+    "blurb": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
     "quickLinks": "Quick Links",
     "resources": "Resources",
     "contact": "Contact Us",
@@ -28,47 +26,35 @@
     "rights": "All rights reserved."
   },
   "home": {
-    "titleA": "Search ",
-    "titleHighlight": "Afghanistan’s",
-    "titleB": "Trademark Registry",
-    "subtitle": "Explore official trademark records published in the Afghanistan Official Gazette.",
+    "title": "Search Trademarks in Afghanistan",
+    "subtitle": "Explore trademark records published in the Official Gazette of Afghanistan through a simple, searchable digital platform.",
     "searchPlaceholder": "Search trademark name, applicant, serial number, class...",
     "searchButton": "Search",
-    "advanced": "Advanced Search",
     "stats": {
-      "trademarks": "Total Trademarks",
-      "trademarksSub": "Published records",
+      "records": "Total Records",
+      "recordsSub": "Trademark records published in the Official Gazette",
       "gazettes": "Official Gazettes",
-      "gazettesSub": "Published so far",
-      "images": "Trademark Images",
-      "imagesSub": "Logos & brand images",
-      "applicants": "Applicants",
-      "applicantsSub": "Unique applicants"
-    },
-    "recent": "Recently Added Trademarks",
-    "viewAll": "View All Trademarks",
-    "features": {
-      "official": "Official & Verified",
-      "officialSub": "Data from Afghanistan Official Gazette",
-      "source": "Source Information",
-      "sourceSub": "Every record linked to its original source",
-      "search": "Advanced Search",
-      "searchSub": "Powerful search with multiple filters",
-      "images": "High Quality Images",
-      "imagesSub": "View trademark logos in high resolution"
-    },
-    "noRecent": "No trademarks have been published yet.",
-    "noRecentHint": "Records appear here as soon as the Excel importer loads a gazette."
+      "gazettesSub": "Gazette issues with published records",
+      "registrations": "Total Registrations",
+      "registrationsSub": "New trademark applications",
+      "renewals": "Total Renewals",
+      "renewalsSub": "Trademark renewals",
+      "assignments": "Total Assignments",
+      "assignmentsSub": "Assignments and ownership transfers",
+      "changes": "Total Changes",
+      "changesSub": "Name, address and ownership changes",
+      "ariaLabel": "Statistics"
+    }
   },
   "search": {
-    "title": "Search Results",
+    "title": "Search Trademarks in Afghanistan",
+    "resultsTitle": "Search Results",
     "filtersLabel": "Filters:",
     "resultsFound_one": "{{count}} result found",
     "resultsFound_other": "{{count}} results found",
     "resultsFor": "for “{{query}}”",
     "noResults": "No trademarks match this search.",
     "noResultsHint": "Try fewer filters, a shorter term, or enable fuzzy matching.",
-    "startPrompt": "Enter a mark name, applicant, serial number, gazette or class to begin.",
     "error": "The search could not be completed.",
     "retry": "Retry",
     "view": {
@@ -108,7 +94,6 @@
     "to": "To",
     "applicationType": "Application Type",
     "anyType": "Any type",
-    "attorney": "Attorney / representative",
     "goods": "Goods & services",
     "more": "Advanced",
     "done": "Done"
@@ -125,21 +110,17 @@
     "class": "Class",
     "goods": "Goods & Services",
     "applicationType": "Application Type",
-    "attorney": "Attorney / Representative",
     "publicationDate": "Publication Date",
     "objectionDeadline": "Objection Deadline",
     "gazette": "Gazette",
     "gazetteNumber": "Gazette Number",
     "page": "Page",
-    "row": "Row",
-    "file": "File",
-    "sheet": "Sheet",
     "oldOwner": "Previous owner",
     "newOwner": "New owner",
     "oldAddress": "Previous address",
     "newAddress": "New address",
     "markPrint": "Mark as printed",
-    "notProvided": "Not stated in gazette",
+    "notProvided": "N/A",
     "unnamed": "(no name recorded)"
   },
   "trademark": {
@@ -153,11 +134,9 @@
     "tabs": {
       "images": "Images ({{count}})",
       "goods": "Goods & Services",
-      "history": "History",
-      "notes": "Notes"
+      "history": "History"
     },
     "noImage": "No image on file for this trademark",
-    "noImageHint": "Images are linked by gazette + serial number when the image importer runs; this record has none yet.",
     "openImage": "Open image",
     "zoom": "Zoom",
     "fullscreen": "Fullscreen",
@@ -166,74 +145,86 @@
     "similar": "Similar Trademarks",
     "similarHint": "Text similarity on the recorded mark name.",
     "noHistory": "No ownership or address changes have been recorded for this trademark.",
-    "noNotes": "No transcription notes.",
-    "reviewNote": "Transcription note",
     "imageType": {
       "logo": "Logo",
       "mark_print": "Mark as printed",
       "source_crop": "Gazette crop",
       "other": "Image"
     },
-    "review": {
-      "unreviewed": "Unreviewed",
-      "reviewed": "Reviewed",
-      "needs_correction": "Needs correction",
-      "verified": "Verified"
+    "source": "Source: OG {{gazette}} — Page {{page}}",
+    "sourceNoPage": "Source: OG {{gazette}}",
+    "record": {
+      "title": "Trademark Record",
+      "generated": "Generated on {{date}}",
+      "link": "Record link",
+      "printHint": "Opens the print dialog — choose “Save as PDF” to download."
     }
-  },
-  "gazettes": {
-    "title": "Official Gazettes",
-    "subtitle": "Each issue of the Official Gazette that has been transcribed into the registry.",
-    "count_one": "{{count}} trademark",
-    "count_other": "{{count}} trademarks",
-    "publicationDate": "Publication Date",
-    "totalTrademarks": "Total Trademarks",
-    "notFound": "This gazette is not in the registry.",
-    "searchWithin": "Search within this gazette...",
-    "allGazettes": "Gazettes",
-    "gazetteN": "Gazette {{number}}",
-    "viewAllIn": "View all {{count}} trademarks in this gazette",
-    "empty": "No gazettes have been imported yet.",
-    "images": "Images",
-    "sourceFile": "Source file"
-  },
-  "trademarksPage": {
-    "title": "All Trademarks",
-    "subtitle": "Every trademark record in the registry, newest gazette first."
   },
   "about": {
     "title": "About TMistan",
-    "p1": "TMistan is the official platform for searching and exploring trademark records published in Afghanistan Official Gazette.",
-    "p2": "Our mission is to provide public access to reliable trademark information to support businesses, legal professionals, and the public.",
-    "features": {
-      "official": "Official Source",
-      "officialSub": "All data is sourced from Afghanistan Official Gazette.",
-      "verified": "Verified Records",
-      "verifiedSub": "Every record is verified and linked to its source.",
-      "images": "High Quality Images",
-      "imagesSub": "View trademark logos in high resolution.",
-      "search": "Easy Search",
-      "searchSub": "Powerful search and filters to find trademarks quickly."
-    }
+    "subtitle": "Search and Explore Trademark Records in Afghanistan",
+    "intro": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
+    "intro2": "It brings these published records together in one place so that they can be searched and reviewed through a simple, organized digital experience.",
+    "findTitle": "What You Can Find",
+    "findIntro": "Each record on TMistan presents the information as published, including:",
+    "find": [
+      "Trademark name",
+      "Applicant name",
+      "Serial number",
+      "Trademark class",
+      "Publication information (Official Gazette number and page)",
+      "Trademark image, where available"
+    ],
+    "purposeTitle": "Our Purpose",
+    "purpose": "TMistan was created to make trademark information published in the Official Gazette of Afghanistan easier to find. Instead of reviewing printed issues page by page, users can search across the published records by keyword and refine the results.",
+    "sourceTitle": "Source-Based Information",
+    "source": "Every record on TMistan is based on a publication in the Official Gazette of Afghanistan and shows its source: the gazette number and the page on which it was published. Where a piece of information is not available in the published record, it is shown as N/A.",
+    "audienceTitle": "For Researchers, Businesses, and Professionals",
+    "audienceIntro": "TMistan is intended for anyone who needs to look up trademark records in Afghanistan, including:",
+    "audience": [
+      "Business owners and entrepreneurs",
+      "Legal professionals and trademark agents",
+      "Researchers and students",
+      "Members of the public"
+    ],
+    "toolTitle": "A Digital Research Tool",
+    "tool": "TMistan is a digital research and information tool. It is not a government authority, does not register trademarks and does not replace the Official Gazette or the responsible authorities. For official or legal purposes, please refer to the original publication.",
+    "approachTitle": "Our Approach",
+    "approach": {
+      "accessibility": "Accessibility",
+      "accessibilityText": "Making published trademark records easy to search and explore.",
+      "transparency": "Source Transparency",
+      "transparencyText": "Showing the Official Gazette number and page for every record.",
+      "clarity": "Clarity",
+      "clarityText": "Presenting information in a clear, consistent format."
+    },
+    "closingTitle": "TMistan",
+    "closingSubtitle": "Search Trademarks in Afghanistan",
+    "closingText": "Explore trademark records published in the Official Gazette of Afghanistan through a simple, searchable digital platform."
   },
   "help": {
     "title": "Help Center",
-    "subtitle": "How to search the registry and read a trademark record.",
+    "subtitle": "How to use TMistan.",
     "q1": "How do I search?",
-    "a1": "Type a mark name, applicant, serial number (e.g. 1011-002), gazette number (e.g. 1011) or a goods description into the search box. Use Advanced Search to combine Class, Gazette, Applicant, Application Type and Date Range filters.",
-    "q2": "What is a serial number?",
-    "a2": "The serial number identifies a trademark within a gazette issue — “1011-002” is the second record published in Gazette 1011. Together with the gazette number it uniquely identifies the record.",
-    "q3": "What does “Verified” mean?",
-    "a3": "A registry administrator has checked the transcribed record against the printed gazette page. Records that are not yet verified are still shown, with their review status.",
-    "q4": "Where does the data come from?",
-    "a4": "Every record is transcribed from an issue of the Official Gazette of Afghanistan. The Source Information block on each record page names the gazette, page, source file, sheet and row.",
+    "a1": "Enter a keyword in the search box — a trademark name, applicant name, serial number (for example 1011-002), Official Gazette number (for example 1011), class number or a word from the goods and services — and press Search.",
+    "q2": "How do I refine the results?",
+    "a2": "After a search, filters appear above the results: Class, Gazette, Applicant, Application Type, Date Range and Advanced (mark name, serial number, goods and services, fuzzy matching). You can also sort the results and switch between the grid and table views. Use “Clear All” to remove the filters.",
+    "q3": "How do I open a record?",
+    "a3": "Click a result card or a row in the table. The record page shows the trademark name, serial number, applicant, address, class, goods and services, application type, publication date and the trademark image where one is available.",
+    "q4": "What does the source information mean?",
+    "a4": "Every record shows the Official Gazette (OG) number and the page on which it was published, for example “Source: OG 1011 — Page 3”. Information that is not available in the published record is shown as N/A.",
+    "q5": "What is a serial number?",
+    "a5": "The serial number identifies a record within a gazette issue — “1011-002” is the second record published in Official Gazette 1011.",
+    "q6": "Why does a record have no image?",
+    "a6": "Images are shown where one is available for the record. Records without an image show “No image on file for this trademark”.",
+    "q7": "How does “Download Record” work?",
+    "a7": "“Download Record” on a record page opens your browser’s print dialog with a clean, printable version of the record. Choose “Save as PDF” to download it, or print it directly.",
     "glossary": "Glossary",
     "g": {
       "class": "Class — one of the 45 Nice Classification categories of goods (1–34) and services (35–45).",
       "gazette": "Gazette — an issue of the Official Gazette in which trademark applications are published.",
       "objection": "Objection deadline — the last date on which a third party may oppose the application.",
-      "applicant": "Applicant — the person or company that filed the trademark application.",
-      "attorney": "Attorney / Representative — the agent acting for the applicant."
+      "applicant": "Applicant — the person or company that filed the trademark application."
     }
   },
   "legal": {

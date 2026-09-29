@@ -151,10 +151,6 @@ export function trademarkPath(serial: string, gazette?: string | null): string {
   return gazette ? `${base}?g=${encodeURIComponent(gazette)}` : base
 }
 
-export function gazettePath(gazetteNumber: string): string {
-  return `/gazette/${encodeURIComponent(gazetteNumber)}`
-}
-
 /** Highlight query terms in a text node (case/diacritic-insensitive-ish). */
 export function splitHighlight(text: string, query: string | null | undefined): { part: string; hit: boolean }[] {
   if (!query || !text) return [{ part: text, hit: false }]

@@ -112,3 +112,74 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
           mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
 }
+
+/* ── "Download Record" print document ──────────────────────────────────
+   TrademarkPage portals a .record-sheet into <body>. It is invisible on
+   screen; in print media the app UI is hidden and only the sheet prints. */
+.record-sheet { display: none; }
+
+@media print {
+  @page { size: A4; margin: 16mm; }
+  html, body { background: #fff !important; }
+  body > #root { display: none !important; }
+  .record-sheet {
+    display: block;
+    color: #111;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  .record-sheet__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16pt;
+    padding-bottom: 10pt;
+    border-bottom: 1.5pt solid #067133;
+  }
+  .record-sheet__logo { height: 44pt !important; width: auto; }
+  .record-sheet__tagline { margin-top: 4pt; font-size: 9.5pt; color: #444; }
+  .record-sheet__meta { text-align: end; font-size: 9.5pt; color: #444; }
+  .record-sheet__doc { font-size: 13pt; font-weight: 700; color: #111; }
+  .record-sheet__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18pt;
+    margin-top: 16pt;
+  }
+  .record-sheet__title { margin: 0; font-size: 20pt; font-weight: 700; line-height: 1.2; }
+  .record-sheet__serial { margin-top: 4pt; font-size: 11pt; font-variant-numeric: tabular-nums; }
+  .record-sheet__source { margin-top: 2pt; font-size: 10pt; color: #444; }
+  .record-sheet__figure {
+    flex: 0 0 auto;
+    width: 150pt;
+    height: 110pt;
+    margin: 0;
+    padding: 6pt;
+    border: 0.75pt solid #cfd4d9;
+    border-radius: 4pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .record-sheet__figure img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .record-sheet__table { width: 100%; margin-top: 16pt; border-collapse: collapse; }
+  .record-sheet__table th,
+  .record-sheet__table td {
+    padding: 6pt 8pt;
+    border-top: 0.75pt solid #dfe3e6;
+    vertical-align: top;
+    text-align: start;
+  }
+  .record-sheet__table tr:last-child th,
+  .record-sheet__table tr:last-child td { border-bottom: 0.75pt solid #dfe3e6; }
+  .record-sheet__table th { width: 32%; font-weight: 600; color: #333; background: #f5f7f8; }
+  .record-sheet__footer {
+    margin-top: 18pt;
+    padding-top: 8pt;
+    border-top: 0.75pt solid #dfe3e6;
+    font-size: 9pt;
+    color: #555;
+  }
+  .record-sheet__footer p { margin: 0 0 3pt; word-break: break-all; }
+}

@@ -185,7 +185,7 @@ unmatched/ambiguous files are parked for review and never shown publicly. Every 
 5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /index.html`).
    For a hand-made service: Redirects/Rewrites → Add rule → Source `/*`, Destination `/index.html`, Action **Rewrite**.
 6. **Verify** — open `https://tmistan.onrender.com` (or your name): the home page shows the real
-   counts from the database; reload `/search?q=<a mark you imported>`, `/gazettes`,
+   counts from the database; reload `/search?q=<a mark you imported>` and
    `/trademark/<serial>` directly (no 404 thanks to the rewrite).
 7. Add the Render URL to Supabase → Authentication → URL configuration (for the admin login), then
    sign in at `/admin/login` and load the registry through the Import Center.

@@ -1,18 +1,21 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, BadgeCheck, ChevronRight, CircleDashed, Download, Maximize2, ShieldCheck } from 'lucide-react'
+import { ChevronRight, Download, Maximize2 } from 'lucide-react'
 import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
-import { cn, formatRegistryDate, gazettePath, trademarkPath } from '@/lib/utils'
+import { cn, formatRegistryDate, trademarkPath } from '@/lib/utils'
+import { storagePublicUrl } from '@/lib/supabase'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
+import { Logo } from '@/components/Logo'
 import { TrademarkCard, classText } from '@/components/ResultCards'
-import type { TrademarkRow } from '@/lib/database.types'
+import type { TrademarkImageRow, TrademarkRow } from '@/lib/database.types'
 import { ErrorState, LoadingState } from '@/components/AsyncState'
 
-type Tab = 'images' | 'goods' | 'history' | 'notes'
+type Tab = 'images' | 'goods' | 'history'
 
 export function TrademarkPage() {
   const { serial = '' } = useParams()
@@ -52,7 +55,12 @@ export function TrademarkPage() {
   const lng = i18n.resolvedLanguage
   const current = images[imageIndex] ?? images[0]
   const name = tm.mark_name ?? t('fields.unnamed')
+  const na = t('fields.notProvided')
   const hasHistory = !!(tm.old_owner || tm.new_owner || tm.old_address || tm.new_address)
+  const sourceLine =
+    tm.source_page != null
+      ? t('trademark.source', { gazette: tm.official_gazette_number, page: tm.source_page })
+      : t('trademark.sourceNoPage', { gazette: tm.official_gazette_number })
 
   return (
     <div className="container-x py-6">
@@ -65,9 +73,9 @@ export function TrademarkPage() {
           <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
           <span className="bidi-auto text-ink-900">{name} ({tm.serial_number})</span>
         </nav>
-        <a href={recordDownloadHref(tm)} download={`TMistan-${tm.official_gazette_number}-${tm.serial_number}.json`} className="btn-outline-green h-9 px-4 text-[13px]">
+        <button type="button" onClick={() => printRecord(tm)} title={t('trademark.record.printHint')} className="btn-outline-green h-9 px-4 text-[13px]">
           <Download className="h-4 w-4" /> {t('trademark.download')}
-        </a>
+        </button>
       </div>
 
       {/* ── Main two-column block ────────────────────────────────────── */}
@@ -86,7 +94,7 @@ export function TrademarkPage() {
               path={current?.storage_path}
               variant="full"
               alt={name}
-              fallbackLabel={tm.mark_name ?? tm.serial_number}
+              fallbackLabel={t('trademark.noImage')}
               loading="eager"
               className="aspect-[4/3] w-full !bg-white p-5"
               plain
@@ -97,7 +105,7 @@ export function TrademarkPage() {
               </span>
             )}
           </button>
-          {images.length > 0 && (
+          {images.length > 1 && (
             <ul className="mt-3 flex gap-3" aria-label={t('trademark.tabs.images', { count: images.length })}>
               {images.map((img, i) => (
                 <li key={img.id}>
@@ -113,50 +121,32 @@ export function TrademarkPage() {
               ))}
             </ul>
           )}
-          {!images.length && <p className="muted mt-3">{t('trademark.noImage')}</p>}
         </div>
 
         {/* Facts */}
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="bidi-auto text-[26px] font-bold leading-tight text-ink-900">{name}</h1>
-            <ReviewBadge status={tm.review_status} />
-          </div>
+          <h1 className="bidi-auto text-[26px] font-bold leading-tight text-ink-900">{name}</h1>
           {tm.mark_print && tm.mark_print !== tm.mark_name && <p className="bidi-auto mt-1 text-[14px] text-ink-500">{t('fields.markPrint')}: {tm.mark_print}</p>}
 
           <dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <Fact label={t('fields.serialNumber')} mono>{tm.serial_number}</Fact>
-            <Fact label={t('fields.gazetteNumber')}>
-              <Link to={gazettePath(tm.official_gazette_number)} className="text-brand-600 hover:underline">{tm.official_gazette_number}</Link>
-            </Fact>
-            <Fact label={t('fields.publicationDate')}>{formatRegistryDate(tm.publication_date, lng) || t('fields.notProvided')}</Fact>
-            <Fact label={t('fields.class')}>{classText(tm.class_numbers, tm.trademark_class)}</Fact>
+            <Fact label={t('fields.class')}>{classText(tm.class_numbers, tm.trademark_class, na)}</Fact>
+            <Fact label={t('fields.publicationDate')}>{tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na}</Fact>
             {tm.objection_deadline && <Fact label={t('fields.objectionDeadline')}>{formatRegistryDate(tm.objection_deadline, lng)}</Fact>}
             {tm.record_number && <Fact label={t('fields.recordNumber')} mono>{tm.record_number}</Fact>}
           </dl>
 
           <dl className="mt-5 space-y-4 border-t border-ink-100 pt-5">
-            <Fact label={t('fields.applicant')}>{tm.applicant_name || t('fields.notProvided')}</Fact>
-            <Fact label={t('fields.address')}>{tm.applicant_address || t('fields.notProvided')}</Fact>
-            <Fact label={t('fields.goods')}><span className="line-clamp-3">{tm.goods_and_services || t('fields.notProvided')}</span></Fact>
-            <Fact label={t('fields.attorney')}>{tm.attorney_or_representative || t('fields.notProvided')}</Fact>
-            <Fact label={t('fields.applicationType')}>{tm.application_type || t('fields.notProvided')}</Fact>
+            <Fact label={t('fields.applicant')}>{tm.applicant_name || na}</Fact>
+            <Fact label={t('fields.address')}>{tm.applicant_address || na}</Fact>
+            <Fact label={t('fields.goods')}><span className="line-clamp-3">{tm.goods_and_services || na}</span></Fact>
+            <Fact label={t('fields.applicationType')}>{tm.application_type || na}</Fact>
           </dl>
 
-          {/* Source information */}
+          {/* Source information: Official Gazette number + page only */}
           <div className="mt-5 border-t border-ink-100 pt-5">
             <h2 className="text-[15px] font-semibold text-ink-900">{t('trademark.sourceInformation')}</h2>
-            <p className="mt-1.5 text-[14px] text-ink-700">
-              <span>{t('fields.gazette')} <Link to={gazettePath(tm.official_gazette_number)} className="text-brand-600 hover:underline">{tm.official_gazette_number}</Link></span>
-              {tm.source_page != null && <> · {t('fields.page')} {tm.source_page}</>}
-              {tm.source_row != null && <> · {t('fields.row')} {tm.source_row}</>}
-            </p>
-            {(tm.source_file || tm.source_sheet) && (
-              <p className="mt-0.5 break-all text-[13px] text-ink-500" dir="ltr">
-                {tm.source_file && <>{t('fields.file')}: {tm.source_file}</>}
-                {tm.source_sheet && <> · {t('fields.sheet')}: {tm.source_sheet}</>}
-              </p>
-            )}
+            <p className="mt-1.5 text-[14px] text-ink-700">{sourceLine}</p>
           </div>
         </div>
       </div>
@@ -164,7 +154,7 @@ export function TrademarkPage() {
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
       <div className="card mt-4">
         <div className="flex gap-6 border-b border-ink-200 px-5" role="tablist">
-          {(['images', 'goods', 'history', 'notes'] as Tab[]).map((k) => (
+          {(['images', 'goods', 'history'] as Tab[]).map((k) => (
             <button
               key={k}
               role="tab"
@@ -194,9 +184,9 @@ export function TrademarkPage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-ink-500">{t('trademark.noImage')} — {t('trademark.noImageHint')}</p>
+              <p className="text-ink-500">{t('trademark.noImage')}</p>
             ))}
-          {tab === 'goods' && <p className="bidi-auto whitespace-pre-line">{tm.goods_and_services || t('fields.notProvided')}</p>}
+          {tab === 'goods' && <p className="bidi-auto whitespace-pre-line">{tm.goods_and_services || na}</p>}
           {tab === 'history' &&
             (hasHistory ? (
               <dl className="grid gap-4 sm:grid-cols-2">
@@ -207,12 +197,6 @@ export function TrademarkPage() {
               </dl>
             ) : (
               <p className="text-ink-500">{t('trademark.noHistory')}</p>
-            ))}
-          {tab === 'notes' &&
-            (tm.review_note ? (
-              <p className="bidi-auto whitespace-pre-line">{tm.review_note}</p>
-            ) : (
-              <p className="text-ink-500">{t('trademark.noNotes')}</p>
             ))}
         </div>
       </div>
@@ -231,6 +215,9 @@ export function TrademarkPage() {
       )}
 
       <ImageViewer images={images} index={imageIndex} open={viewerOpen} onOpenChange={setViewerOpen} onIndexChange={setImageIndex} title={name} />
+
+      {/* Print-only document used by "Download Record" (see index.css @media print). */}
+      {createPortal(<RecordSheet tm={tm} image={current} sourceLine={sourceLine} />, document.body)}
     </div>
   )
 }
@@ -244,28 +231,93 @@ function Fact({ label, children, mono }: { label: string; children: React.ReactN
   )
 }
 
-export function ReviewBadge({ status }: { status: TrademarkRow['review_status'] }) {
-  const { t } = useTranslation()
-  const styles: Record<TrademarkRow['review_status'], string> = {
-    verified: 'bg-brand-50 text-brand-700 border-brand-200',
-    reviewed: 'bg-brand-50 text-brand-700 border-brand-200',
-    unreviewed: 'bg-ink-100 text-ink-600 border-ink-200',
-    needs_correction: 'bg-amber-50 text-amber-800 border-amber-200',
+/* ── Download Record ─────────────────────────────────────────────────────
+ * The record is rendered as a clean A4 document that exists only in print
+ * media; "Download Record" opens the browser print dialog, where the user
+ * can save it as a PDF or print it. No library, no invented data: the
+ * document shows exactly the fields on the page (N/A when not recorded).
+ * ---------------------------------------------------------------------- */
+
+function printRecord(tm: TrademarkRow) {
+  const prev = document.title
+  document.title = `TMistan-${tm.serial_number}`
+  const restore = () => {
+    document.title = prev
+    window.removeEventListener('afterprint', restore)
   }
-  const icons = { verified: ShieldCheck, reviewed: BadgeCheck, unreviewed: CircleDashed, needs_correction: AlertCircle } as const
-  const Icon = icons[status]
-  return (
-    <span className={cn('inline-flex h-6 items-center gap-1 rounded-full border px-2.5 text-[12px] font-semibold', styles[status])}>
-      <Icon className="h-3.5 w-3.5" /> {t(`trademark.review.${status}`)}
-    </span>
-  )
+  window.addEventListener('afterprint', restore)
+  window.print()
 }
 
-/** Client-side JSON export of the record (no extra endpoint; the data is already loaded). */
-function recordDownloadHref(tm: TrademarkRow): string {
-  const { search_vector: _sv, ...rest } = tm as TrademarkRow & { search_vector?: unknown }
-  void _sv
-  return 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(rest, null, 2))
+function RecordSheet({ tm, image, sourceLine }: { tm: TrademarkRow; image: TrademarkImageRow | undefined; sourceLine: string }) {
+  const { t, i18n } = useTranslation()
+  const lng = i18n.resolvedLanguage
+  const na = t('fields.notProvided')
+  const src = storagePublicUrl(image?.storage_bucket, image?.storage_path)
+  const generated = new Intl.DateTimeFormat(lng === 'fa' ? 'fa-AF' : lng === 'ps' ? 'ps-AF' : 'en-GB', { dateStyle: 'long' }).format(new Date())
+  const link = `${window.location.origin}${trademarkPath(tm.serial_number, tm.official_gazette_number)}`
+
+  const rows: [string, React.ReactNode][] = [
+    [t('fields.mark'), tm.mark_name || na],
+    [t('fields.serialNumber'), tm.serial_number],
+    [t('fields.applicant'), tm.applicant_name || na],
+    [t('fields.address'), tm.applicant_address || na],
+    [t('fields.class'), classText(tm.class_numbers, tm.trademark_class, na)],
+    [t('fields.goods'), tm.goods_and_services || na],
+    [t('fields.applicationType'), tm.application_type || na],
+    [t('fields.publicationDate'), tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na],
+  ]
+  if (tm.objection_deadline) rows.push([t('fields.objectionDeadline'), formatRegistryDate(tm.objection_deadline, lng)])
+  if (tm.record_number) rows.push([t('fields.recordNumber'), tm.record_number])
+  if (tm.old_owner) rows.push([t('fields.oldOwner'), tm.old_owner])
+  if (tm.new_owner) rows.push([t('fields.newOwner'), tm.new_owner])
+  if (tm.old_address) rows.push([t('fields.oldAddress'), tm.old_address])
+  if (tm.new_address) rows.push([t('fields.newAddress'), tm.new_address])
+  rows.push([t('trademark.sourceInformation'), sourceLine])
+
+  return (
+    <div className="record-sheet" dir={i18n.dir()} aria-hidden>
+      <header className="record-sheet__header">
+        <div>
+          <Logo className="record-sheet__logo" />
+          <div className="record-sheet__tagline">{t('home.title')}</div>
+        </div>
+        <div className="record-sheet__meta">
+          <div className="record-sheet__doc">{t('trademark.record.title')}</div>
+          <div>{t('trademark.record.generated', { date: generated })}</div>
+        </div>
+      </header>
+
+      <section className="record-sheet__top">
+        <div>
+          <h1 className="record-sheet__title bidi-auto">{tm.mark_name || na}</h1>
+          <div className="record-sheet__serial" dir="ltr">{t('fields.serialNumber')}: {tm.serial_number}</div>
+          <div className="record-sheet__source">{sourceLine}</div>
+        </div>
+        {src && (
+          <figure className="record-sheet__figure">
+            <img src={src} alt={tm.mark_name ?? tm.serial_number} />
+          </figure>
+        )}
+      </section>
+
+      <table className="record-sheet__table">
+        <tbody>
+          {rows.map(([label, value]) => (
+            <tr key={label}>
+              <th scope="row">{label}</th>
+              <td className="bidi-auto">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <footer className="record-sheet__footer">
+        <p>{t('footer.blurb')}</p>
+        <p>{t('trademark.record.link')}: <span dir="ltr">{link}</span></p>
+      </footer>
+    </div>
+  )
 }
 
 export { trademarkPath }

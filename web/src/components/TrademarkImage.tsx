@@ -13,7 +13,7 @@ interface Props {
   alt: string
   className?: string
   imgClassName?: string
-  /** Text shown in the empty/broken state. */
+  /** Small caption under the icon in the empty/broken state (e.g. "No image on file"). */
   fallbackLabel?: string
   loading?: 'lazy' | 'eager'
   /** Plain white background (cards) instead of the transparency checkerboard (viewer). */
@@ -63,11 +63,8 @@ export function TrademarkImage({
       {state === 'loading' && <div className="absolute inset-0 animate-pulse bg-ink-100" aria-hidden />}
       {state === 'error' && (
         <div className="flex flex-col items-center justify-center gap-1 p-2 text-center text-ink-400">
-          {fallbackLabel ? (
-            <span className="bidi-auto line-clamp-2 font-serif text-xl italic tracking-wide text-ink-700">{fallbackLabel}</span>
-          ) : (
-            <ImageOff className="h-5 w-5" aria-hidden />
-          )}
+          <ImageOff className="h-5 w-5" aria-hidden />
+          {fallbackLabel && <span className="line-clamp-2 text-[11px] leading-tight">{fallbackLabel}</span>}
         </div>
       )}
     </div>

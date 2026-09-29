@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { TrademarkSearchResult } from '@/lib/database.types'
-import { cn, formatRegistryDate, gazettePath, splitHighlight, trademarkPath } from '@/lib/utils'
+import { cn, formatRegistryDate, splitHighlight, trademarkPath } from '@/lib/utils'
 import { TrademarkImage } from './TrademarkImage'
 
 export function Highlight({ text, query }: { text: string | null | undefined; query?: string | null }) {
@@ -21,10 +21,10 @@ export function Highlight({ text, query }: { text: string | null | undefined; qu
   )
 }
 
-/** "25" or "25, 35" — the mock-up prints classes as plain text. */
-export function classText(classes: number[] | null, raw: string | null | undefined): string {
+/** "25" or "25, 35" — classes are printed as plain text; `fallback` (N/A) when the record has none. */
+export function classText(classes: number[] | null, raw: string | null | undefined, fallback = 'N/A'): string {
   if (classes && classes.length) return classes.join(', ')
-  return raw?.trim() || '—'
+  return raw?.trim() || fallback
 }
 
 /* ── Card ──────────────────────────────────────────────────────────────── */
@@ -42,7 +42,7 @@ export function TrademarkCard({ r, query, className }: { r: TrademarkSearchResul
         path={r.primary_image_path}
         thumbnailPath={r.primary_thumbnail_path}
         alt={name}
-        fallbackLabel={r.mark_name ?? r.serial_number}
+        fallbackLabel={t('trademark.noImage')}
         className="h-[104px] w-full rounded-md !bg-white"
         imgClassName="max-h-[88px]"
         plain
@@ -50,10 +50,10 @@ export function TrademarkCard({ r, query, className }: { r: TrademarkSearchResul
       <div className="bidi-auto mt-3 truncate text-[15px] font-bold uppercase tracking-wide text-brand-600">{name}</div>
       <dl className="mt-2 space-y-1 text-[13px] leading-snug">
         <Row label={t('fields.serial')} mono>{r.serial_number}</Row>
-        <Row label={t('fields.class')}>{classText(r.class_numbers, r.trademark_class)}</Row>
+        <Row label={t('fields.class')}>{classText(r.class_numbers, r.trademark_class, t('fields.notProvided'))}</Row>
         <Row label={t('fields.gazette')}>{r.official_gazette_number}</Row>
         <Row label={t('fields.applicant')}>
-          <span className="bidi-auto line-clamp-2"><Highlight text={r.applicant_name ?? '—'} query={query} /></span>
+          <span className="bidi-auto line-clamp-2"><Highlight text={r.applicant_name || t('fields.notProvided')} query={query} /></span>
         </Row>
       </dl>
     </Link>
@@ -111,14 +111,14 @@ export function ResultTable({ results, query, compact }: { results: TrademarkSea
                   <span className="bidi-auto font-medium">{r.mark_name ? <Highlight text={r.mark_name} query={query} /> : <span className="text-ink-400">{t('fields.unnamed')}</span>}</span>
                 </Link>
               </td>
-              <td className="bidi-auto px-4 py-3 text-ink-700"><Highlight text={r.applicant_name} query={query} /></td>
-              <td className="px-4 py-3 tabular-nums text-ink-800">{classText(r.class_numbers, r.trademark_class)}</td>
+              <td className="bidi-auto px-4 py-3 text-ink-700">{r.applicant_name ? <Highlight text={r.applicant_name} query={query} /> : <span className="text-ink-400">{t('fields.notProvided')}</span>}</td>
+              <td className="px-4 py-3 tabular-nums text-ink-800">{classText(r.class_numbers, r.trademark_class, t('fields.notProvided'))}</td>
               {compact ? (
-                <td className="px-4 py-3 tabular-nums text-ink-800">{r.source_page ?? '—'}</td>
+                <td className="px-4 py-3 tabular-nums text-ink-800">{r.source_page ?? t('fields.notProvided')}</td>
               ) : (
                 <>
-                  <td className="px-4 py-3"><Link to={gazettePath(r.official_gazette_number)} className="text-ink-800 hover:text-brand-600">{r.official_gazette_number}</Link></td>
-                  <td className="px-4 py-3 tabular-nums text-ink-700">{formatRegistryDate(r.publication_date, i18n.resolvedLanguage)}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-800">{r.official_gazette_number}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-700">{r.publication_date ? formatRegistryDate(r.publication_date, i18n.resolvedLanguage) : t('fields.notProvided')}</td>
                 </>
               )}
             </tr>

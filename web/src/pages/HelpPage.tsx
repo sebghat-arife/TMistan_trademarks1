@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
+/** Help — questions and answers that describe what the site actually does today. */
 export function HelpPage() {
   const { t } = useTranslation()
   useDocumentTitle(`${t('help.title')} · ${t('app.shortName')}`)
-  const qa = [1, 2, 3, 4] as const
-  const glossary = ['class', 'gazette', 'objection', 'applicant', 'attorney'] as const
+  const qa = [1, 2, 3, 4, 5, 6, 7] as const
+  const glossary = ['class', 'gazette', 'objection', 'applicant'] as const
 
   return (
     <div className="container-x py-8">
@@ -23,7 +24,7 @@ export function HelpPage() {
             </details>
           ))}
         </section>
-        <section id="glossary" className="card p-5">
+        <section id="glossary" className="card h-fit p-5">
           <h2 className="text-[17px] font-semibold text-ink-900">{t('help.glossary')}</h2>
           <ul className="mt-3 space-y-3 text-[14px] leading-relaxed text-ink-700">
             {glossary.map((k) => (

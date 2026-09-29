@@ -10,8 +10,6 @@ import { HomePage } from '@/pages/HomePage'
 // rest load on demand.
 const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
 const TrademarkPage = lazy(() => import('@/pages/TrademarkPage').then((m) => ({ default: m.TrademarkPage })))
-const GazettesPage = lazy(() => import('@/pages/GazettesPage').then((m) => ({ default: m.GazettesPage })))
-const GazettePage = lazy(() => import('@/pages/GazettePage').then((m) => ({ default: m.GazettePage })))
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const HelpPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.HelpPage })))
 const LegalPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.LegalPage })))
@@ -61,10 +59,7 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/trademarks" element={<SearchPage browseAll />} />
               <Route path="/trademark/:serial" element={<TrademarkPage />} />
-              <Route path="/gazettes" element={<GazettesPage />} />
-              <Route path="/gazette/:number" element={<GazettePage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/help" element={<HelpPage />} />
               <Route path="/terms" element={<LegalPage kind="terms" />} />

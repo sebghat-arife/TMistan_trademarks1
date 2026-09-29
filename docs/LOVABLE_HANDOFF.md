@@ -29,7 +29,7 @@ fixed dataset — never assume a record count.
 - RLS: anon/authenticated read published rows and matched images; `public.is_admin()` gates writes;
   no DELETE via API. Storage buckets `trademark-images` (public) and `source-documents` (private).
 - Frontend (React + TS + Vite + Tailwind + shadcn-style components + TanStack Query + React Router + i18next):
-  `/`, `/search`, `/trademark/:serial`, `/gazettes`, `/gazette/:number`, `/about`. URL is the search
+  `/`, `/search`, `/trademark/:serial`, `/about`, `/help`. URL is the search
   state. EN / Dari / Pashto with RTL. Images render via `storagePublicUrl(bucket, path)`.
 - Ingestion: **Admin → Import Center** in the browser (`web/src/pages/admin/ImportCenterPage.tsx`,
   `docs/IMPORT_CENTER.md`) through admin-only `SECURITY DEFINER` RPCs (migration 0400:

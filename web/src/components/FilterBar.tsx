@@ -17,8 +17,8 @@ interface Props {
 const NICE_CLASSES = Array.from({ length: 45 }, (_, i) => i + 1)
 
 /**
- * Horizontal filter row exactly as in the mock-up:
- *   Filters:  [Class ▾] [Gazette ▾] [Applicant ▾] [Application Type ▾] [Date Range ▾]  Clear All
+ * Horizontal filter row shown with the results once a search exists:
+ *   Filters:  [Class ▾] [Gazette ▾] [Applicant ▾] [Application Type ▾] [Date Range ▾] [Advanced ▾]  Clear All
  * Every chip opens a small popover; changes are written to the URL (server-side search).
  */
 export function FilterBar({ state, onApply, hideGazette }: Props) {
@@ -28,7 +28,7 @@ export function FilterBar({ state, onApply, hideGazette }: Props) {
   const classCounts = new Map(options?.classes.map((c) => [c.class, c.count]) ?? [])
 
   const clear = () =>
-    onApply({ mark: '', applicant: '', serial: '', gazette: hideGazette ? state.gazette : '', classes: [], goods: '', type: '', attorney: '', from: '', to: '', page: 1 })
+    onApply({ mark: '', applicant: '', serial: '', gazette: hideGazette ? state.gazette : '', classes: [], goods: '', type: '', from: '', to: '', page: 1 })
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -93,7 +93,7 @@ export function FilterBar({ state, onApply, hideGazette }: Props) {
       {/* Date range */}
       <DateChip state={state} onApply={onApply} />
 
-      {/* More: mark / serial / attorney / goods / fuzzy */}
+      {/* More: mark / serial / goods / fuzzy */}
       <MoreChip state={state} onApply={onApply} />
 
       <button type="button" onClick={clear} disabled={active === 0} className="ms-1 text-[14px] text-ink-500 hover:text-ink-900 disabled:opacity-40">
@@ -202,10 +202,10 @@ function DateChip({ state, onApply }: { state: SearchState; onApply: (p: Partial
 
 function MoreChip({ state, onApply }: { state: SearchState; onApply: (p: Partial<SearchState>) => void }) {
   const { t } = useTranslation()
-  const [draft, setDraft] = useState({ mark: state.mark, serial: state.serial, attorney: state.attorney, goods: state.goods })
+  const [draft, setDraft] = useState({ mark: state.mark, serial: state.serial, goods: state.goods })
   const [open, setOpen] = useState(false)
-  useEffect(() => { setDraft({ mark: state.mark, serial: state.serial, attorney: state.attorney, goods: state.goods }) }, [state.mark, state.serial, state.attorney, state.goods])
-  const n = [state.mark, state.serial, state.attorney, state.goods].filter((v) => v.trim()).length
+  useEffect(() => { setDraft({ mark: state.mark, serial: state.serial, goods: state.goods }) }, [state.mark, state.serial, state.goods])
+  const n = [state.mark, state.serial, state.goods].filter((v) => v.trim()).length
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
@@ -218,7 +218,7 @@ function MoreChip({ state, onApply }: { state: SearchState; onApply: (p: Partial
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={6} className="z-50 w-80 rounded-lg border border-ink-200 bg-white p-3 shadow-lg outline-none">
           <form onSubmit={(e) => { e.preventDefault(); onApply({ ...draft, page: 1 }); setOpen(false) }} className="flex flex-col gap-2">
-            {(['mark', 'serial', 'attorney', 'goods'] as const).map((k) => (
+            {(['mark', 'serial', 'goods'] as const).map((k) => (
               <label key={k} className="flex flex-col gap-1 text-[12px] text-ink-500">
                 {t(`filters.${k}`)}
                 <input className={cn('field', k === 'serial' && 'tabular-nums')} value={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} dir={k === 'serial' ? 'ltr' : undefined} />

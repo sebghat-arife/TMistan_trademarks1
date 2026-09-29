@@ -13,7 +13,6 @@ export interface SearchState {
   classes: number[]
   goods: string
   type: string
-  attorney: string
   from: string
   to: string
   fuzzy: boolean
@@ -32,7 +31,6 @@ export const DEFAULT_STATE: SearchState = {
   classes: [],
   goods: '',
   type: '',
-  attorney: '',
   from: '',
   to: '',
   fuzzy: true,
@@ -60,7 +58,6 @@ export function parseSearchParams(sp: URLSearchParams): SearchState {
       .filter((n) => Number.isInteger(n) && n >= 1 && n <= 45),
     goods: sp.get('goods') ?? '',
     type: sp.get('type') ?? '',
-    attorney: sp.get('attorney') ?? '',
     from: sp.get('from') ?? '',
     to: sp.get('to') ?? '',
     fuzzy: sp.get('fuzzy') !== '0',
@@ -85,7 +82,6 @@ export function toSearchParams(s: SearchState): URLSearchParams {
   if (s.classes.length) sp.set('class', [...s.classes].sort((a, b) => a - b).join(','))
   set('goods', s.goods.trim())
   set('type', s.type.trim())
-  set('attorney', s.attorney.trim())
   set('from', s.from)
   set('to', s.to)
   if (!s.fuzzy) sp.set('fuzzy', '0')
@@ -107,7 +103,6 @@ export function toRpcArgs(s: SearchState): SearchTrademarksArgs {
     p_classes: s.classes.length ? s.classes : null,
     p_goods: nz(s.goods),
     p_application_type: nz(s.type),
-    p_attorney: nz(s.attorney),
     p_date_from: nz(s.from),
     p_date_to: nz(s.to),
     p_fuzzy: s.fuzzy,
@@ -119,7 +114,7 @@ export function toRpcArgs(s: SearchState): SearchTrademarksArgs {
 
 export function countActiveFilters(s: SearchState): number {
   let n = 0
-  for (const k of ['mark', 'applicant', 'serial', 'gazette', 'goods', 'type', 'attorney', 'from', 'to'] as const) {
+  for (const k of ['mark', 'applicant', 'serial', 'gazette', 'goods', 'type', 'from', 'to'] as const) {
     if (s[k].trim() !== '') n++
   }
   if (s.classes.length) n++

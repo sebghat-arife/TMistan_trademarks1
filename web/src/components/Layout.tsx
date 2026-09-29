@@ -9,8 +9,6 @@ import { SITE_CONTACT } from '@/lib/site'
 
 const NAV = [
   { to: '/search', key: 'nav.search' },
-  { to: '/gazettes', key: 'nav.gazettes' },
-  { to: '/trademarks', key: 'nav.trademarks' },
   { to: '/about', key: 'nav.about' },
   { to: '/help', key: 'nav.help' },
 ] as const
@@ -37,7 +35,7 @@ export function Layout() {
       <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
         <div className="container-x flex h-[68px] items-center justify-between gap-6">
           <Link to="/" className="flex items-center" aria-label="TMistan — home">
-            <Logo className="h-11" />
+            <Logo className="h-[52px]" />
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
@@ -96,10 +94,10 @@ export function Layout() {
       <footer className="mt-12 bg-dark-900 text-white">
         <div className="container-x grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
-            <Logo variant="dark" className="h-12" />
+            <Logo variant="dark" className="h-14" />
             <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-white/85">{t('footer.blurb')}</p>
           </div>
-          <FooterCol title={t('footer.quickLinks')} links={[['/search', t('nav.search')], ['/gazettes', t('nav.gazettes')], ['/trademarks', t('nav.trademarks')], ['/about', t('nav.about')]]} />
+          <FooterCol title={t('footer.quickLinks')} links={[['/', t('trademark.home')], ['/search', t('nav.search')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
           <FooterCol title={t('footer.resources')} links={[['/help', t('footer.helpCenter')], ['/help#glossary', t('footer.glossary')], ['/terms', t('footer.terms')], ['/privacy', t('footer.privacy')]]} />
           <div>
             <h3 className="text-[15px] font-semibold">{t('footer.contact')}</h3>

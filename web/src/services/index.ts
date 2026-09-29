@@ -7,7 +7,6 @@
  */
 export * from './_shared'
 export * from './trademark_service'
-export * from './gazette_service'
 export * from './image_service'
 export * from './stats_service'
 export * from './admin_service'
