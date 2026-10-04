@@ -16,6 +16,9 @@ import { defineConfig, loadEnv } from 'vite'
  * particular SUPABASE_SERVICE_ROLE_KEY — is never read here, so it cannot leak
  * into client JavaScript even if it is present in the build environment.
  */
+/** Default public website of Masnad Law Firm (overridable with SITE_MASNAD_URL). */
+const DEFAULT_MASNAD_URL = 'https://www.masnadip.af/'
+
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
   const supabaseUrl = env.SUPABASE_URL ?? env.VITE_SUPABASE_URL ?? ''
@@ -44,6 +47,9 @@ export default defineConfig(({ mode }) => {
         facebook: env.SITE_FACEBOOK_URL ?? '',
         twitter: env.SITE_TWITTER_URL ?? '',
         linkedin: env.SITE_LINKEDIN_URL ?? '',
+        // Public website of Masnad Law Firm (the firm behind TMistan). Override per deployment;
+        // set to an empty string to render the firm name without a link.
+        masnad: env.SITE_MASNAD_URL ?? DEFAULT_MASNAD_URL,
       }),
     },
     server: {

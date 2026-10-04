@@ -8,6 +8,8 @@
 #   Publish Directory .. dist
 #   Redirects/Rewrites . /*  →  /index.html   (Rewrite)
 #   Environment ........ SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY   (public values; NEVER the secret key)
+#                        optional: SITE_MASNAD_URL (public website of Masnad Law Firm linked from the
+#                        homepage/footer; defaults to https://www.masnadip.af/ — empty string = no link)
 #
 # The two Supabase values are read at BUILD time by web/vite.config.ts and
 # inlined into the JS bundle (Vite apps have no runtime environment).
@@ -29,6 +31,8 @@ services:
         sync: false                       # prompt in dashboard: sb_publishable_... (public)
       - key: NODE_VERSION
         value: "22.12.0"                  # matches web/.node-version (Vite 8 needs 20.19+ / 22.12+)
+      - key: SITE_MASNAD_URL
+        value: https://www.masnadip.af/   # public Masnad Law Firm website (not a secret); "" disables the link
     routes:
       - type: rewrite                     # client-side routing: every path serves the SPA
         source: /*

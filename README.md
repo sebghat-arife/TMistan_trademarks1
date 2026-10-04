@@ -81,6 +81,7 @@ platform's variables. `.env.example` files contain placeholders only.
 | `SUPABASE_URL` | web build (Render environment variable / Docker build-arg) | `https://<ref>.supabase.co` — public |
 | `SUPABASE_PUBLISHABLE_KEY` | web build | publishable (`sb_publishable_…`) or legacy anon JWT — public by design; the build **refuses** a `sb_secret_`/service-role key |
 | `SITE_CONTACT_EMAIL` `SITE_CONTACT_PHONE` `SITE_CONTACT_ADDRESS` `SITE_FACEBOOK_URL` `SITE_TWITTER_URL` `SITE_LINKEDIN_URL` | web build, optional | footer contact / social links (hidden when unset) |
+| `SITE_MASNAD_URL` | web build, optional | public website of Masnad Law Firm linked from the homepage and footer (default `https://www.masnadip.af/`; empty string = firm name without a link) |
 | `NODE_VERSION` | Render build (set by `render.yaml`, also `web/.node-version`) | `22.12.0` — Vite 8 needs Node ≥ 20.19 / ≥ 22.12 |
 | `PORT`, `ENVIRONMENT` | optional Docker image only | nginx listen port / label — not used by the static site |
 | `SUPABASE_SERVICE_ROLE_KEY` | **importers only** (`importers/.env`) | bypasses RLS — never in the web app, never in the image |
@@ -179,7 +180,8 @@ unmatched/ambiguous files are parked for review and never shown publicly. Every 
    | `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (the **publishable** key — never `sb_secret_…`) |
    | `NODE_VERSION` | `22.12.0` (already in `render.yaml`) |
    Optional: `SITE_CONTACT_EMAIL`, `SITE_CONTACT_PHONE`, `SITE_CONTACT_ADDRESS`, `SITE_FACEBOOK_URL`,
-   `SITE_TWITTER_URL`, `SITE_LINKEDIN_URL` (footer; hidden when absent).
+   `SITE_TWITTER_URL`, `SITE_LINKEDIN_URL` (footer; hidden when absent); `SITE_MASNAD_URL` (Masnad Law
+   Firm website, defaults to `https://www.masnadip.af/`).
    Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the frontend never uses it.
 4. **Apply / Deploy**. Build log should end with `✓ built in …` and "Your site is live".
 5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /index.html`).

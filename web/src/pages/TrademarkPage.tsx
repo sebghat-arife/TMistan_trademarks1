@@ -280,7 +280,7 @@ function RecordSheet({ tm, image, sourceLine }: { tm: TrademarkRow; image: Trade
       <header className="record-sheet__header">
         <div>
           <Logo className="record-sheet__logo" />
-          <div className="record-sheet__tagline">{t('home.title')}</div>
+          <div className="record-sheet__tagline">{t('home.hero.title')}</div>
         </div>
         <div className="record-sheet__meta">
           <div className="record-sheet__doc">{t('trademark.record.title')}</div>

@@ -37,15 +37,31 @@ export function HelpPage() {
   )
 }
 
-export function LegalPage({ kind }: { kind: 'terms' | 'privacy' }) {
+export type LegalKind = 'terms' | 'privacy' | 'disclaimer'
+
+const LEGAL_KEYS: Record<LegalKind, { title: string; body: string }> = {
+  terms: { title: 'legal.termsTitle', body: 'legal.terms' },
+  privacy: { title: 'legal.privacyTitle', body: 'legal.privacy' },
+  disclaimer: { title: 'legal.disclaimerTitle', body: 'legal.disclaimer' },
+}
+
+export function LegalPage({ kind }: { kind: LegalKind }) {
   const { t } = useTranslation()
-  const title = t(kind === 'terms' ? 'legal.termsTitle' : 'legal.privacyTitle')
+  const keys = LEGAL_KEYS[kind]
+  const title = t(keys.title)
   useDocumentTitle(`${title} · ${t('app.shortName')}`)
+  // A legal text may be a single string or a list of paragraphs.
+  const body = t(keys.body, { returnObjects: true }) as string | string[]
+  const paragraphs = Array.isArray(body) ? body : [body]
   return (
     <div className="container-x py-8">
       <div className="card max-w-3xl p-6 md:p-8">
         <h1 className="text-[28px] font-bold text-ink-900">{title}</h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-ink-700">{t(kind === 'terms' ? 'legal.terms' : 'legal.privacy')}</p>
+        {paragraphs.map((para, i) => (
+          <p key={i} className="mt-4 text-[15px] leading-relaxed text-ink-700">
+            {para}
+          </p>
+        ))}
       </div>
     </div>
   )

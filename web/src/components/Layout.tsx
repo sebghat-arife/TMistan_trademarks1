@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Globe, Menu, X } from 'lucide-react'
+import { ArrowUpRight, Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
-import { SITE_CONTACT } from '@/lib/site'
+import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 
 const NAV = [
   { to: '/search', key: 'nav.search' },
@@ -91,21 +91,25 @@ export function Layout() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="mt-12 bg-dark-900 text-white">
-        <div className="container-x grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-          <div>
+      <footer className="mt-12 bg-dark-950 text-white">
+        <div className="container-x grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Logo variant="dark" className="h-14" />
-            <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-white/85">{t('footer.blurb')}</p>
-          </div>
-          <FooterCol title={t('footer.quickLinks')} links={[['/', t('trademark.home')], ['/search', t('nav.search')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
-          <FooterCol title={t('footer.resources')} links={[['/help', t('footer.helpCenter')], ['/help#glossary', t('footer.glossary')], ['/terms', t('footer.terms')], ['/privacy', t('footer.privacy')]]} />
-          <div>
-            <h3 className="text-[15px] font-semibold">{t('footer.contact')}</h3>
-            <ul className="mt-4 space-y-2.5 text-[14px] text-white/85">
-              {SITE_CONTACT.email && <li>{t('footer.email')}: <a href={`mailto:${SITE_CONTACT.email}`} className="hover:underline">{SITE_CONTACT.email}</a></li>}
-              {SITE_CONTACT.phone && <li>{t('footer.phone')}: <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:underline" dir="ltr">{SITE_CONTACT.phone}</a></li>}
-              <li>{SITE_CONTACT.address || t('footer.address')}</li>
-            </ul>
+            <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-white/80">{t('footer.blurb')}</p>
+            {(SITE_CONTACT.email || SITE_CONTACT.phone) && (
+              <ul className="mt-4 space-y-1.5 text-[13px] text-white/70">
+                {SITE_CONTACT.email && (
+                  <li>
+                    <a href={`mailto:${SITE_CONTACT.email}`} className="hover:text-white hover:underline">{SITE_CONTACT.email}</a>
+                  </li>
+                )}
+                {SITE_CONTACT.phone && (
+                  <li>
+                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:text-white hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
+                  </li>
+                )}
+              </ul>
+            )}
             <div className={cn('mt-5 flex items-center gap-3', SOCIAL.length === 0 && 'hidden')}>
               {SOCIAL.map(({ label, href, d }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
@@ -114,9 +118,26 @@ export function Layout() {
               ))}
             </div>
           </div>
+          <FooterCol title={t('footer.platform')} links={[['/search', t('nav.search')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
+          <FooterCol
+            title={t('footer.information')}
+            links={[['/about', t('footer.aboutTMistan')], ['/#how-it-works', t('footer.howItWorks')], ['/#sources', t('footer.sources')], ['/help', t('nav.help')]]}
+          />
+          <div>
+            <h3 className="text-[15px] font-semibold">{t('footer.masnad')}</h3>
+            <p className="mt-4 text-[14px] leading-relaxed text-white/80">{t('footer.product')}</p>
+            {MASNAD_URL && (
+              <a href={MASNAD_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[14px] font-medium text-brand-300 hover:text-brand-200 hover:underline">
+                {t('footer.visitMasnad')}
+                <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+              </a>
+            )}
+          </div>
+          <FooterCol title={t('footer.legal')} links={[['/terms', t('footer.terms')], ['/privacy', t('footer.privacy')], ['/disclaimer', t('footer.disclaimer')]]} />
         </div>
-        <div className="container-x border-t border-white/10 py-5 text-center text-[13px] text-white/70">
-          © {new Date().getFullYear()} TMistan. {t('footer.rights')}
+        <div className="container-x flex flex-col items-center justify-between gap-4 border-t border-white/10 py-5 text-[13px] text-white/70 sm:flex-row">
+          <span>© {new Date().getFullYear()} TMistan — {t('footer.rights')}</span>
+          <LanguageSwitcher tone="dark" />
         </div>
       </footer>
     </div>
@@ -127,10 +148,10 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   return (
     <div>
       <h3 className="text-[15px] font-semibold">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-[14px] text-white/85">
+      <ul className="mt-4 space-y-2.5 text-[14px] text-white/80">
         {links.map(([to, label]) => (
           <li key={to}>
-            <Link to={to} className="hover:underline">
+            <Link to={to} className="transition-colors hover:text-white hover:underline">
               {label}
             </Link>
           </li>
@@ -140,17 +161,18 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   )
 }
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+export function LanguageSwitcher({ className, tone = 'light' }: { className?: string; tone?: 'light' | 'dark' }) {
   const { i18n, t } = useTranslation()
   const current = LANGUAGES.find((l) => l.code === i18n.resolvedLanguage) ?? LANGUAGES[0]
+  const text = tone === 'dark' ? 'text-white/85' : 'text-ink-800'
   return (
-    <label className={cn('inline-flex items-center gap-1.5 text-[14px] font-medium text-ink-800', className)}>
-      <Globe className="h-[18px] w-[18px] text-ink-700" aria-hidden />
+    <label className={cn('inline-flex items-center gap-1.5 text-[14px] font-medium', text, className)}>
+      <Globe className={cn('h-[18px] w-[18px]', tone === 'dark' ? 'text-white/70' : 'text-ink-700')} aria-hidden />
       <span className="sr-only">{t('nav.language')}</span>
       <select
         value={current.code}
         onChange={(e) => void i18n.changeLanguage(e.target.value)}
-        className="cursor-pointer appearance-none bg-transparent pe-1 text-[14px] font-medium text-ink-800 outline-none"
+        className={cn('cursor-pointer appearance-none bg-transparent pe-1 text-[14px] font-medium outline-none', text, tone === 'dark' && '[&>option]:text-ink-900')}
       >
         {LANGUAGES.map((l) => (
           <option key={l.code} value={l.code}>

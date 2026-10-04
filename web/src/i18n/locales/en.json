@@ -12,25 +12,117 @@
     "language": "Language"
   },
   "footer": {
-    "blurb": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
-    "quickLinks": "Quick Links",
-    "resources": "Resources",
-    "contact": "Contact Us",
-    "helpCenter": "Help Center",
-    "glossary": "Glossary",
+    "blurb": "Search and explore trademark records published in the Official Gazette of Afghanistan.",
+    "platform": "Platform",
+    "information": "Information",
+    "masnad": "Masnad Law Firm",
+    "legal": "Legal",
+    "aboutTMistan": "About TMistan",
+    "howItWorks": "How It Works",
+    "sources": "Sources",
+    "product": "A product of Masnad Law Firm",
+    "visitMasnad": "Visit Masnad Law Firm",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
-    "email": "Email",
-    "phone": "Phone",
-    "address": "Kabul, Afghanistan",
+    "disclaimer": "Disclaimer",
     "rights": "All rights reserved."
   },
   "home": {
-    "title": "Search Trademarks in Afghanistan",
-    "subtitle": "Explore trademark records published in the Official Gazette of Afghanistan through a simple, searchable digital platform.",
-    "searchPlaceholder": "Search trademark name, applicant, serial number, class...",
-    "searchButton": "Search",
+    "hero": {
+      "eyebrow": "Afghanistan Trademark Research Platform",
+      "title": "Search Trademarks in Afghanistan",
+      "lead": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
+      "secondary": "Built to make trademark research in Afghanistan simpler, faster, and more accessible.",
+      "searchPlaceholder": "Search trademark name, applicant, serial number, class...",
+      "searchButton": "Search",
+      "examples": "Search by trademark name, applicant, serial number, class, Gazette number, or classification.",
+      "learn": "Learn About TMistan"
+    },
+    "why": {
+      "eyebrow": "Why TMistan?",
+      "title": "A New Way to Research Trademarks in Afghanistan",
+      "p1": "Trademark information is an important part of business and intellectual-property research. Yet finding and reviewing published trademark information can be time-consuming when information is distributed across Gazette publications and documents.",
+      "p2": "TMistan was created to make that research process more accessible by bringing searchable published trademark records into one modern digital platform.",
+      "statement": "From Gazette publications to a searchable digital experience.",
+      "points": {
+        "searchable": {
+          "title": "Searchable",
+          "text": "Find records using relevant trademark information."
+        },
+        "source": {
+          "title": "Source-Based",
+          "text": "Records remain connected to their available Gazette references."
+        },
+        "structured": {
+          "title": "Structured",
+          "text": "Information is organized into a consistent digital format."
+        },
+        "accessible": {
+          "title": "Accessible",
+          "text": "Designed to make trademark research easier for professionals and the public."
+        }
+      }
+    },
+    "masnad": {
+      "eyebrow": "Built by Masnad Law Firm",
+      "title": "From Legal Expertise to Digital Innovation",
+      "p1": "TMistan is a product of Masnad Law Firm, an Afghan law firm with a strong focus on intellectual property, trademarks, and business law.",
+      "p2": "The platform was developed from a practical understanding of the challenges involved in researching trademark information in Afghanistan.",
+      "p3": "Masnad Law Firm created TMistan with a simple objective: to make published trademark information easier to search, explore, and understand through modern digital technology.",
+      "button": "Visit Masnad Law Firm",
+      "panelTitle": "From Legal Expertise to Digital Innovation",
+      "panelText": "For years, trademark professionals and businesses have relied on published legal and commercial records when researching brands and intellectual-property matters. TMistan brings that research experience into a dedicated digital environment."
+    },
+    "matters": {
+      "eyebrow": "Why It Matters",
+      "title": "Making Trademark Research More Accessible",
+      "before": {
+        "title": "Before",
+        "text": "Searching through published documents and manually locating relevant information can take significant time."
+      },
+      "with": {
+        "title": "With TMistan",
+        "text": "Searchable records make it easier to identify and review relevant published trademark information."
+      },
+      "professionals": {
+        "title": "For Professionals",
+        "text": "A structured research interface can support preliminary trademark research, business research, legal research, and due diligence."
+      }
+    },
+    "capabilities": {
+      "eyebrow": "Platform Capabilities",
+      "title": "One Platform. Multiple Ways to Explore.",
+      "search": {
+        "title": "Trademark Search",
+        "intro": "Search records using:",
+        "items": [
+          "Trademark name",
+          "Applicant",
+          "Serial number",
+          "Classification",
+          "Gazette",
+          "Application type",
+          "Date-related information",
+          "Advanced search criteria"
+        ]
+      },
+      "record": {
+        "title": "Record Details",
+        "text": "Open an individual record and review the available information in a structured format."
+      },
+      "source": {
+        "title": "Source Information",
+        "text": "Show the relevant Official Gazette and page information where available."
+      },
+      "images": {
+        "title": "Trademark Images",
+        "text": "Display available trademark images associated with the relevant record."
+      }
+    },
     "stats": {
+      "title": "TMistan at a Glance",
+      "subtitle": "Live figures from the TMistan database.",
+      "note": "Registrations, renewals, assignments and changes are counted from the notice type of each published record.",
       "records": "Total Records",
       "recordsSub": "Trademark records published in the Official Gazette",
       "gazettes": "Official Gazettes",
@@ -44,6 +136,81 @@
       "changes": "Total Changes",
       "changesSub": "Name, address and ownership changes",
       "ariaLabel": "Statistics"
+    },
+    "how": {
+      "eyebrow": "How TMistan Works",
+      "title": "From Publication to Search",
+      "steps": {
+        "published": {
+          "title": "Published",
+          "text": "Trademark information is published through the Official Gazette."
+        },
+        "structured": {
+          "title": "Structured",
+          "text": "Available record information is organized into a searchable digital structure."
+        },
+        "explore": {
+          "title": "Explore",
+          "text": "Users can search and explore available trademark records through TMistan."
+        }
+      }
+    },
+    "sources": {
+      "eyebrow": "Built Around Published Sources",
+      "title": "Published Sources & Transparency",
+      "text": "TMistan focuses on trademark information published in the Official Gazette of Afghanistan. Where available, individual records are connected to their Gazette reference and page information so users can better understand the source of the information they are viewing.",
+      "disclaimer": "TMistan is an independent research platform and is not the official Government trademark registry or a substitute for official legal records and procedures."
+    },
+    "audience": {
+      "eyebrow": "Who Is TMistan For?",
+      "title": "Designed for People Who Need Trademark Information",
+      "businesses": {
+        "title": "Businesses",
+        "text": "Research brands and published trademark records."
+      },
+      "professionals": {
+        "title": "Trademark Professionals",
+        "text": "Support preliminary research and record review."
+      },
+      "lawyers": {
+        "title": "Lawyers",
+        "text": "Access structured published information during legal and IP research."
+      },
+      "researchers": {
+        "title": "Researchers",
+        "text": "Explore historical and published trademark information."
+      },
+      "entrepreneurs": {
+        "title": "Entrepreneurs",
+        "text": "Better understand the trademark landscape when developing brands."
+      }
+    },
+    "afghanistan": {
+      "eyebrow": "Built for Afghanistan",
+      "statement": "Afghan trademark information deserves a modern digital research experience.",
+      "p1": "TMistan was created specifically around the realities of trademark research in Afghanistan.",
+      "p2": "Rather than adapting a generic international database to the Afghan market, the platform is designed around the structure, terminology, and published sources relevant to Afghanistan.",
+      "pioneerEyebrow": "Pioneering Digital Trademark Research",
+      "pioneer1": "TMistan represents a pioneering effort to create a dedicated, searchable digital experience for published trademark records in Afghanistan.",
+      "pioneer2": "It was created in response to a clear practical need: making trademark information easier to discover and research through modern digital technology."
+    },
+    "vision": {
+      "eyebrow": "Masnad + TMistan Vision",
+      "title": "From Legal Expertise to Digital Infrastructure",
+      "p1": "Masnad Law Firm's work in intellectual property and trademark matters provided the foundation for TMistan.",
+      "p2": "The platform reflects a broader vision: combining legal expertise with technology to make important business and intellectual-property information more accessible.",
+      "statement1": "Legal knowledge.",
+      "statement2": "Digital technology.",
+      "statement3": "Better access to information.",
+      "button": "Learn More About Masnad Law Firm",
+      "product": "A product of Masnad Law Firm"
+    },
+    "cta": {
+      "eyebrow": "Get Started",
+      "title": "Start Your Trademark Research",
+      "text": "Explore published trademark records from the Official Gazette of Afghanistan through TMistan.",
+      "search": "Search Trademarks",
+      "learn": "Learn About TMistan"
     }
   },
   "search": {
@@ -231,7 +398,13 @@
     "termsTitle": "Terms of Use",
     "terms": "TMistan reproduces trademark publications from the Official Gazette of Afghanistan for research and information purposes. The printed gazette remains the authoritative publication. Records are provided as transcribed; TMistan makes no warranty as to completeness or accuracy and accepts no liability for decisions made on the basis of this information.",
     "privacyTitle": "Privacy Policy",
-    "privacy": "Public pages of TMistan do not require an account and do not collect personal data beyond standard server logs. Administrator accounts are used only to maintain the registry. No data is sold or shared with third parties."
+    "privacy": "Public pages of TMistan do not require an account and do not collect personal data beyond standard server logs. Administrator accounts are used only to maintain the registry. No data is sold or shared with third parties.",
+    "disclaimerTitle": "Disclaimer",
+    "disclaimer": [
+      "TMistan is an independent research platform and a product of Masnad Law Firm. It is not the official Government trademark registry of Afghanistan and is not a substitute for official legal records and procedures.",
+      "Records are reproduced as published in the Official Gazette of Afghanistan and may differ from the printed publication through transcription. TMistan does not perform official trademark clearance, does not guarantee the availability of any trademark, and does not provide legal advice.",
+      "For legal or procedural matters, refer to the official publication and the responsible authorities, or seek professional advice."
+    ]
   },
   "admin": {
     "login": "Login",

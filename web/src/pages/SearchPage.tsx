@@ -67,13 +67,13 @@ export function SearchPage() {
               type="search"
               value={draftQ}
               onChange={(e) => setDraftQ(e.target.value)}
-              placeholder={t('home.searchPlaceholder')}
-              aria-label={t('home.searchPlaceholder')}
+              placeholder={t('home.hero.searchPlaceholder')}
+              aria-label={t('home.hero.searchPlaceholder')}
               className="h-full w-full bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
             />
           </div>
           <button type="submit" className="btn-primary h-12 px-6 text-[15px]">
-            <Search className="h-4 w-4" /> {t('home.searchButton')}
+            <Search className="h-4 w-4" /> {t('home.hero.searchButton')}
           </button>
         </form>
       </div>

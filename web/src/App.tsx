@@ -26,10 +26,18 @@ const queryClient = new QueryClient({
 })
 
 function ScrollToTop() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   useEffect(() => {
+    if (hash) {
+      // In-page anchors (e.g. /#how-it-works from the footer): scroll to the section once rendered.
+      const id = decodeURIComponent(hash.slice(1))
+      const timer = window.setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ block: 'start' })
+      }, 60)
+      return () => window.clearTimeout(timer)
+    }
     window.scrollTo({ top: 0 })
-  }, [pathname])
+  }, [pathname, hash])
   return null
 }
 
@@ -64,6 +72,7 @@ export default function App() {
               <Route path="/help" element={<HelpPage />} />
               <Route path="/terms" element={<LegalPage kind="terms" />} />
               <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+              <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

@@ -1,16 +1,23 @@
 @import "tailwindcss";
+/* Self-hosted fonts (bundled by Vite — no third-party font requests). */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/source-serif-4/wght.css";
 
 /* ──────────────────────────────────────────────────────────────────────────
    TMistan design tokens — sampled from the approved UI mock-up + logo
    ────────────────────────────────────────────────────────────────────────── */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, sans-serif;
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, sans-serif;
+  /* editorial display face for the public homepage headings */
+  --font-serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Noto Naskh Arabic", "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* brand green (buttons, links, accents) */
   --color-brand-50:  #eef8ee;   /* icon circles */
   --color-brand-100: #d6eeda;   /* active toggle bg */
   --color-brand-200: #b5dfbd;
+  --color-brand-300: #8fcf9d;   /* links on dark backgrounds */
+  --color-brand-400: #4fb06a;
   --color-brand-500: #1c8c45;
   --color-brand-600: #067133;   /* buttons */
   --color-brand-700: #056d30;   /* sidebar active, hover */
@@ -35,6 +42,14 @@
 
   --color-dark-900: #141b1e;    /* footer */
   --color-dark-950: #0e1519;    /* admin sidebar */
+
+  /* deep navy/teal for the enterprise homepage: headings + dark bands */
+  --color-navy-900: #10233a;    /* headline ink */
+  --color-navy-950: #0a1a2a;
+  --color-teal-900: #0c2a33;    /* dark band */
+  --color-teal-950: #07202a;    /* darker band */
+  --color-mist-50:  #f3f7f5;    /* tinted section background */
+  --color-mist-100: #e9f1ed;
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -77,6 +92,11 @@
   .btn-ghost { @apply border-transparent bg-transparent text-ink-700 hover:bg-ink-100; }
   .btn-outline-green { @apply border-brand-200 bg-white text-brand-600 hover:bg-brand-50; }
 
+  /* Homepage editorial typography */
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600; }
+  .section-title { @apply font-serif text-[30px] font-semibold leading-[1.15] tracking-[-0.01em] text-navy-900 md:text-[36px]; }
+  .section-title-sm { @apply font-serif text-[24px] font-semibold leading-[1.2] tracking-[-0.01em] text-navy-900; }
+
   /* pill toggle (Grid | Table) */
   .toggle { @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-ink-200 bg-white px-3 text-[13px] font-medium text-ink-700 transition-colors hover:bg-ink-100; }
   .toggle-on { @apply border-brand-200 bg-brand-100 text-brand-700 hover:bg-brand-100; }
@@ -107,10 +127,66 @@
 [dir="ltr"] .bidi-auto { text-align: left; }
 [dir="rtl"] .bidi-auto { text-align: right; }
 
-/* Hero background image fades into white from the left */
-.hero-art {
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
-          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 30%, #000 65%);
+/* ── Homepage (enterprise layout) ─────────────────────────────────────── */
+
+/* Hero photograph: only loaded from md up (CSS background → not fetched on phones),
+   fades into the tinted hero background on the text side. */
+.hero-photo {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 58%;
+  display: none;
+  background-size: cover;
+  background-position: 62% center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
+          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
+}
+[dir="rtl"] .hero-photo {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
+          mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
+}
+@media (min-width: 768px) {
+  .hero-photo { display: block; background-image: url('/img/hero-mosque.jpg'); }
+}
+
+/* Dark "Built for Afghanistan" band: citadel photograph on the end side under a navy wash. */
+.afg-band {
+  background-color: var(--color-teal-900);
+  background-image: linear-gradient(rgba(12,42,51,.86), rgba(12,42,51,.86)), url('/img/afghanistan-citadel.jpg');
+  background-size: cover;
+  background-position: right center;
+}
+@media (min-width: 1024px) {
+  .afg-band {
+    background-image:
+      linear-gradient(to right, var(--color-teal-900) 0%, var(--color-teal-900) 36%, rgba(12,42,51,.82) 58%, rgba(12,42,51,.45) 78%, rgba(12,42,51,.18) 100%),
+      url('/img/afghanistan-citadel.jpg');
+  }
+  [dir="rtl"] .afg-band {
+    background-image:
+      linear-gradient(to left, var(--color-teal-900) 0%, var(--color-teal-900) 36%, rgba(12,42,51,.82) 58%, rgba(12,42,51,.45) 78%, rgba(12,42,51,.18) 100%),
+      url('/img/afghanistan-citadel.jpg');
+    background-position: left center;
+  }
+}
+
+/* Fine architectural grid for dark editorial panels */
+.dark-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Scroll reveal (subtle motion; disabled for reduced-motion users and print) */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease-out, transform .6s ease-out; }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+@media print {
+  .reveal { opacity: 1; transform: none; }
 }
 
 /* ── "Download Record" print document ──────────────────────────────────
