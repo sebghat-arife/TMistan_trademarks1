@@ -22,6 +22,7 @@ import {
   TRADEMARK_COLUMNS,
 } from '@/lib/import/spreadsheet'
 import { type ImageCandidate, type IntakeResult, intakeImages, isImageFile, isZipFile } from '@/lib/import/images'
+import { ImageIndexPanel } from './ImageIndexPanel'
 import {
   type ImageImportProgress,
   type ImageUploadPlanItem,
@@ -33,6 +34,8 @@ import {
   importCenterReady,
   importImages,
   importJobsQuery,
+  indexUploadedImages,
+  type IndexRunReport,
   importTrademarkRows,
   listImportJobItems,
   listTrademarksWithoutImages,
@@ -71,6 +74,9 @@ export function ImportCenterPage() {
       <div className={cn('mt-5 grid gap-5 xl:grid-cols-2', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
         <SpreadsheetImporter />
         <ImageImporter />
+      </div>
+      <div className={cn('mt-5', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
+        <ImageIndexPanel />
       </div>
       <RecentImports />
     </div>
@@ -511,8 +517,8 @@ type ImageState =
   | { phase: 'reading'; done: number; total: number }
   | { phase: 'resolving'; intake: IntakeResult }
   | { phase: 'ready'; intake: IntakeResult; match: MatchedSet }
-  | { phase: 'importing'; intake: IntakeResult; match: MatchedSet; job: ImportJobRow; progress: ImageImportProgress }
-  | { phase: 'done'; intake: IntakeResult; match: MatchedSet; job: ImportJobRow; progress: ImageImportProgress }
+  | { phase: 'importing'; intake: IntakeResult; match: MatchedSet; job: ImportJobRow; progress: ImageImportProgress; indexing?: { done: number; total: number } }
+  | { phase: 'done'; intake: IntakeResult; match: MatchedSet; job: ImportJobRow; progress: ImageImportProgress; indexReport?: IndexRunReport }
   | { phase: 'error'; message: string }
 
 function ImageImporter() {
@@ -587,10 +593,36 @@ function ImageImporter() {
       ]
       if (items.length) await addImportItems(job.id, items)
       const progress = await importImages(job.id, match.matched, (p) => setState((s) => (s.phase === 'importing' ? { ...s, progress: p } : s)), ctl.signal)
+
+      // Visual search index: describe the images that were just stored (bytes are still in memory)
+      // so "Search by Image" covers them immediately. Failures never fail the import itself.
+      const failedKeys = new Set(progress.failures.map((f) => f.fileName))
+      const stored = match.matched.filter((m) => !failedKeys.has(m.candidate.fileName) && !failedKeys.has(m.storagePath))
+      let indexReport: IndexRunReport | undefined
+      if (stored.length) {
+        setState((s) => (s.phase === 'importing' ? { ...s, indexing: { done: 0, total: stored.length } } : s))
+        try {
+          indexReport = await indexUploadedImages(
+            stored.map((m) => ({ storage_path: m.storagePath, blob: new Blob([m.candidate.bytes as BlobPart], { type: m.candidate.contentType }) })),
+            (done, total) => setState((s) => (s.phase === 'importing' ? { ...s, indexing: { done, total } } : s)),
+          )
+        } catch (e) {
+          indexReport = { attempted: stored.length, indexed: 0, failed: stored.length, failures: [{ key: '*', storage_path: '*', reason: (e as Error).message }] }
+        }
+        void qc.invalidateQueries({ queryKey: ['image-search'] })
+      }
+
       const rejected = match.unmatched.length + match.ambiguous.length + res.invalid.length + match.noSerial.length
       const warn = progress.failed > 0 || rejected > 0
-      const finished = await finishImportJob(job.id, warn ? 'completed_with_warnings' : 'completed', { uploaded: progress.uploaded, linked: progress.linked, unchanged: progress.unchanged, failed: progress.failed }, null, null, rejected)
-      setState({ phase: 'done', intake: res, match, job: finished, progress })
+      const finished = await finishImportJob(
+        job.id,
+        warn ? 'completed_with_warnings' : 'completed',
+        { uploaded: progress.uploaded, linked: progress.linked, unchanged: progress.unchanged, failed: progress.failed, visual_index_indexed: indexReport?.indexed ?? 0, visual_index_failed: indexReport?.failed ?? 0 },
+        null,
+        null,
+        rejected,
+      )
+      setState({ phase: 'done', intake: res, match, job: finished, progress, indexReport })
     } catch (e) {
       const message = (e as Error).message
       try {
@@ -754,6 +786,11 @@ function ImageImporter() {
               onCancel={state.phase === 'importing' ? () => abortRef.current?.abort() : undefined}
             />
           )}
+          {state.phase === 'importing' && state.indexing && (
+            <p className="flex items-center gap-2 text-[13px] text-ink-700" role="status">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {t('admin.import.indexingImages', { done: formatNumber(state.indexing.done, lng), total: formatNumber(state.indexing.total, lng) })}
+            </p>
+          )}
 
           {state.phase === 'done' && (
             <>
@@ -763,6 +800,14 @@ function ImageImporter() {
                 title={t('admin.import.imagesDoneTitle')}
                 text={t('admin.import.imagesDoneText', { linked: state.progress.linked, unchanged: state.progress.unchanged, unmatched: match.unmatched.length, failed: state.progress.failed })}
               />
+              {state.indexReport && (
+                <Callout
+                  tone={state.indexReport.failed > 0 ? 'warn' : 'ok'}
+                  icon={state.indexReport.failed > 0 ? AlertTriangle : CheckCircle2}
+                  title={t('admin.import.indexDoneTitle')}
+                  text={t('admin.import.indexDoneText', { indexed: state.indexReport.indexed, failed: state.indexReport.failed })}
+                />
+              )}
               {state.progress.failures.length > 0 && (
                 <IssueTable
                   title={t('admin.import.uploadFailures', { count: state.progress.failures.length })}

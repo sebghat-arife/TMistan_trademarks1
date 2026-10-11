@@ -199,6 +199,15 @@ export type Database = {
       recent_trademarks: { Args: { p_limit?: number }; Returns: TrademarkSearchResult[] }
       trademarks_by_class: { Args: Record<string, never>; Returns: { class: number; count: number }[] }
       is_admin: { Args: Record<string, never>; Returns: boolean }
+      // Search by Image (migration 0500)
+      search_trademarks_by_image: {
+        Args: { p_embedding: number[]; p_version: number; p_limit?: number; p_min_similarity?: number }
+        Returns: (TrademarkSearchResult & { similarity: number; matched_image_id: string })[]
+      }
+      image_search_status: { Args: { p_version?: number | null }; Returns: { available: boolean; descriptor_version: number | null; indexed_images: number; indexed_trademarks: number } }
+      admin_image_index_status: { Args: { p_version: number }; Returns: { descriptor_version: number; matched_images: number; indexed: number; stale: number; missing: number; last_computed_at: string | null } }
+      admin_images_missing_features: { Args: { p_version: number; p_limit?: number; p_offset?: number }; Returns: { id: string; trademark_id: string; storage_bucket: string; storage_path: string; serial_number: string | null; content_type: string | null; byte_size: number | null }[] }
+      admin_upsert_image_features: { Args: { p_version: number; p_items: unknown[] }; Returns: { upserted: number; failed: number; results: unknown[] } }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

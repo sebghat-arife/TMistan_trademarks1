@@ -11,7 +11,7 @@ search, filter and statistic is a database query.
 │  React SPA (web/)          │   PostgREST  /rest/v1/rpc/*       │  Postgres  public.trademarks │
 │  static files on           │   Storage    /storage/v1/object   │            gazettes, images… │
 │  Render Static Site (CDN)  │ ◀──────────────────────────────── │  Storage   trademark-images  │
-│  Admin → Import Center     │   admin JWT → SECURITY DEFINER    │  admin_* RPCs (0400)         │
+│  Admin → Import Center     │   admin JWT → SECURITY DEFINER    │  admin_* RPCs (0400/0500)    │
 └────────────────────────────┘   RPCs + RLS storage policies     └──────────────▲───────────────┘
                                                                                  │ service-role key
                                                     ┌────────────────────────────┴───────────────┐
@@ -27,6 +27,14 @@ named `<serial>.png`; they are matched by serial number, stored in Supabase Stor
 `trademark_images` and visible in the public search immediately. The record count is whatever the
 imported files contain — nothing is assumed or seeded.
 
+**Search by Image** (`/search?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo, the
+browser computes a compact visual descriptor (the picture itself never leaves the tab) and Postgres
+(pgvector, migration 0500) returns the most similar published marks. The index is built by the
+administrator from Import Center → *Visual search index*; images uploaded later are indexed
+automatically. **Download Record** on a trademark page produces a real A4 PDF ("Trademark Publication
+Report", fonts embedded, Dari/Pashto right-to-left) generated in the browser — no server, no
+third-party service (`docs/PDF_REPORT.md`).
+
 There is **no application server** — nothing to keep running, no `PORT`, no health endpoint. The
 build output (`web/dist`) is plain static files served by Render's CDN; authorisation is decided by
 Row Level Security in Postgres, so the only key in the browser is the public (publishable) key. The
@@ -41,14 +49,15 @@ service-role key exists only on the machine that runs importers / the storage se
 | `render.yaml` | **Render Blueprint — Static Site** (root `web`, `npm ci && npm run build`, publish `dist`, SPA rewrite) | — |
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation, image intake (ZIP, sniffing, hashing), serial matching | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0400) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0500) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import | no |
+| `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
 | `scripts/local-stack/` | offline dev stack: PostgreSQL + PostgREST + static image server, no Supabase account needed | no |
-| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `LOVABLE_HANDOFF.md` | no |
+| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `IMPORT_CENTER.md`, `IMAGE_SEARCH.md`, `PDF_REPORT.md`, `LOVABLE_HANDOFF.md` | no |
 
 ## Data model used by the app
 
@@ -65,6 +74,7 @@ Discovered from the live project + `supabase/migrations`:
 | `admin_import_trademark_rows()`, `admin_resolve_serials()`, `admin_register_images()`, `admin_create/finish_import_job()`, `admin_add_import_items()`, `admin_trademarks_without_images()` | SECURITY DEFINER RPCs (0400), admin-only | Import Center |
 | `trademarks_serial_number_key` (unique `serial_number`, guarded), `serial_canonical()` | (0400) | idempotent imports, image matching |
 | Storage bucket `trademark-images` (public read, admin write via 0400 policies) | (0300/0400) | image URLs, Import Center uploads |
+| `trademark_image_features` (pgvector, RLS, no public policies), `search_trademarks_by_image()`, `image_search_status()`, `admin_image_index_status()`, `admin_images_missing_features()`, `admin_upsert_image_features()` | (0500) | Search by Image, Visual search index panel |
 
 Dates are stored exactly as printed in the gazette — Afghan **Solar Hijri** (e.g. `1389-12-29`).
 `public.to_gregorian_date()` converts for date filters/sorting; the UI shows both calendars in
@@ -82,6 +92,7 @@ platform's variables. `.env.example` files contain placeholders only.
 | `SUPABASE_PUBLISHABLE_KEY` | web build | publishable (`sb_publishable_…`) or legacy anon JWT — public by design; the build **refuses** a `sb_secret_`/service-role key |
 | `SITE_CONTACT_EMAIL` `SITE_CONTACT_PHONE` `SITE_CONTACT_ADDRESS` `SITE_FACEBOOK_URL` `SITE_TWITTER_URL` `SITE_LINKEDIN_URL` | web build, optional | footer contact / social links (hidden when unset) |
 | `SITE_MASNAD_URL` | web build, optional | public website of Masnad Law Firm linked from the homepage and footer (default `https://www.masnadip.af/`; empty string = firm name without a link) |
+| `SITE_CANONICAL_URL` | web build, optional | public origin printed in the PDF report (record link) and used for canonical links (default `https://www.tmistan.com`) |
 | `NODE_VERSION` | Render build (set by `render.yaml`, also `web/.node-version`) | `22.12.0` — Vite 8 needs Node ≥ 20.19 / ≥ 22.12 |
 | `PORT`, `ENVIRONMENT` | optional Docker image only | nginx listen port / label — not used by the static site |
 | `SUPABASE_SERVICE_ROLE_KEY` | **importers only** (`importers/.env`) | bypasses RLS — never in the web app, never in the image |
@@ -125,11 +136,12 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 
 1. **Backup** (Dashboard → Database → Backups).
 2. **Schema** — SQL Editor → New query → paste the whole of `supabase/APPLY_ALL.sql` → Run.
-   It is the concatenation of `supabase/migrations/…0100` … `…0400`; additive and
+   It is the concatenation of `supabase/migrations/…0100` … `…0500`; additive and
    idempotent (safe to re-run), it never drops or rewrites `public.trademarks` rows and keeps the
    `(official_gazette_number, serial_number)` uniqueness. The result panel prints the post-checks
    (trademark count, gazettes, policies, anon-readable rows). A project that already has 0100–0300
-   only needs **`supabase/APPLY_0400.sql`** (Import Center). Read the *Messages* tab: a WARNING about
+   only needs **`supabase/APPLY_0400.sql`** (Import Center), and one on 0100–0400 only
+   **`supabase/APPLY_0500.sql`** (Search by Image). Read the *Messages* tab: a WARNING about
    `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
@@ -142,9 +154,13 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
    `insert into public.user_roles (user_id, role) select id, 'admin' from auth.users where email = '<e-mail>';`
 6. **Auth → URL configuration**: add the deployed origin (needed for admin login).
 7. **Load the data** — sign in, Admin → Import Center, follow `docs/IMPORT_CENTER.md`.
+8. **Build the visual index** — Import Center → *Visual search index* → *Index N images*
+   (`docs/IMAGE_SEARCH.md`). Until 0500 is applied the image search page reports itself unavailable;
+   keyword search is unaffected.
 
 Status of the production project `tzzslhpqbfjklazihssc`: 0100–0300 applied 2026-09-12, 12 gazette
-files loaded, RLS verified; **0400 must be pasted by the project owner** (see `docs/IMPORT_CENTER.md` §1).
+files loaded, RLS verified; 0400 applied by the project owner; **0500 (`APPLY_0500.sql`) must be pasted by
+the project owner** before Search by Image works (see `docs/IMAGE_SEARCH.md` §1).
 
 ## Optional Python importer (operator machine, service-role key)
 

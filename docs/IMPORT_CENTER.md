@@ -121,6 +121,19 @@ replacements).
 unmatched / duplicates, retry hint). Statuses: `processing` (page was closed mid-way — just drop the
 file again), `completed`, `completed_with_warnings` (some rows/files rejected, see report), `failed`.
 
+### Visual search index (Search by Image)
+
+A third card below the two importers. It shows, for the current descriptor algorithm version,
+how many matched images exist, how many have a descriptor, how many are **missing** and how many
+are **stale** (older algorithm version), and the time of the last stored descriptor.
+*Index N images* downloads each listed image from the public bucket, computes its descriptor in
+the browser and stores the vectors through `admin_upsert_image_features` (200 per call); progress,
+cancel and a failures list (CSV) are shown. Images uploaded by the image importer are indexed
+automatically at the end of the upload — the import result shows *"Visual search index updated:
+N descriptors stored · M failed"* and the job summary records `visual_index_indexed /
+visual_index_failed`. Requires migration 0500 (`supabase/APPLY_0500.sql`); without it the card
+explains that and nothing else changes. Details: `docs/IMAGE_SEARCH.md`.
+
 ### Retry / recovery
 
 Everything is re-runnable: drop the same spreadsheet or images again. Rows and files that are
@@ -201,4 +214,6 @@ Public check: open `/trademark/<serial>` and `/search?q=<mark>` — the card/det
 `web/src/pages/admin/ImportCenterPage.tsx` (UI) · `web/src/services/import_service.ts` (RPC/Storage calls) ·
 `web/src/lib/import/{spreadsheet,images,serial}.ts` (browser parsing, validation, matching keys) ·
 `supabase/migrations/20260905000400_admin_import.sql` · `supabase/APPLY_0400.sql` ·
-`scripts/check_supabase.py` (§2b) · i18n keys `admin.import.*` in `web/src/i18n/locales/{en,fa,ps}.json`.
+`scripts/check_supabase.py` (§2b) · i18n keys `admin.import.*` in `web/src/i18n/locales/{en,fa,ps}.json` ·
+visual index: `web/src/pages/admin/ImageIndexPanel.tsx`, `web/src/services/image_search_service.ts`,
+`supabase/migrations/20261011000500_image_search.sql`, `supabase/APPLY_0500.sql`, i18n `admin.index.*`.

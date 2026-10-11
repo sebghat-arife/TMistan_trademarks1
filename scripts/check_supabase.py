@@ -164,6 +164,31 @@ def main() -> int:
         bad(f"missing admin import functions: {', '.join(import_missing)}",
             "Run supabase/APPLY_0400.sql in the Supabase SQL editor — the Import Center shows 'not available' until then.")
 
+    print("\n2c. Search by Image (migration 0500)")
+    status, body, _ = c.call("POST", "/rest/v1/rpc/image_search_status", {"p_version": 1})
+    code = body.get("code") if isinstance(body, dict) else None
+    if status == 404 and code == "PGRST202":
+        print("  ! migration 0500 not applied — /search?mode=image reports itself unavailable (keyword search unaffected)\n"
+              "      → Run supabase/APPLY_0500.sql in the Supabase SQL editor, then Admin → Import Center → Visual search index.")
+    elif status == 200 and isinstance(body, dict):
+        n = body.get("indexed_images") or 0
+        ok(f"rpc image_search_status(): {n} indexed images, {body.get('indexed_trademarks') or 0} trademarks (descriptor v{body.get('descriptor_version')})"
+           + ("" if n else " — index empty: Admin → Import Center → Visual search index → Index"))
+        for fn, rpc_args in {"admin_image_index_status": {"p_version": 1}, "admin_images_missing_features": {"p_version": 1, "p_limit": 1, "p_offset": 0}, "admin_upsert_image_features": {"p_version": 1, "p_items": []}}.items():
+            st, b, _ = c.call("POST", f"/rest/v1/rpc/{fn}", rpc_args)
+            cd = b.get("code") if isinstance(b, dict) else None
+            if st in (401, 403) or cd == "42501":
+                ok(f"rpc {fn}() present, anonymous call refused ({st})")
+            else:
+                bad(f"rpc {fn}() for anon → {st} {str(b)[:70]}", "Admin functions must refuse non-admins (APPLY_0500.sql grants execute to 'authenticated' only).")
+        st, b, _ = c.call("GET", "/rest/v1/trademark_image_features?select=image_id&limit=1")
+        if st in (401, 403, 404) or (st == 200 and b == []):
+            ok("trademark_image_features is not readable by anon (RLS, no policies)")
+        else:
+            bad(f"anon can read trademark_image_features ({st})", "The table must have RLS enabled and no public policies — re-run APPLY_0500.sql.")
+    else:
+        bad(f"rpc image_search_status() → {status} {str(body)[:90]}", "Re-run supabase/APPLY_0500.sql and check the Messages tab.")
+
     print("\n3. Real data through the public key")
     _, _, hdrs = c.call("GET", "/rest/v1/trademarks?select=id", headers={"Prefer": "count=exact", "Range": "0-0"})
     total = hdrs.get("Content-Range", "*/0").split("/")[-1]

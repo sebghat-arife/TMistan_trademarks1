@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Download, Maximize2 } from 'lucide-react'
+import { ChevronRight, Download, Loader2, Maximize2 } from 'lucide-react'
 import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
-import { cn, formatRegistryDate, trademarkPath } from '@/lib/utils'
+import { cn, formatRegistryDate, formatToday, trademarkPath } from '@/lib/utils'
 import { storagePublicUrl } from '@/lib/supabase'
+import { CANONICAL_URL } from '@/lib/site'
+import { REPORT_DISCLAIMER, reportFileName } from '@/lib/pdf/disclaimer'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
-import { Logo } from '@/components/Logo'
 import { TrademarkCard, classText } from '@/components/ResultCards'
 import type { TrademarkImageRow, TrademarkRow } from '@/lib/database.types'
 import { ErrorState, LoadingState } from '@/components/AsyncState'
@@ -29,6 +29,7 @@ export function TrademarkPage() {
   const [viewerOpen, setViewerOpen] = useState(false)
   const [imageIndex, setImageIndex] = useState(0)
   const [tab, setTab] = useState<Tab>('images')
+  const report = useRecordDownload()
 
   const { data: similar } = useQuery({ ...similarTrademarksQuery(tm?.id ?? ''), enabled: !!tm })
 
@@ -73,9 +74,25 @@ export function TrademarkPage() {
           <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
           <span className="bidi-auto text-ink-900">{name} ({tm.serial_number})</span>
         </nav>
-        <button type="button" onClick={() => printRecord(tm)} title={t('trademark.record.printHint')} className="btn-outline-green h-9 px-4 text-[13px]">
-          <Download className="h-4 w-4" /> {t('trademark.download')}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            type="button"
+            onClick={() => void report.download(tm, current, sourceLine)}
+            disabled={report.status === 'working'}
+            title={t('trademark.record.hint')}
+            aria-busy={report.status === 'working'}
+            className="btn-outline-green h-9 px-4 text-[13px] disabled:cursor-progress disabled:opacity-70"
+          >
+            {report.status === 'working' ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
+            {report.status === 'working' ? t('trademark.record.preparing') : t('trademark.download')}
+          </button>
+          {report.status === 'error' && (
+            <p role="alert" className="text-[12px] text-red-700">
+              {t('trademark.record.failed')}{' '}
+              <button type="button" onClick={() => void report.download(tm, current, sourceLine)} className="font-medium underline underline-offset-2">{t('common.retry')}</button>
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── Main two-column block ────────────────────────────────────── */}
@@ -215,9 +232,6 @@ export function TrademarkPage() {
       )}
 
       <ImageViewer images={images} index={imageIndex} open={viewerOpen} onOpenChange={setViewerOpen} onIndexChange={setImageIndex} title={name} />
-
-      {/* Print-only document used by "Download Record" (see index.css @media print). */}
-      {createPortal(<RecordSheet tm={tm} image={current} sourceLine={sourceLine} />, document.body)}
     </div>
   )
 }
@@ -232,92 +246,116 @@ function Fact({ label, children, mono }: { label: string; children: React.ReactN
 }
 
 /* ── Download Record ─────────────────────────────────────────────────────
- * The record is rendered as a clean A4 document that exists only in print
- * media; "Download Record" opens the browser print dialog, where the user
- * can save it as a PDF or print it. No library, no invented data: the
- * document shows exactly the fields on the page (N/A when not recorded).
+ * Generates a real PDF file ("TMistan Trademark Publication Report") in the
+ * browser and downloads it. The PDF engine is loaded on demand (code-split),
+ * so it costs nothing until the button is used. The document contains exactly
+ * the recorded fields shown on this page (N/A when not recorded), the
+ * approved disclaimer and the canonical record link — nothing invented.
  * ---------------------------------------------------------------------- */
 
-function printRecord(tm: TrademarkRow) {
-  const prev = document.title
-  document.title = `TMistan-${tm.serial_number}`
-  const restore = () => {
-    document.title = prev
-    window.removeEventListener('afterprint', restore)
+type DownloadStatus = 'idle' | 'working' | 'error'
+
+function useRecordDownload() {
+  const { t, i18n } = useTranslation()
+  const [status, setStatus] = useState<DownloadStatus>('idle')
+  const alive = useRef(true)
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+    }
+  }, [])
+
+  const download = async (tm: TrademarkRow, image: TrademarkImageRow | undefined, sourceLine: string) => {
+    if (status === 'working') return
+    setStatus('working')
+    try {
+      const lng = i18n.resolvedLanguage ?? 'en'
+      const dir = i18n.dir(lng) === 'rtl' ? 'rtl' : 'ltr'
+      const na = t('fields.notProvided')
+      const mod = await import('@/lib/pdf/trademarkReport') // code-split PDF engine
+      const src = storagePublicUrl(image?.storage_bucket, image?.storage_path)
+      const [logo, pictureData] = await Promise.all([fetchLogo(), src ? mod.imageToPngDataUrl(src) : Promise.resolve(null)])
+      const picture = { data: pictureData, failed: !!src && !pictureData }
+
+      const rows: { label: string; value: string }[] = [
+        { label: t('fields.mark'), value: tm.mark_name || na },
+        { label: t('fields.serialNumber'), value: tm.serial_number },
+        { label: t('fields.applicant'), value: tm.applicant_name || na },
+        { label: t('fields.address'), value: tm.applicant_address || na },
+        { label: t('fields.class'), value: classText(tm.class_numbers, tm.trademark_class, na) },
+        { label: t('fields.goods'), value: tm.goods_and_services || na },
+        { label: t('fields.applicationType'), value: tm.application_type || na },
+        { label: t('fields.publicationDate'), value: tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na },
+      ]
+      if (tm.mark_print && tm.mark_print !== tm.mark_name) rows.splice(1, 0, { label: t('fields.markPrint'), value: tm.mark_print })
+      if (tm.objection_deadline) rows.push({ label: t('fields.objectionDeadline'), value: formatRegistryDate(tm.objection_deadline, lng) })
+      if (tm.record_number) rows.push({ label: t('fields.recordNumber'), value: tm.record_number })
+      if (tm.old_owner) rows.push({ label: t('fields.oldOwner'), value: tm.old_owner })
+      if (tm.new_owner) rows.push({ label: t('fields.newOwner'), value: tm.new_owner })
+      if (tm.old_address) rows.push({ label: t('fields.oldAddress'), value: tm.old_address })
+      if (tm.new_address) rows.push({ label: t('fields.newAddress'), value: tm.new_address })
+      rows.push({ label: t('fields.gazette'), value: tm.official_gazette_number })
+      rows.push({ label: t('trademark.sourceInformation'), value: sourceLine })
+
+      const generated = formatToday(lng)
+
+      await mod.downloadTrademarkReport({
+        dir,
+        labels: {
+          platformName: t('app.shortName'),
+          tagline: t('home.hero.lead'),
+          documentTitle: t('trademark.record.title'),
+          generated: t('trademark.record.generated', { date: generated }),
+          serial: t('fields.serialNumber'),
+          source: t('trademark.sourceInformation'),
+          details: t('trademark.record.details'),
+          image: t('trademark.record.image'),
+          imageUnavailable: t('trademark.record.imageUnavailable'),
+          disclaimerTitle: t('trademark.record.disclaimer'),
+          recordLink: t('trademark.record.link'),
+          page: (n, total) => t('trademark.record.page', { page: n, total }),
+        },
+        markName: tm.mark_name || na,
+        serial: tm.serial_number,
+        sourceLine,
+        rows,
+        disclaimer: REPORT_DISCLAIMER,
+        link: `${CANONICAL_URL}${trademarkPath(tm.serial_number, tm.official_gazette_number)}`,
+        logo,
+        image: picture.data,
+        imageFailed: picture.failed,
+        fileName: reportFileName(tm.serial_number),
+      })
+      if (alive.current) setStatus('idle')
+    } catch (err) {
+      console.error('[TMistan] PDF report failed', err)
+      if (alive.current) setStatus('error')
+    }
   }
-  window.addEventListener('afterprint', restore)
-  window.print()
+
+  return { status, download }
 }
 
-function RecordSheet({ tm, image, sourceLine }: { tm: TrademarkRow; image: TrademarkImageRow | undefined; sourceLine: string }) {
-  const { t, i18n } = useTranslation()
-  const lng = i18n.resolvedLanguage
-  const na = t('fields.notProvided')
-  const src = storagePublicUrl(image?.storage_bucket, image?.storage_path)
-  const generated = new Intl.DateTimeFormat(lng === 'fa' ? 'fa-AF' : lng === 'ps' ? 'ps-AF' : 'en-GB', { dateStyle: 'long' }).format(new Date())
-  const link = `${window.location.origin}${trademarkPath(tm.serial_number, tm.official_gazette_number)}`
-
-  const rows: [string, React.ReactNode][] = [
-    [t('fields.mark'), tm.mark_name || na],
-    [t('fields.serialNumber'), tm.serial_number],
-    [t('fields.applicant'), tm.applicant_name || na],
-    [t('fields.address'), tm.applicant_address || na],
-    [t('fields.class'), classText(tm.class_numbers, tm.trademark_class, na)],
-    [t('fields.goods'), tm.goods_and_services || na],
-    [t('fields.applicationType'), tm.application_type || na],
-    [t('fields.publicationDate'), tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na],
-  ]
-  if (tm.objection_deadline) rows.push([t('fields.objectionDeadline'), formatRegistryDate(tm.objection_deadline, lng)])
-  if (tm.record_number) rows.push([t('fields.recordNumber'), tm.record_number])
-  if (tm.old_owner) rows.push([t('fields.oldOwner'), tm.old_owner])
-  if (tm.new_owner) rows.push([t('fields.newOwner'), tm.new_owner])
-  if (tm.old_address) rows.push([t('fields.oldAddress'), tm.old_address])
-  if (tm.new_address) rows.push([t('fields.newAddress'), tm.new_address])
-  rows.push([t('trademark.sourceInformation'), sourceLine])
-
-  return (
-    <div className="record-sheet" dir={i18n.dir()} aria-hidden>
-      <header className="record-sheet__header">
-        <div>
-          <Logo className="record-sheet__logo" />
-          <div className="record-sheet__tagline">{t('home.hero.title')}</div>
-        </div>
-        <div className="record-sheet__meta">
-          <div className="record-sheet__doc">{t('trademark.record.title')}</div>
-          <div>{t('trademark.record.generated', { date: generated })}</div>
-        </div>
-      </header>
-
-      <section className="record-sheet__top">
-        <div>
-          <h1 className="record-sheet__title bidi-auto">{tm.mark_name || na}</h1>
-          <div className="record-sheet__serial" dir="ltr">{t('fields.serialNumber')}: {tm.serial_number}</div>
-          <div className="record-sheet__source">{sourceLine}</div>
-        </div>
-        {src && (
-          <figure className="record-sheet__figure">
-            <img src={src} alt={tm.mark_name ?? tm.serial_number} />
-          </figure>
-        )}
-      </section>
-
-      <table className="record-sheet__table">
-        <tbody>
-          {rows.map(([label, value]) => (
-            <tr key={label}>
-              <th scope="row">{label}</th>
-              <td className="bidi-auto">{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <footer className="record-sheet__footer">
-        <p>{t('footer.blurb')}</p>
-        <p>{t('trademark.record.link')}: <span dir="ltr">{link}</span></p>
-      </footer>
-    </div>
-  )
+let logoCache: Promise<string | null> | null = null
+function fetchLogo(): Promise<string | null> {
+  logoCache ??= (async () => {
+    try {
+      const url = `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}brand/logo.png`
+      const res = await fetch(url)
+      if (!res.ok) return null
+      const blob = await res.blob()
+      return await new Promise<string | null>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+        reader.onerror = () => resolve(null)
+        reader.readAsDataURL(blob)
+      })
+    } catch {
+      return null
+    }
+  })()
+  return logoCache
 }
 
 export { trademarkPath }

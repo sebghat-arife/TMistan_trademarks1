@@ -243,7 +243,46 @@
     "next": "Next",
     "fuzzy": "Fuzzy matching",
     "fuzzyHint": "Also match similar spellings (COCA-COLA ≈ COCACOLA).",
-    "showing": "Showing {{from}}–{{to}} of {{total}}"
+    "showing": "Showing {{from}}–{{to}} of {{total}}",
+    "image": {
+      "modeLabel": "Search mode",
+      "modeText": "Search by Name or Details",
+      "modeImage": "Search by Image",
+      "title": "Search by Image",
+      "lead": "Upload an image of a logo or trademark to find visually similar images among the published records.",
+      "dropTitle": "Drag and drop an image here",
+      "dropOr": "or",
+      "browse": "browse files",
+      "formats": "PNG, JPEG, WebP, GIF or BMP · up to {{mb}} MB",
+      "privacy": "The image is analysed in your browser. It is not uploaded, stored or shared.",
+      "previewAlt": "Selected image",
+      "replace": "Replace image",
+      "remove": "Remove image",
+      "submit": "Search by Image",
+      "analysing": "Analysing image…",
+      "searching": "Searching…",
+      "errors": {
+        "invalidType": "This file type is not supported. Please choose a PNG, JPEG, WebP, GIF or BMP image.",
+        "tooLarge": "The image is larger than {{mb}} MB. Please choose a smaller file.",
+        "decode": "The image could not be read. Please try a different file.",
+        "failed": "Image search could not be completed. Please try again."
+      },
+      "statusFailed": "Image search status could not be loaded.",
+      "unavailableTitle": "Image search is temporarily unavailable",
+      "unavailableText": "No trademark images have been indexed for visual search yet. Please try again later or use Search by Name or Details.",
+      "indexedNote": "Compared against {{images}} indexed images from {{trademarks}} trademark records.",
+      "resultsFound_one": "{{count}} visually similar record found",
+      "resultsFound_other": "{{count}} visually similar records found",
+      "noResults": "No sufficiently similar trademark images were found among the available indexed records.",
+      "noResultsHint": "Try a clearer image of the mark on a plain background, or use Search by Name or Details.",
+      "indicatorNote": "Similarity scores are a computational indicator derived from visual features of the images. They are not a legal determination of similarity, likelihood of confusion or conflict.",
+      "similarity": "{{percent}}% similar",
+      "level": {
+        "high": "High visual similarity",
+        "moderate": "Moderate visual similarity",
+        "low": "Low visual similarity"
+      }
+    }
   },
   "filters": {
     "title": "Filters",
@@ -288,7 +327,9 @@
     "newAddress": "New address",
     "markPrint": "Mark as printed",
     "notProvided": "N/A",
-    "unnamed": "(no name recorded)"
+    "unnamed": "(no name recorded)",
+    "row": "Row",
+    "sheet": "Sheet"
   },
   "trademark": {
     "home": "Home",
@@ -321,10 +362,17 @@
     "source": "Source: OG {{gazette}} — Page {{page}}",
     "sourceNoPage": "Source: OG {{gazette}}",
     "record": {
-      "title": "Trademark Record",
+      "title": "Trademark Publication Report",
       "generated": "Generated on {{date}}",
       "link": "Record link",
-      "printHint": "Opens the print dialog — choose “Save as PDF” to download."
+      "hint": "Downloads this record as a PDF file.",
+      "preparing": "Preparing PDF…",
+      "failed": "The PDF could not be generated.",
+      "details": "Record details",
+      "image": "Image as published",
+      "imageUnavailable": "Image could not be loaded",
+      "disclaimer": "Disclaimer",
+      "page": "Page {{page}} of {{total}}"
     }
   },
   "about": {
@@ -573,7 +621,31 @@
       "uploadMatched_one": "Upload 1 matched image",
       "uploadMatched_other": "Upload {{count}} matched images",
       "importRows_one": "Import 1 trademark",
-      "importRows_other": "Import {{count}} trademarks"
+      "importRows_other": "Import {{count}} trademarks",
+      "indexingImages": "Indexing {{done}} of {{total}} uploaded images for Search by Image…",
+      "indexDoneTitle": "Visual search index updated",
+      "indexDoneText": "{{indexed}} image descriptors stored for Search by Image · {{failed}} failed."
+    },
+    "index": {
+      "title": "Visual search index",
+      "subtitle": "“Search by Image” compares visitors’ pictures with a descriptor computed for every matched trademark image (algorithm version {{version}}). Images uploaded through the Import Center are indexed automatically; use this panel to index older images or to rebuild after an algorithm change.",
+      "refresh": "Refresh",
+      "matchedImages": "Matched images",
+      "indexed": "Indexed",
+      "missing": "Missing",
+      "stale": "Stale version",
+      "lastComputed": "Last descriptor stored: {{date}}",
+      "neverComputed": "No descriptors stored yet.",
+      "build": "Index {{count}} images",
+      "upToDate": "Index is up to date",
+      "cancel": "Cancel",
+      "hint": "Images are downloaded from Storage and analysed in this browser; only the descriptors are sent to the database.",
+      "listing": "Listing images that need a descriptor…",
+      "progress": "Indexed {{done}} of {{total}} images",
+      "doneText": "{{indexed}} indexed · {{failed}} failed (of {{attempted}}).",
+      "downloadFailures": "Download failures (CSV)",
+      "notInstalledTitle": "Migration 0500 (image search) has not been applied",
+      "notInstalledText": "Run supabase/migrations/20261011000500_image_search.sql in the Supabase SQL editor to enable Search by Image. Nothing else is affected."
     }
   },
   "common": {

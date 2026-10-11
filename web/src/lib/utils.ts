@@ -13,6 +13,23 @@ function intlLocale(locale?: string): string {
   return INTL_LOCALE[locale ?? 'en'] ?? locale ?? 'en-GB'
 }
 
+/** Chromium ships no Pashto ICU data; Afghan Pashto uses the same digits and grouping as Dari,
+ *  so numbers fall back to `fa-AF` there instead of silently becoming English. */
+let numberLocaleCache: Record<string, string> = {}
+function numberLocale(locale?: string): string {
+  const tag = intlLocale(locale)
+  if (!numberLocaleCache[tag]) {
+    let supported = true
+    try {
+      supported = Intl.NumberFormat.supportedLocalesOf([tag]).length > 0
+    } catch {
+      supported = false
+    }
+    numberLocaleCache = { ...numberLocaleCache, [tag]: supported ? tag : tag.startsWith('ps') ? 'fa-AF' : 'en-GB' }
+  }
+  return numberLocaleCache[tag]
+}
+
 /**
  * Registry dates are recorded exactly as printed in the Official Gazette — in
  * the Afghan Solar Hijri calendar (e.g. "1389-12-29"). A year below 1500 is
@@ -75,6 +92,9 @@ export function formatDate(value: string | null | undefined, locale = 'en'): str
   if (!value) return '—'
   const parsed = parseRegistryDate(value)
   if (!parsed) return value
+  // Chromium's ICU has no Pashto locale data (Intl silently falls back to English), so Pashto
+  // dates are formatted here from the Solar Hijri calendar fields — identical in every browser.
+  if ((locale ?? 'en').startsWith('ps')) return formatPashtoDate(parsed)
   try {
     const parts = new Intl.DateTimeFormat(intlLocale(locale), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(parsed.gregorian)
     // Drop the era designator ("AP") some locales emit for the Persian calendar.
@@ -94,6 +114,34 @@ export function formatDate(value: string | null | undefined, locale = 'en'): str
     return text
   } catch {
     return value
+  }
+}
+
+/** Afghan Solar Hijri month names in Pashto (وری … کب). */
+const PASHTO_MONTHS = ['وری', 'غویی', 'غبرگولی', 'چنگاښ', 'زمری', 'وږی', 'تله', 'لړم', 'لیندۍ', 'مرغومی', 'سلواغه', 'کب']
+
+/** ASCII digits → extended Arabic-Indic digits (۰–۹) used by Dari and Pashto. */
+export function toPersoArabicDigits(text: string): string {
+  return text.replace(/[0-9]/g, (d) => String.fromCharCode(0x06f0 + Number(d)))
+}
+
+/** "۲۹ مرغومی ۱۳۸۹" — day, Pashto month name, Solar Hijri year. */
+function formatPashtoDate(parsed: NonNullable<ReturnType<typeof parseRegistryDate>>): string {
+  const g = parsed.gregorian
+  const sh = parsed.solar ?? gregorianToSolarHijri(g.getUTCFullYear(), g.getUTCMonth() + 1, g.getUTCDate())
+  return toPersoArabicDigits(`${sh.d} ${PASHTO_MONTHS[sh.m - 1] ?? sh.m} ${sh.y}`)
+}
+
+/** Today's date in long form for generated documents ("11 October 2026", "۱۹ میزان ۱۴۰۵"). */
+export function formatToday(locale = 'en', now: Date = new Date()): string {
+  if ((locale ?? 'en').startsWith('ps')) {
+    const utc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+    return formatPashtoDate({ gregorian: utc, solar: null })
+  }
+  try {
+    return new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: 'long' }).format(now)
+  } catch {
+    return now.toISOString().slice(0, 10)
   }
 }
 
@@ -139,7 +187,7 @@ export function isoDate(value: string | null | undefined): string {
 export function formatNumber(n: number | null | undefined, locale = 'en'): string {
   if (n === null || n === undefined) return '—'
   try {
-    return new Intl.NumberFormat(intlLocale(locale)).format(n)
+    return new Intl.NumberFormat(numberLocale(locale)).format(n)
   } catch {
     return String(n)
   }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, LayoutGrid, Search, Table2 } from 'lucide-react'
+import { ChevronDown, ImageIcon, LayoutGrid, Search, Table2, TextSearch } from 'lucide-react'
 import { searchTrademarksQuery } from '@/services'
 import { hasAnyCriteria, parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatNumber } from '@/lib/utils'
@@ -10,6 +10,7 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { FilterBar } from '@/components/FilterBar'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
 import { EmptyState, ErrorState } from '@/components/AsyncState'
+import { ImageSearchPanel } from '@/components/ImageSearchPanel'
 
 /**
  * /search — the URL is the single source of truth (see lib/searchParams).
@@ -37,7 +38,16 @@ export function SearchPage() {
     [state, setSp],
   )
 
-  const enabled = hasAnyCriteria(state)
+  // Search mode: keyword/details (default) or image. Kept in the URL (?mode=image) so it is linkable.
+  const imageMode = sp.get('mode') === 'image'
+  const setMode = (mode: 'text' | 'image') => {
+    const next = new URLSearchParams(sp)
+    if (mode === 'image') next.set('mode', 'image')
+    else next.delete('mode')
+    setSp(next, { replace: true })
+  }
+
+  const enabled = !imageMode && hasAnyCriteria(state)
   const { data: page, isFetching, isError, error, refetch } = useQuery({ ...searchTrademarksQuery(toRpcArgs(state)), enabled })
   const data = page?.items
 
@@ -45,9 +55,11 @@ export function SearchPage() {
   const pages = Math.max(1, Math.ceil(total / state.perPage))
 
   useDocumentTitle(
-    enabled
-      ? `${state.q.trim() ? `${state.q.trim()} — ` : ''}${t('search.resultsTitle')} · ${t('app.shortName')}`
-      : `${t('search.title')} · ${t('app.shortName')}`,
+    imageMode
+      ? `${t('search.image.title')} · ${t('app.shortName')}`
+      : enabled
+        ? `${state.q.trim() ? `${state.q.trim()} — ` : ''}${t('search.resultsTitle')} · ${t('app.shortName')}`
+        : `${t('search.title')} · ${t('app.shortName')}`,
   )
 
   const submit = (e: React.FormEvent) => {
@@ -55,12 +67,36 @@ export function SearchPage() {
     update({ q: draftQ, page: 1, sort: draftQ.trim() ? 'relevance' : state.sort === 'relevance' ? 'newest' : state.sort })
   }
 
+  const modeToggle = (
+    <div className={cn('inline-flex rounded-lg border border-ink-200 bg-white p-1', !enabled && !imageMode && 'mx-auto', imageMode && 'mx-auto')} role="tablist" aria-label={t('search.image.modeLabel')}>
+      <button type="button" role="tab" aria-selected={!imageMode} onClick={() => setMode('text')} className={cn('inline-flex h-9 items-center gap-2 rounded-md px-3 text-[13px] font-medium transition-colors', !imageMode ? 'bg-brand-600 text-white shadow-sm' : 'text-ink-700 hover:bg-ink-50')} data-testid="mode-text">
+        <TextSearch className="h-4 w-4" aria-hidden /> {t('search.image.modeText')}
+      </button>
+      <button type="button" role="tab" aria-selected={imageMode} onClick={() => setMode('image')} className={cn('inline-flex h-9 items-center gap-2 rounded-md px-3 text-[13px] font-medium transition-colors', imageMode ? 'bg-brand-600 text-white shadow-sm' : 'text-ink-700 hover:bg-ink-50')} data-testid="mode-image">
+        <ImageIcon className="h-4 w-4" aria-hidden /> {t('search.image.modeImage')}
+      </button>
+    </div>
+  )
+
+  if (imageMode) {
+    return (
+      <div className="container-x py-10 md:py-14">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-[32px] font-bold tracking-tight text-ink-900 md:text-[40px]">{t('search.title')}</h1>
+          <div className="mt-6 flex justify-center">{modeToggle}</div>
+        </div>
+        <ImageSearchPanel className="mt-8" />
+      </div>
+    )
+  }
+
   return (
     <div className={cn('container-x', enabled ? 'py-6' : 'py-16 md:py-24')}>
       {/* ── Heading + keyword search ───────────────────────────────────── */}
       <div className={cn(!enabled && 'mx-auto max-w-2xl text-center')}>
         <h1 className={cn('font-bold tracking-tight text-ink-900', enabled ? 'text-[26px]' : 'text-[32px] md:text-[40px]')}>{t('search.title')}</h1>
-        <form onSubmit={submit} role="search" className={cn('flex flex-col gap-3 sm:flex-row sm:items-center', enabled ? 'mt-4' : 'mt-8')}>
+        <div className={cn('flex', enabled ? 'mt-4' : 'mt-6 justify-center')}>{modeToggle}</div>
+        <form onSubmit={submit} role="search" className={cn('flex flex-col gap-3 sm:flex-row sm:items-center', enabled ? 'mt-4' : 'mt-6')}>
           <div className="flex h-12 flex-1 items-center gap-2 rounded-lg border border-ink-200 bg-white px-4 shadow-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100">
             <Search className="h-[18px] w-[18px] shrink-0 text-ink-400" aria-hidden />
             <input

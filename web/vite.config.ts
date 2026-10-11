@@ -2,6 +2,7 @@ import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv } from 'vite'
+import { reactPdfTextkitFix } from './vite-plugins/reactPdfTextkitFix.ts'
 
 /**
  * Environment variables.
@@ -18,6 +19,9 @@ import { defineConfig, loadEnv } from 'vite'
  */
 /** Default public website of Masnad Law Firm (overridable with SITE_MASNAD_URL). */
 const DEFAULT_MASNAD_URL = 'https://www.masnadip.af/'
+/** Default canonical public origin of TMistan (overridable with SITE_CANONICAL_URL); used for links in
+ * generated documents such as the PDF Trademark Publication Report. */
+const DEFAULT_CANONICAL_URL = 'https://www.tmistan.com'
 
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
@@ -30,7 +34,10 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [reactPdfTextkitFix(), react(), tailwindcss()],
+    // The PDF engine is only loaded on demand; keep it out of dev pre-bundling so the
+    // textkit fix above can also reach it in `vite dev` (the production build is the verified path).
+    optimizeDeps: { exclude: ['@react-pdf/renderer'] },
     resolve: {
       alias: { '@': path.resolve(import.meta.dirname, './src') },
     },
@@ -51,6 +58,8 @@ export default defineConfig(({ mode }) => {
         // set to an empty string to render the firm name without a link.
         masnad: env.SITE_MASNAD_URL ?? DEFAULT_MASNAD_URL,
       }),
+      // Canonical public origin (no trailing slash). Not a secret.
+      __SITE_CANONICAL_URL__: JSON.stringify((env.SITE_CANONICAL_URL || DEFAULT_CANONICAL_URL).replace(/\/+$/, '')),
     },
     server: {
       host: '0.0.0.0',
