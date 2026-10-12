@@ -1,5 +1,6 @@
 import { supabase, storagePublicUrl } from '@/lib/supabase'
-import type { TrademarkImageRow } from '@/lib/database.types'
+import { TRADEMARK_IMAGE_PUBLIC_COLUMNS } from '@/lib/database.types'
+import type { TrademarkImagePublicRow, TrademarkImageRow } from '@/lib/database.types'
 import { unwrap } from './_shared'
 
 /* ---------------------------------------------------------------------------
@@ -10,16 +11,17 @@ import { unwrap } from './_shared'
  * enforces the same rule server-side); this filter just keeps intent explicit.
  * ------------------------------------------------------------------------- */
 
-export async function listTrademarkImages(trademarkId: string): Promise<TrademarkImageRow[]> {
+export async function listTrademarkImages(trademarkId: string): Promise<TrademarkImagePublicRow[]> {
+  // Explicit public columns: anon/authenticated hold column-level grants only (migration 0600).
   return unwrap(
     await supabase
       .from('trademark_images')
-      .select('*')
+      .select(TRADEMARK_IMAGE_PUBLIC_COLUMNS.join(','))
       .eq('trademark_id', trademarkId)
       .eq('status', 'matched')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true }),
-  ) as TrademarkImageRow[]
+  ) as unknown as TrademarkImagePublicRow[]
 }
 
 /** Public URL of the full-size image (Supabase Storage public bucket). */

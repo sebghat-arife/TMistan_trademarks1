@@ -24,6 +24,8 @@ export type TrademarkRow = {
   publication_date: string | null
   objection_deadline: string | null
   official_gazette_number: string
+  registration_number: string | null
+  application_number: string | null
   new_address: string | null
   old_address: string | null
   new_owner: string | null
@@ -41,8 +43,25 @@ export type TrademarkRow = {
   reviewed_at: string | null
   review_comment: string | null
   import_job_id: string | null
+  created_by_job_id: string | null
   class_numbers: number[] | null
 }
+
+/**
+ * Columns anonymous/authenticated clients may read directly from
+ * `public.trademarks` (column-level grants, migration 0600). Everything else —
+ * attorney_or_representative, review fields, source-file provenance, import
+ * ids — is admin-only and reachable through the `admin_*` functions.
+ * Keep this list identical to the GRANT in 20261012000600_data_management.sql.
+ */
+export const TRADEMARK_PUBLIC_COLUMNS = [
+  'id', 'record_number', 'serial_number', 'mark_name', 'mark_print', 'applicant_name', 'applicant_address',
+  'trademark_class', 'class_numbers', 'goods_and_services', 'application_type', 'publication_date',
+  'objection_deadline', 'official_gazette_number', 'registration_number', 'application_number',
+  'new_address', 'old_address', 'new_owner', 'old_owner', 'source_page', 'review_status', 'is_published',
+  'created_at', 'updated_at',
+] as const
+export type TrademarkPublicRow = Pick<TrademarkRow, (typeof TRADEMARK_PUBLIC_COLUMNS)[number]>
 
 export type TrademarkImageRow = {
   id: string
@@ -64,10 +83,19 @@ export type TrademarkImageRow = {
   content_hash: string | null
   sort_order: number
   import_job_id: string | null
+  created_by_job_id: string | null
   review_note: string | null
   created_at: string
   updated_at: string
 }
+
+/** Public columns of `trademark_images` (see TRADEMARK_PUBLIC_COLUMNS). */
+export const TRADEMARK_IMAGE_PUBLIC_COLUMNS = [
+  'id', 'trademark_id', 'image_type', 'status', 'storage_bucket', 'storage_path', 'thumbnail_path',
+  'gazette_number', 'serial_number', 'width', 'height', 'byte_size', 'content_type', 'sort_order',
+  'created_at', 'updated_at',
+] as const
+export type TrademarkImagePublicRow = Pick<TrademarkImageRow, (typeof TRADEMARK_IMAGE_PUBLIC_COLUMNS)[number]>
 
 export type GazetteRow = {
   id: string
@@ -99,7 +127,6 @@ export type TrademarkSearchResult = {
   class_numbers: number[] | null
   goods_and_services: string | null
   application_type: string | null
-  attorney_or_representative: string | null
   publication_date: string | null
   objection_deadline: string | null
   official_gazette_number: string
@@ -121,6 +148,7 @@ export type SearchTrademarksArgs = {
   p_classes?: number[] | null
   p_goods?: string | null
   p_application_type?: string | null
+  /** Accepted for compatibility; ignored server-side since migration 0600 (attorney is never public). */
   p_attorney?: string | null
   p_date_from?: string | null
   p_date_to?: string | null

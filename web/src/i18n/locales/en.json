@@ -293,8 +293,8 @@
     "applicant": "Applicant",
     "class": "Class",
     "classHint": "Select one or more Nice classes (1–45)",
-    "gazette": "Gazette",
-    "anyGazette": "Any gazette",
+    "gazette": "Gazette Number",
+    "anyGazette": "Any Gazette Number",
     "dateRange": "Date Range",
     "from": "From",
     "to": "To",
@@ -318,7 +318,7 @@
     "applicationType": "Application Type",
     "publicationDate": "Publication Date",
     "objectionDeadline": "Objection Deadline",
-    "gazette": "Gazette",
+    "gazette": "Gazette Number",
     "gazetteNumber": "Gazette Number",
     "page": "Page",
     "oldOwner": "Previous owner",
@@ -329,7 +329,9 @@
     "notProvided": "N/A",
     "unnamed": "(no name recorded)",
     "row": "Row",
-    "sheet": "Sheet"
+    "sheet": "Sheet",
+    "registrationNumber": "Registration Number",
+    "applicationNumber": "Application Number"
   },
   "trademark": {
     "home": "Home",
@@ -373,7 +375,9 @@
       "imageUnavailable": "Image could not be loaded",
       "disclaimer": "Disclaimer",
       "page": "Page {{page}} of {{total}}"
-    }
+    },
+    "sourceValue": "OG {{gazette}} — Page {{page}}",
+    "sourceValueNoPage": "OG {{gazette}}"
   },
   "about": {
     "title": "About TMistan",
@@ -574,7 +578,7 @@
       "showingFirst": "Showing the first {{shown}} of {{total}}",
       "refresh": "Refresh",
       "type": "Type",
-      "typeData": "Data",
+      "typeData": "Excel/CSV",
       "typeImages": "Images",
       "records": "Records",
       "imagesCol": "Images",
@@ -605,6 +609,8 @@
         "attorney_or_representative": "Attorney / representative",
         "publication_date": "Publication date",
         "objection_deadline": "Objection deadline",
+        "registration_number": "Registration number",
+        "application_number": "Application number",
         "new_address": "New address",
         "old_address": "Previous address",
         "new_owner": "New owner",
@@ -624,7 +630,9 @@
       "importRows_other": "Import {{count}} trademarks",
       "indexingImages": "Indexing {{done}} of {{total}} uploaded images for Search by Image…",
       "indexDoneTitle": "Visual search index updated",
-      "indexDoneText": "{{indexed}} image descriptors stored for Search by Image · {{failed}} failed."
+      "indexDoneText": "{{indexed}} image descriptors stored for Search by Image · {{failed}} failed.",
+      "excelSubtitle": "Import trademark records from the official Excel/CSV structure (21 columns). Every file is parsed in the browser, the column mapping is shown before anything is written, and re-importing the same serial numbers updates existing records instead of creating duplicates.",
+      "imagesSubtitle": "Upload trademark images as a ZIP or as individual files. Each file is matched to a record by the serial number in its file name — never by row order — and stored in Supabase Storage."
     },
     "index": {
       "title": "Visual search index",
@@ -646,6 +654,284 @@
       "downloadFailures": "Download failures (CSV)",
       "notInstalledTitle": "Migration 0500 (image search) has not been applied",
       "notInstalledText": "Run supabase/migrations/20261011000500_image_search.sql in the Supabase SQL editor to enable Search by Image. Nothing else is affected."
+    },
+    "nav": {
+      "overview": "Data Overview",
+      "trademarks": "Trademark Records",
+      "images": "Trademark Images",
+      "importsExcel": "Excel/CSV Imports",
+      "importsImages": "ZIP Image Imports",
+      "history": "Import History",
+      "unmatched": "Unmatched Images",
+      "orphans": "Orphaned Files",
+      "audit": "Audit Log"
+    },
+    "data": {
+      "notReady": "Data management is not available",
+      "notApplied": {
+        "title": "Migration 0600 has not been applied",
+        "hint": "Run supabase/APPLY_0600.sql in the Supabase SQL editor (Dashboard → SQL). It is additive: no table is dropped and no record is deleted."
+      },
+      "pager": "{{from}}–{{to}} of {{total}}",
+      "noResults": "No records match the current filters.",
+      "selectAll": "Select all on this page",
+      "selected": "{{count}} selected",
+      "clearSelection": "Clear selection",
+      "clearFilter": "Clear",
+      "created": "Created",
+      "updated": "Updated",
+      "yes": "Yes",
+      "no": "No",
+      "partial": "Partial",
+      "status": {
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "imageStatus": {
+        "matched": "Matched",
+        "unmatched": "Unmatched",
+        "ambiguous": "Ambiguous",
+        "needs_review": "Needs review"
+      },
+      "cleanupStatus": {
+        "pending": "Pending",
+        "failed": "Failed",
+        "done": "Done",
+        "skipped": "Skipped"
+      },
+      "actionStatus": {
+        "success": "Success",
+        "partial": "Partial",
+        "failed": "Failed",
+        "preview": "Preview"
+      },
+      "actionNames": {
+        "trademarks": {
+          "delete": "Delete trademark records",
+          "archive": "Archive trademark records",
+          "restore": "Restore trademark records"
+        },
+        "images": {
+          "delete": "Delete images"
+        },
+        "import_job": {
+          "delete_records": "Delete records created by an import",
+          "delete": "Delete import record",
+          "cancel": "Cancel import",
+          "purge": "Retention cleanup of import history"
+        },
+        "storage": {
+          "delete_orphans": "Delete orphaned Storage files"
+        }
+      },
+      "targetTypes": {
+        "trademark": "Trademark",
+        "image": "Image",
+        "import_job": "Import",
+        "storage_object": "Storage file",
+        "mixed": "Mixed"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "anyImages": "With or without images",
+        "withImages": "With images",
+        "withoutImages": "Without images",
+        "anyLink": "Linked or unlinked",
+        "linked": "Linked to a record",
+        "unlinked": "Not linked to a record",
+        "allTypes": "All import types",
+        "allActions": "All actions",
+        "allTables": "All tables",
+        "allOps": "All operations"
+      },
+      "sort": {
+        "updated": "Last updated",
+        "created": "Newest first",
+        "serial": "Gazette / serial",
+        "mark": "Mark name"
+      },
+      "actions": {
+        "archive": "Archive (hide from public)",
+        "restore": "Restore (publish again)",
+        "deletePermanently": "Delete permanently",
+        "deleteImage": "Delete image"
+      },
+      "confirm": {
+        "dependents": "Also affected",
+        "irreversible": "This cannot be undone",
+        "irreversibleHint": "Deleted records and files are removed from the database and from Storage. There is no recycle bin — restore is only possible from your own backup or by re-importing the source file.",
+        "reversible": "Reversible",
+        "reversibleHint": "Nothing is deleted. The records are hidden from the public website and from search, and can be restored at any time.",
+        "typeToken": "Type {{token}} to confirm"
+      },
+      "provenance": {
+        "createdBy": "Created by import",
+        "lastImport": "Last import",
+        "jobDeleted": "import record deleted",
+        "unknown": "Unknown (imported before provenance tracking)"
+      },
+      "overview": {
+        "subtitle": "Live counts from the Supabase project. Use the sections on the left to inspect, archive or delete data — every destructive action asks for confirmation and is written to the audit log.",
+        "withProvenance": "With import provenance",
+        "lastImport": "Last import",
+        "staleRunning": "{{count}} import(s) have been in a running state for more than two hours. Open Import History to cancel them if the browser session was closed."
+      },
+      "trademarks": {
+        "subtitle": "Search any record by serial number, mark name, applicant, registration or application number. Open a record to see every stored field, including the administrator-only ones, its images, provenance and change history.",
+        "searchPlaceholder": "Serial, mark name, applicant, registration no.…",
+        "filteredByJob": "Showing records touched by import",
+        "detail": "Record",
+        "gone": "This record no longer exists.",
+        "openPublic": "Public page",
+        "internal": "Administrator-only fields (never shown publicly)",
+        "reviewComment": "Review comment",
+        "sourceFile": "Source file / sheet / row",
+        "linkedImages": "Linked images ({{count}})",
+        "noImages": "No images linked. Upload images via ZIP Image Imports; files are matched by the serial number in the file name.",
+        "features": "{{count}} image(s) indexed for Search by Image.",
+        "history": "Change history",
+        "noHistory": "No recorded changes.",
+        "archiveTitle": "Archive {{count}} record(s)?",
+        "archiveText": "Archived records disappear from the public website, search results and statistics immediately. The data, images and history stay in the database and can be restored at any time.",
+        "restoreTitle": "Restore {{count}} record(s)?",
+        "restoreText": "The records become visible again on the public website and in search results.",
+        "deleteTitle": "Permanently delete {{count}} record(s)?",
+        "deleteText": "The selected trademark records are removed from the database together with their linked images and image-search features. Records that are not selected are never touched.",
+        "deleteDependents": "{{images}} linked image row(s) will be deleted as well; their Storage files are queued for removal and reported under Orphaned Files if Storage rejects the deletion.",
+        "deleted": "{{count}} record(s) deleted, {{images}} image row(s) removed, {{queued}} Storage file(s) queued for cleanup.",
+        "archived": "{{count}} record(s) archived.",
+        "restored": "{{count}} record(s) restored."
+      },
+      "images": {
+        "subtitle": "Every image row in the database with its Storage file, linked record and provenance. Deleting an image never deletes the trademark record.",
+        "unmatchedSubtitle": "Image rows that are not linked to a trademark record, plus the files that image imports could not match to a serial number.",
+        "searchPlaceholder": "Serial, file name, storage path, mark name…",
+        "noTrademark": "No linked record",
+        "hash": "Content hash",
+        "indexed": "Indexed for Search by Image",
+        "openRecord": "Open record",
+        "openRow": "Open image row",
+        "deleteTitle": "Permanently delete {{count}} image(s)?",
+        "deleteText": "The image rows are removed from the database and their Storage files are queued for removal. The trademark records stay untouched and will show the neutral placeholder.",
+        "deleteDependents": "Search-by-image features of these images are removed. Trademark records are never deleted by this action.",
+        "deleted": "{{count}} image(s) deleted; {{queued}} Storage file(s) queued for cleanup.",
+        "unmatchedFilesTitle": "Files reported as unmatched by image imports",
+        "unmatchedFilesHint": "These files were never uploaded: no record with the serial number in the file name existed at import time (or several did). Fix the file name or import the record first, then upload again.",
+        "noUnmatchedFiles": "No unmatched files have been reported."
+      },
+      "history": {
+        "subtitle": "Every Excel/CSV and image import with its counts, failures and provenance. Deleting an import record never deletes trademark data; deleting the records of a batch removes only what that batch created.",
+        "running": "Running",
+        "retention": "Retention: remove finished import records older than",
+        "days": "days",
+        "purgeButton": "Clean up history",
+        "purgeTitle": "Remove import records older than {{days}} days?",
+        "purgeText": "Only the history entries and their item logs are removed. Trademark records and images are never affected by retention cleanup.",
+        "purgePreview": "{{jobs}} import record(s) and {{items}} item log line(s) would be removed.",
+        "purged": "{{count}} import record(s) removed.",
+        "createdNow": "Created",
+        "createdHint": "Rows that still exist and were created by this import (reliable provenance).",
+        "updatedByBatch": "Updated by batch",
+        "touched": "Last touched by batch",
+        "createdImages": "Images created",
+        "provenance": "Row provenance",
+        "provenanceHint": "This import ran before per-row provenance was recorded; only creation provenance is available.",
+        "jobId": "Import ID",
+        "import": "Import",
+        "details": "Details",
+        "started": "Started",
+        "completed": "Completed",
+        "createdBy": "Started by",
+        "viewRecords": "View its records",
+        "recordsOfBatch": "Records of this batch",
+        "kind": {
+          "created": "Created",
+          "updated": "Updated",
+          "images": "Images"
+        },
+        "modifiedLater": "Modified later",
+        "noRecords": "No records are attributed to this batch.",
+        "actionsOnBatch": "Administrative actions on this batch",
+        "cancelTitle": "Cancel this import?",
+        "cancelText": "The import is marked as failed and the database refuses any further rows for it. Rows already written stay in place; re-importing the same file later updates them without creating duplicates.",
+        "cancelButton": "Cancel import",
+        "cancelled": "Import cancelled.",
+        "deleteJobTitle": "Delete this import record?",
+        "deleteJobText": "Only the history entry and its item log are removed. The trademark records and images it created stay in the database (their provenance ID is kept).",
+        "deleteJobDependents": "{{created}} record(s)/image(s) created by this import are NOT deleted. {{items}} item log line(s) are removed.",
+        "deleteJobButton": "Delete import record",
+        "jobDeleted": "Import record deleted ({{items}} item log line(s) removed).",
+        "deleteRecordsTitle": "Delete the records created by this import?",
+        "deleteRecordsText": "Removes only the trademark records and images that \"{{file}}\" created. Records that already existed and were merely updated by this import are never deleted.",
+        "previewLoading": "Checking dependencies…",
+        "previewTrademarks": "Trademark records to delete",
+        "previewImages": "Image rows to delete",
+        "previewStorage": "Storage files to remove",
+        "previewModified": "Created by this import but modified later",
+        "previewUpdatedOnly": "Updated only (kept)",
+        "includeModified": "Also delete the {{count}} record(s) that were modified after this import (by a later import or manually).",
+        "noProvenance": "No rows are attributed to this import. It either created nothing, or it ran before provenance tracking — nothing will be deleted.",
+        "deleteRecordsButton": "Delete created records",
+        "recordsDeleted": "{{trademarks}} record(s) and {{images}} image(s) deleted; {{queued}} Storage file(s) queued; {{skipped}} modified record(s) kept.",
+        "note1": "Deleting a source file is not possible here: uploaded Excel/ZIP files are never stored — only their rows and images are.",
+        "note2": "Counts are taken from the import itself; \"Created\" is recounted from the database so it reflects what still exists.",
+        "note3": "Imports still running after the browser was closed can be cancelled; the database then rejects any late rows."
+      },
+      "storage": {
+        "subtitle": "Keeps the database and Supabase Storage consistent: files of deleted records are removed here, orphaned files can be found and deleted, and broken image references are listed.",
+        "queueTitle": "Storage cleanup queue",
+        "queueHint": "Files of deleted records and images. The database never reports a file as removed before Storage confirms it; failures stay here and can be retried.",
+        "runCleanup": "Remove {{count}} queued file(s)",
+        "cleanupResult": "Cleanup finished: {{done}} removed, {{failed}} failed.",
+        "queueEmpty": "Nothing in the queue.",
+        "reason": "Reason",
+        "attempts": "Attempts",
+        "lastError": "Last error",
+        "scanTitle": "Orphaned and missing files",
+        "scanHint": "Lists the bucket trademark-images and compares it with the image rows. Nothing is deleted by the scan.",
+        "scanButton": "Scan Storage",
+        "listing": "Listing Storage… {{count}} objects",
+        "comparing": "Comparing with the database…",
+        "objects": "Objects in Storage",
+        "orphans": "Orphaned files",
+        "missing": "Missing files",
+        "scannedAt": "Scanned",
+        "truncated": "The listing was cut off at the safety limit; results are partial. Run the cleanup queue and scan again.",
+        "orphansTitle": "Orphaned files ({{count}})",
+        "orphansHint": "Files in Storage that no image row references. They are not visible on the website. Files already queued for cleanup are marked and handled by the queue.",
+        "noOrphans": "No orphaned files.",
+        "queued": "queued",
+        "size": "Size",
+        "deleteSelected": "Delete selected ({{count}})",
+        "deleteTitle": "Delete {{count}} orphaned file(s) from Storage?",
+        "deleteText": "Each file is re-checked against the database right before deletion; a file that became referenced in the meantime is skipped. The operation is written to the audit log with the exact paths.",
+        "orphansDeleted": "{{deleted}} file(s) deleted, {{skipped}} skipped (now referenced), {{failed}} failed.",
+        "missingTitle": "Image rows whose file is missing ({{count}})",
+        "missingHint": "These database rows point to a Storage path that does not exist. Re-upload the image (same serial number) or delete the row from Trademark Images."
+      },
+      "audit": {
+        "subtitle": "Who did what, when, to which records. Administrative actions record ids, serial numbers, Storage paths, batch and result; row changes are the trigger-based before/after log.",
+        "tab": {
+          "actions": "Administrative actions",
+          "rows": "Row changes"
+        },
+        "immutable": "Both logs are append-only: no role can modify or delete entries, and a database trigger refuses changes even from the owner.",
+        "time": "Time",
+        "admin": "Administrator",
+        "action": "Action",
+        "target": "Target",
+        "count": "Count",
+        "details": "Details",
+        "show": "Show",
+        "serials": "Serial numbers",
+        "paths": "Storage paths",
+        "noActions": "No administrative actions recorded yet.",
+        "table": "Table",
+        "op": "Operation",
+        "changedFields": "Changed fields",
+        "actor": "Actor",
+        "noRows": "No row changes recorded."
+      }
     }
   },
   "common": {
@@ -658,6 +944,10 @@
     "copyLink": "Copy link",
     "openInNewTab": "Open in new tab",
     "notAvailable": "—",
-    "schemaMissing": "Database not ready"
+    "schemaMissing": "Database not ready",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close",
+    "cancel": "Cancel"
   }
 }

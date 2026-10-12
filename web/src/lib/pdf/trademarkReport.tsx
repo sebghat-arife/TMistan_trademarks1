@@ -126,8 +126,6 @@ const s = StyleSheet.create({
   top: { flexDirection: 'row', gap: 20, marginTop: 20, alignItems: 'flex-start' },
   titleBlock: { flex: 1 },
   mark: { fontSize: 22, fontWeight: 700, color: NAVY, lineHeight: 1.25 },
-  serial: { fontSize: 11, marginTop: 6, color: INK },
-  source: { fontSize: 10, marginTop: 3, color: MUTED },
   figure: { width: 170, minHeight: 110, borderWidth: 1, borderColor: RULE, borderRadius: 4, padding: 8, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
   figureImg: { maxWidth: 152, maxHeight: 120, objectFit: 'contain' },
   figureCaption: { fontSize: 7.5, color: MUTED, marginTop: 5 },
@@ -192,13 +190,8 @@ export function TrademarkReportDocument({ input }: { input: ReportInput }) {
         {/* Title block + image */}
         <View style={[s.top, { flexDirection: rowDir }]}>
           <View style={s.titleBlock}>
+            {/* Only the mark name is repeated here — serial number, gazette number and source are listed once, in the details table. */}
             <T dir={dir} style={s.mark} weight={700}>{input.markName}</T>
-            {/* label and serial are separate runs so the bidi algorithm never reorders "1011-002" in Dari/Pashto */}
-            <View style={{ flexDirection: rowDir, alignItems: 'baseline', marginTop: 6 }}>
-              <T dir={dir} style={[s.serial, { marginTop: 0 }]}>{`${labels.serial}:`}</T>
-              <T dir="ltr" style={[s.serial, { marginTop: 0, marginLeft: dir === 'rtl' ? 0 : 4, marginRight: dir === 'rtl' ? 4 : 0 }]}>{input.serial}</T>
-            </View>
-            <T dir={dir} style={s.source}>{input.sourceLine}</T>
           </View>
           {(input.image || input.imageFailed) && (
             <View style={s.figure}>

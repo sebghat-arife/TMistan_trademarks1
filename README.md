@@ -27,6 +27,12 @@ named `<serial>.png`; they are matched by serial number, stored in Supabase Stor
 `trademark_images` and visible in the public search immediately. The record count is whatever the
 imported files contain — nothing is assumed or seeded.
 
+**Admin Data Management Center** (`/admin`, `docs/ADMIN_DATA_MANAGEMENT.md`, migration 0600): Data
+Overview, Trademark Records, Trademark Images, Excel/CSV Imports, ZIP Image Imports, Import History,
+Unmatched Images, Orphaned Files, Audit Log. Archive (reversible) vs. permanent delete (typed `DELETE`,
+enforced server-side), delete-by-import-batch with real provenance, Storage cleanup queue, append-only
+audit log. The admin area is reached only by typing `/admin/login` — the public site has no Login button.
+
 **Search by Image** (`/search?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo, the
 browser computes a compact visual descriptor (the picture itself never leaves the tab) and Postgres
 (pgvector, migration 0500) returns the most similar published marks. The index is built by the
@@ -48,16 +54,18 @@ service-role key exists only on the machine that runs importers / the storage se
 | `web/src/services/` | the centralised data-access layer — the *only* place that talks to Supabase | yes |
 | `render.yaml` | **Render Blueprint — Static Site** (root `web`, `npm ci && npm run build`, publish `dist`, SPA rewrite) | — |
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
-| `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation, image intake (ZIP, sniffing, hashing), serial matching | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0500) — paste once into the Supabase SQL editor of a new project | no |
+| `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
+| `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0600) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search | no |
+| `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
 | `scripts/local-stack/` | offline dev stack: PostgreSQL + PostgREST + static image server, no Supabase account needed | no |
-| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `IMPORT_CENTER.md`, `IMAGE_SEARCH.md`, `PDF_REPORT.md`, `LOVABLE_HANDOFF.md` | no |
+| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `IMPORT_CENTER.md`, `ADMIN_DATA_MANAGEMENT.md`, `IMAGE_SEARCH.md`, `PDF_REPORT.md`, `LOVABLE_HANDOFF.md` | no |
 
 ## Data model used by the app
 
@@ -136,12 +144,13 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 
 1. **Backup** (Dashboard → Database → Backups).
 2. **Schema** — SQL Editor → New query → paste the whole of `supabase/APPLY_ALL.sql` → Run.
-   It is the concatenation of `supabase/migrations/…0100` … `…0500`; additive and
+   It is the concatenation of `supabase/migrations/…0100` … `…0600`; additive and
    idempotent (safe to re-run), it never drops or rewrites `public.trademarks` rows and keeps the
    `(official_gazette_number, serial_number)` uniqueness. The result panel prints the post-checks
    (trademark count, gazettes, policies, anon-readable rows). A project that already has 0100–0300
-   only needs **`supabase/APPLY_0400.sql`** (Import Center), and one on 0100–0400 only
-   **`supabase/APPLY_0500.sql`** (Search by Image). Read the *Messages* tab: a WARNING about
+   only needs **`supabase/APPLY_0400.sql`** (Import Center), one on 0100–0400 only
+   **`supabase/APPLY_0500.sql`** (Search by Image), and one on 0100–0500 only
+   **`supabase/APPLY_0600.sql`** (Admin Data Management). Read the *Messages* tab: a WARNING about
    `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
@@ -157,10 +166,14 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 8. **Build the visual index** — Import Center → *Visual search index* → *Index N images*
    (`docs/IMAGE_SEARCH.md`). Until 0500 is applied the image search page reports itself unavailable;
    keyword search is unaffected.
+9. **Data Management** — until 0600 is applied every `/admin` data-management page shows
+   *"Migration 0600 has not been applied"*; paste `supabase/APPLY_0600.sql` (after a backup) and
+   re-run `scripts/check_supabase.py` (section 2d). See `docs/ADMIN_DATA_MANAGEMENT.md`.
 
 Status of the production project `tzzslhpqbfjklazihssc`: 0100–0300 applied 2026-09-12, 12 gazette
-files loaded, RLS verified; 0400 applied by the project owner; **0500 (`APPLY_0500.sql`) must be pasted by
-the project owner** before Search by Image works (see `docs/IMAGE_SEARCH.md` §1).
+files loaded, RLS verified; 0400 and 0500 applied by the project owner (56 images indexed);
+**0600 (`APPLY_0600.sql`) must be pasted by the project owner** before the Data Management pages work
+(see `docs/ADMIN_DATA_MANAGEMENT.md` §6).
 
 ## Optional Python importer (operator machine, service-role key)
 
@@ -229,6 +242,10 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
   `authenticated` role **and** `is_admin()`, so anonymous/non-admin uploads are refused (verified: anonymous upload → 400/403).
 - Import Center: every privileged step is a `SECURITY DEFINER` RPC that calls `admin_assert()` first
   (whitelisted columns, capped batch sizes, per-row error isolation); `EXECUTE` is revoked from `anon`.
+- Data Management (0600): destructive RPCs require the typed token `DELETE` **in SQL**, delete only the
+  ids passed, enqueue Storage paths for cleanup in the same transaction and write an append-only
+  `admin_actions` row; `admin_actions`/`audit_logs` reject UPDATE/DELETE even from the owner. Column-level
+  grants hide attorney, review notes and source file/sheet/row from the public API.
 - `vite.config.ts` and the `Dockerfile` reject `sb_secret_*` / service-role JWTs as the public key; the built
   bundle is grepped for `sb_secret_`, `service_role`, `SUPABASE_SERVICE_ROLE_KEY` (zero hits).
 - `.gitignore` excludes every `.env*` except `*.example`; `render.yaml` never references the secret key.
@@ -242,5 +259,6 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
 - Detail page renders only fields that exist and are non-null; images come from `trademark_images` or a neutral placeholder — never a fabricated logo.
 - Images: bytes in Storage, metadata in `trademark_images`, matched only by the serial number in the file name — never guessed (ambiguous = not uploaded).
 - No demo/seed dataset anywhere: the registry contains exactly what administrators import.
-- Every trademark shows gazette / page / file / sheet / row provenance.
+- Every trademark shows gazette / page provenance publicly; file / sheet / row, attorney and review notes are administrator-only.
+- Deleting an image never deletes a trademark; deleting an import record never deletes records; nothing is deleted automatically.
 - Schema changes only via explicit migrations; existing records and the gazette+serial uniqueness are preserved.

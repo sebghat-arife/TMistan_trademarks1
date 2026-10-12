@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, BookOpen, Image as ImageIcon, Tag } from 'lucide-react'
+import { AlertTriangle, Archive, BookOpen, FileClock, HardDrive, Image as ImageIcon, ShieldAlert, Tag } from 'lucide-react'
 import { importJobsQuery, registryStatsQuery, trademarksByClassQuery } from '@/services'
-import { cn, formatDate, formatNumber } from '@/lib/utils'
+import { dataManagementReady, getDataOverview } from '@/services/admin_data_service'
+import { cn, formatDate, formatDateTime, formatNumber } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import type { ImportJobRow } from '@/lib/database.types'
 import { ErrorState } from '@/components/AsyncState'
+import { Notice, formatBytes } from '@/components/admin/AdminUi'
 
 export function AdminDashboardPage() {
   const { t, i18n } = useTranslation()
@@ -14,13 +16,14 @@ export function AdminDashboardPage() {
   const { data: stats, isError: statsError, error: statsErr } = useQuery(registryStatsQuery())
   const { data: byClass, isError: classError, error: classErr } = useQuery(trademarksByClassQuery())
   const { data: jobs, isLoading: jobsLoading, isError: jobsError, error: jobsErr } = useQuery(importJobsQuery(8))
-  useDocumentTitle(`${t('admin.dashboard')} · ${t('app.shortName')}`)
+  useDocumentTitle(`${t('admin.nav.overview')} · ${t('app.shortName')}`)
 
   const max = Math.max(1, ...(byClass ?? []).map((c) => c.count))
 
   return (
     <div>
-      <h1 className="text-[24px] font-bold text-ink-900">{t('admin.dashboard')}</h1>
+      <h1 className="text-[24px] font-bold text-ink-900">{t('admin.nav.overview')}</h1>
+      <p className="muted mt-1 max-w-3xl">{t('admin.data.overview.subtitle')}</p>
       {statsError && <ErrorState className="mt-5" error={statsErr} />}
 
       <div className="mt-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
@@ -29,6 +32,8 @@ export function AdminDashboardPage() {
         <Stat icon={ImageIcon} label={t('admin.images')} value={formatNumber(stats?.images, lng)} />
         <Stat icon={AlertTriangle} label={t('admin.needsReview')} value={formatNumber(stats?.needs_review, lng)} tone="danger" />
       </div>
+
+      <DataOverviewPanel />
 
       {/* Trademarks by class */}
       <section className="card mt-5 p-5">
@@ -53,7 +58,7 @@ export function AdminDashboardPage() {
       <section className="card mt-5 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4">
           <h2 className="text-[16px] font-semibold text-ink-900">{t('admin.recentImports')}</h2>
-          <Link to="/admin/imports" className="link-green">{t('admin.viewAllImports')} →</Link>
+          <Link to="/admin/history" className="link-green">{t('admin.viewAllImports')} →</Link>
         </div>
         <table className="w-full text-[14px]">
           <thead className="border-y border-ink-200 bg-ink-50 text-[13px] text-ink-600">
@@ -90,6 +95,70 @@ export function AdminDashboardPage() {
   )
 }
 
+/** Data-management overview (migration 0600). Shows a clear notice instead of numbers when not applied. */
+function DataOverviewPanel() {
+  const { t, i18n } = useTranslation()
+  const lng = i18n.resolvedLanguage
+  const ready = useQuery({ queryKey: ['admin', 'data_ready'], queryFn: dataManagementReady, staleTime: 60_000, retry: false })
+  const ov = useQuery({ queryKey: ['admin', 'overview'], queryFn: getDataOverview, enabled: ready.data?.ready === true, staleTime: 15_000 })
+  if (ready.data && !ready.data.ready) {
+    return (
+      <Notice tone="warn" className="mt-5 flex items-start gap-2" title={ready.data.reason === 'schema_missing' ? t('admin.data.notApplied.title') : t('admin.data.notReady')}>
+        <span className="flex items-start gap-2"><ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" /> {ready.data.message} {ready.data.reason === 'schema_missing' ? t('admin.data.notApplied.hint') : ''}</span>
+      </Notice>
+    )
+  }
+  const d = ov.data
+  if (!d) return ov.isError ? <ErrorState className="mt-5" error={ov.error} /> : null
+  const n = (x: number | null | undefined) => formatNumber(x ?? 0, lng)
+  const sections: { to: string; icon: React.ComponentType<{ className?: string }>; title: string; rows: [string, string, ('warn' | 'error' | undefined)?][] }[] = [
+    { to: '/admin/trademarks', icon: Tag, title: t('admin.nav.trademarks'), rows: [
+      [t('admin.data.status.published'), n(d.trademarks.published)],
+      [t('admin.data.status.archived'), n(d.trademarks.archived), d.trademarks.archived ? 'warn' : undefined],
+      [t('admin.data.filters.withoutImages'), n(d.trademarks.without_images)],
+      [t('admin.data.overview.withProvenance'), `${n(d.trademarks.with_provenance)} / ${n(d.trademarks.total)}`],
+    ] },
+    { to: '/admin/images', icon: ImageIcon, title: t('admin.nav.images'), rows: [
+      [t('admin.data.imageStatus.matched'), n(d.images.matched)],
+      [t('admin.data.filters.unlinked'), n(d.images.unlinked), d.images.unlinked ? 'warn' : undefined],
+      [t('admin.data.images.indexed'), `${n(d.images.indexed)} / ${n(d.images.matched)}`],
+      [t('admin.data.storage.size'), formatBytes(d.images.bytes)],
+    ] },
+    { to: '/admin/history', icon: FileClock, title: t('admin.nav.history'), rows: [
+      [t('admin.data.history.running'), n(d.import_jobs.running), d.import_jobs.stale_running ? 'warn' : undefined],
+      [t('admin.import.status.failed'), n(d.import_jobs.failed), d.import_jobs.failed ? 'error' : undefined],
+      [t('admin.import.status.completed_with_warnings'), n(d.import_jobs.warnings)],
+      [t('admin.data.overview.lastImport'), formatDateTime(d.import_jobs.last_at, lng)],
+    ] },
+    { to: '/admin/storage', icon: HardDrive, title: t('admin.nav.orphans'), rows: [
+      [t('admin.data.cleanupStatus.pending'), n(d.storage_cleanup.pending), d.storage_cleanup.pending ? 'warn' : undefined],
+      [t('admin.data.cleanupStatus.failed'), n(d.storage_cleanup.failed), d.storage_cleanup.failed ? 'error' : undefined],
+      [t('admin.data.cleanupStatus.done'), n(d.storage_cleanup.done)],
+      [t('admin.nav.audit'), `${n(d.audit.admin_actions)} · ${formatDateTime(d.audit.last_action_at, lng)}`],
+    ] },
+  ]
+  return (
+    <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {sections.map((s) => (
+        <Link key={s.to} to={s.to} className="card block p-4 transition-colors hover:border-brand-300">
+          <div className="flex items-center gap-2 text-[14px] font-semibold text-ink-900"><s.icon className="h-4 w-4 text-brand-600" /> {s.title}</div>
+          <dl className="mt-3 space-y-1 text-[13px]">
+            {s.rows.map(([k, v, tone]) => (
+              <div key={k} className="flex items-baseline justify-between gap-3">
+                <dt className="text-ink-500">{k}</dt>
+                <dd className={cn('text-end font-semibold tabular-nums text-ink-900', tone === 'warn' && 'text-amber-700', tone === 'error' && 'text-red-700')}>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </Link>
+      ))}
+      {d.import_jobs.stale_running > 0 && (
+        <Notice tone="warn" className="md:col-span-2 xl:col-span-4 flex items-center gap-2"><Archive className="h-4 w-4" /> {t('admin.data.overview.staleRunning', { count: d.import_jobs.stale_running })}</Notice>
+      )}
+    </div>
+  )
+}
+
 function basename(p: string | null): string | null {
   if (!p) return null
   const parts = p.replace(/[\\/]+$/, '').split(/[\\/]/)
@@ -120,16 +189,4 @@ function StatusPill({ status }: { status: ImportJobRow['status'] }) {
   }
   const { t } = useTranslation()
   return <span className={cn('inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold', map[status])}>{t(`admin.import.status.${status}`)}</span>
-}
-
-/** Placeholder for the remaining admin sections (Phase 2). */
-export function AdminSectionPage({ titleKey }: { titleKey: string }) {
-  const { t } = useTranslation()
-  useDocumentTitle(`${t(titleKey)} · ${t('app.shortName')}`)
-  return (
-    <div>
-      <h1 className="text-[24px] font-bold text-ink-900">{t(titleKey)}</h1>
-      <div className="card mt-5 p-8 text-center text-[14px] text-ink-600">{t('admin.comingSoon')}</div>
-    </div>
-  )
 }

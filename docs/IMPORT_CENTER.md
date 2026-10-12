@@ -52,17 +52,39 @@ an anonymous caller `401`.
 
 ## 2. Using the Import Center
 
-Sign in at `/admin/login`, open **Import Center** in the sidebar.
+Sign in at `/admin/login` (the public site has no Login button), open **Excel/CSV Imports** or
+**ZIP Image Imports** in the sidebar (`/admin/imports` still shows both steps on one page).
 
 ### Step 1 — Trademark data (`.xlsx`, `.xls`, `.csv`)
 
 1. Drop the file (or *Choose file*). The page shows *File · Records detected · Columns detected ·
    Sheet* and a preview of the first rows.
 2. Headers are detected automatically (English / Dari / Pashto and `snake_case` variants; the
-   header row may be preceded by title rows). Only **Serial Number** is mandatory; the gazette
-   number is taken from the *Official Gazette Number* column or derived from the serial prefix
-   (`1011-002` → gazette `1011`). Recommended columns: Mark Name, Applicant Name, Trademark Class,
-   Goods and Services, Application Type, Publication Date.
+   header row may be preceded by title rows). The **official 21-column structure** is recognised
+   as a whole and shown in *Column mapping* (every target has a dropdown, so an unusual header can
+   be assigned by hand before anything is written; unassigned source columns are listed as
+   *ignored*, never silently dropped):
+
+   | Excel header | Stored as | Public? |
+   |---|---|---|
+   | No. | `record_number` | yes |
+   | Serial Number | `serial_number` (text — leading zeros and hyphens kept, the record key) | yes |
+   | Mark Name | `mark_name` | yes |
+   | Mark print | `mark_print` (the printed text value; the picture itself comes from the image import, matched by serial file name) | yes |
+   | Applicant's name / Applicant's address | `applicant_name` / `applicant_address` | yes |
+   | Class | `trademark_class` (text, several classes allowed: `29, 30`; `class_numbers[]` is generated) | yes |
+   | Goods and services | `goods_and_services` | yes |
+   | Official gazette number | `official_gazette_number` (or derived from the serial prefix `1011-002` → `1011`) | yes |
+   | Publication date / Objection deadline | `publication_date` / `objection_deadline` | yes |
+   | Application type | `application_type` | yes |
+   | Registration Number / Application Number | `registration_number` / `application_number` (migration 0600) | yes |
+   | Attorney or Representative | `attorney_or_representative` | **no — administrators only** |
+   | New address / Old address / New owner / Old owner | `new_address` / `old_address` / `new_owner` / `old_owner` (shown per record type) | yes |
+   | Source page | `source_page` ("Source: OG <gazette> — Page <n>") | yes |
+   | Review note | `review_note` | **no — administrators only** |
+
+   Only **Serial Number** is mandatory. Empty cells become `NULL` (displayed as `N/A`); no value is
+   ever invented.
 3. Validation runs **before** anything is written:
    * empty / missing serial → *error* (row skipped)
    * the same serial twice in the file → *error* on the later row (first occurrence wins)
@@ -116,10 +138,13 @@ replacements).
 
 ### Recent Imports
 
-`Date · Type (Data / Images) · File name · Records (inserted+updated+unchanged / total) · Images
+`Date · Type (Excel/CSV / Images) · File name · Records (inserted+updated+unchanged / total) · Images
 (linked / total) · Status` for the last 25 jobs, with *View report* (summary JSON, per-item failures /
-unmatched / duplicates, retry hint). Statuses: `processing` (page was closed mid-way — just drop the
-file again), `completed`, `completed_with_warnings` (some rows/files rejected, see report), `failed`.
+unmatched / duplicates, retry hint). Statuses: `processing` (page was closed mid-way — cancel it from
+*Import History* or just drop the file again), `completed`, `completed_with_warnings` (some rows/files
+rejected, see report), `failed`. The full history with provenance, cancel, delete-import-record,
+delete-records-created-by-batch and retention cleanup lives in **Import History**
+(`docs/ADMIN_DATA_MANAGEMENT.md`).
 
 ### Visual search index (Search by Image)
 
@@ -214,6 +239,7 @@ Public check: open `/trademark/<serial>` and `/search?q=<mark>` — the card/det
 `web/src/pages/admin/ImportCenterPage.tsx` (UI) · `web/src/services/import_service.ts` (RPC/Storage calls) ·
 `web/src/lib/import/{spreadsheet,images,serial}.ts` (browser parsing, validation, matching keys) ·
 `supabase/migrations/20260905000400_admin_import.sql` · `supabase/APPLY_0400.sql` ·
+`supabase/migrations/20261012000600_data_management.sql` (registration/application numbers, creation provenance, cancel guard) ·
 `scripts/check_supabase.py` (§2b) · i18n keys `admin.import.*` in `web/src/i18n/locales/{en,fa,ps}.json` ·
 visual index: `web/src/pages/admin/ImageIndexPanel.tsx`, `web/src/services/image_search_service.ts`,
 `supabase/migrations/20261011000500_image_search.sql`, `supabase/APPLY_0500.sql`, i18n `admin.index.*`.

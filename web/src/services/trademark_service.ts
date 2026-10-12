@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { SearchTrademarksArgs, TrademarkImageRow, TrademarkRow, TrademarkSearchResult } from '@/lib/database.types'
+import { TRADEMARK_PUBLIC_COLUMNS } from '@/lib/database.types'
+import type { SearchTrademarksArgs, TrademarkImagePublicRow, TrademarkPublicRow, TrademarkSearchResult } from '@/lib/database.types'
 import { unwrap, unwrapNullable } from './_shared'
 import { listTrademarkImages } from './image_service'
 
@@ -13,6 +14,14 @@ import { listTrademarkImages } from './image_service'
  * LIMIT/OFFSET paging and a window `total_count`. Nothing is filtered in the
  * browser and the full table is never downloaded.
  * ------------------------------------------------------------------------- */
+
+/**
+ * Explicit column list for direct reads of `public.trademarks`. Since migration
+ * 0600 anonymous/authenticated roles hold column-level SELECT grants only, so
+ * `select=*` would be rejected by PostgREST (and attorney/review fields must
+ * never reach the browser anyway).
+ */
+const TRADEMARK_PUBLIC_SELECT = TRADEMARK_PUBLIC_COLUMNS.join(',')
 
 export interface TrademarkPage {
   items: TrademarkSearchResult[]
@@ -43,8 +52,8 @@ export const filterByGazette = (gazette: string, limit = 20, offset = 0) => sear
 export const filterByApplicant = (applicant: string, limit = 20, offset = 0) => searchTrademarks({ p_applicant: applicant, p_sort: 'newest', p_limit: limit, p_offset: offset })
 
 export interface TrademarkDetail {
-  trademark: TrademarkRow
-  images: TrademarkImageRow[]
+  trademark: TrademarkPublicRow
+  images: TrademarkImagePublicRow[]
 }
 
 /**
@@ -54,9 +63,9 @@ export interface TrademarkDetail {
  * Returns `null` when nothing matches (the page renders a not-found state).
  */
 export async function getTrademarkBySerial(serial: string, gazette?: string | null): Promise<TrademarkDetail | null> {
-  let q = supabase.from('trademarks').select('*').eq('serial_number', serial)
+  let q = supabase.from('trademarks').select(TRADEMARK_PUBLIC_SELECT).eq('serial_number', serial)
   if (gazette) q = q.eq('official_gazette_number', gazette)
-  const rows = unwrap(await q.order('publication_date', { ascending: false, nullsFirst: false }).limit(1)) as TrademarkRow[]
+  const rows = unwrap(await q.order('publication_date', { ascending: false, nullsFirst: false }).limit(1)) as unknown as TrademarkPublicRow[]
   const trademark = rows[0]
   if (!trademark) return null
   const images = await listTrademarkImages(trademark.id)
@@ -69,8 +78,8 @@ export const trademarkBySerialQuery = (serial: string, gazette?: string | null) 
     queryFn: () => getTrademarkBySerial(serial, gazette),
   })
 
-export async function getTrademarkById(id: string): Promise<TrademarkRow | null> {
-  return unwrapNullable(await supabase.from('trademarks').select('*').eq('id', id).maybeSingle()) as TrademarkRow | null
+export async function getTrademarkById(id: string): Promise<TrademarkPublicRow | null> {
+  return unwrapNullable(await supabase.from('trademarks').select(TRADEMARK_PUBLIC_SELECT).eq('id', id).maybeSingle()) as unknown as TrademarkPublicRow | null
 }
 
 /** Text-similar marks (pg_trgm on the normalised mark name). */

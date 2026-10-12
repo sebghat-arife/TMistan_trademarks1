@@ -1,22 +1,22 @@
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, ClipboardCheck, Download, FileClock, Image as ImageIcon, LayoutDashboard, LogOut, Settings, Tag, UserCircle, Users } from 'lucide-react'
+import { FileClock, FileSpreadsheet, HardDrive, History, ImageOff, Image as ImageIcon, Images, LayoutDashboard, LogOut, Tag } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/Layout'
 
+/** Admin Data Management Center navigation (order mandated by the client brief). */
 export const ADMIN_NAV = [
-  { to: '/admin', key: 'admin.dashboard', Icon: LayoutDashboard, end: true },
-  { to: '/admin/trademarks', key: 'admin.trademarks', Icon: Tag },
-  { to: '/admin/gazettes', key: 'admin.gazettes', Icon: BookOpen },
-  { to: '/admin/images', key: 'admin.images', Icon: ImageIcon },
-  { to: '/admin/applicants', key: 'admin.applicants', Icon: UserCircle },
-  { to: '/admin/imports', key: 'admin.importJobs', Icon: Download },
-  { to: '/admin/reviews', key: 'admin.reviews', Icon: ClipboardCheck },
-  { to: '/admin/users', key: 'admin.users', Icon: Users },
-  { to: '/admin/audit', key: 'admin.auditLogs', Icon: FileClock },
-  { to: '/admin/settings', key: 'admin.settings', Icon: Settings },
+  { to: '/admin', key: 'admin.nav.overview', Icon: LayoutDashboard, end: true },
+  { to: '/admin/trademarks', key: 'admin.nav.trademarks', Icon: Tag },
+  { to: '/admin/images', key: 'admin.nav.images', Icon: ImageIcon, end: true },
+  { to: '/admin/imports/excel', key: 'admin.nav.importsExcel', Icon: FileSpreadsheet },
+  { to: '/admin/imports/images', key: 'admin.nav.importsImages', Icon: Images },
+  { to: '/admin/history', key: 'admin.nav.history', Icon: History },
+  { to: '/admin/images/unmatched', key: 'admin.nav.unmatched', Icon: ImageOff },
+  { to: '/admin/storage', key: 'admin.nav.orphans', Icon: HardDrive },
+  { to: '/admin/audit', key: 'admin.nav.audit', Icon: FileClock },
 ] as const
 
 /** Dark sidebar shell from the mock-up. Only reachable when `is_admin()` is true. */
@@ -62,7 +62,20 @@ export function AdminLayout() {
             <NavLink to="/" className="text-[13px] font-medium text-brand-600 hover:underline">TMistan ↗</NavLink>
           </div>
         </header>
-        <main className="flex-1 p-6">
+        {/* Mobile navigation (the sidebar is desktop-only) */}
+        <nav className="flex gap-1 overflow-x-auto border-b border-ink-200 bg-white px-3 py-2 md:hidden" aria-label="Admin">
+          {ADMIN_NAV.map(({ to, key, Icon, ...rest }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={'end' in rest && rest.end}
+              className={({ isActive }) => cn('inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100', isActive && 'bg-brand-50 text-brand-700')}
+            >
+              <Icon className="h-3.5 w-3.5" /> {t(key)}
+            </NavLink>
+          ))}
+        </nav>
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

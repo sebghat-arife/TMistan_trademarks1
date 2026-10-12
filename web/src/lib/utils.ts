@@ -145,6 +145,23 @@ export function formatToday(locale = 'en', now: Date = new Date()): string {
   }
 }
 
+/**
+ * Timestamp (ISO string from Postgres) → locale date + time, for admin
+ * screens. Pashto falls back to fa-AF (same digits/calendar in Afghanistan)
+ * because Chromium ships no Pashto ICU data.
+ */
+export function formatDateTime(value: string | null | undefined, locale = 'en'): string {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return value
+  const tag = intlLocale(locale)
+  try {
+    return new Intl.DateTimeFormat(tag.startsWith('ps') ? 'fa-AF' : tag, { dateStyle: 'medium', timeStyle: 'short' }).format(d)
+  } catch {
+    return d.toISOString().replace('T', ' ').slice(0, 16)
+  }
+}
+
 /** Gregorian → Solar Hijri (Jalali); exact inverse of `solarHijriToGregorian` (same 33-year-cycle algorithm). */
 export function gregorianToSolarHijri(gy: number, gm: number, gd: number): { y: number; m: number; d: number } {
   const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]

@@ -55,11 +55,9 @@ export function Layout() {
             ))}
           </nav>
 
+          {/* The administrator sign-in is deliberately not linked from the public site: open /admin/login directly. */}
           <div className="hidden items-center gap-4 md:flex">
             <LanguageSwitcher />
-            <Link to="/admin/login" className="btn-primary h-9 px-5">
-              {t('nav.login')}
-            </Link>
           </div>
 
           <button type="button" className="btn-ghost md:hidden" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label={t('common.menu')}>
@@ -77,9 +75,6 @@ export function Layout() {
               ))}
               <div className="flex items-center justify-between px-3 py-2">
                 <LanguageSwitcher />
-                <Link to="/admin/login" className="btn-primary h-9 px-5" onClick={() => setMenuOpen(false)}>
-                  {t('nav.login')}
-                </Link>
               </div>
             </div>
           </div>

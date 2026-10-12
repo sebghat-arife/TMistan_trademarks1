@@ -88,3 +88,21 @@ Uniqueness: `(storage_bucket, storage_path)` and `(trademark_id, image_type, con
   No existing column or function needs to change.
 - AI suggestions: store them in a separate `suggestions` table with `status` (proposed / accepted / rejected)
   and apply through the same admin edit path so the audit log captures who accepted what.
+
+## Data management additions (migration 0600)
+
+- `trademarks.registration_number`, `trademarks.application_number` — columns 13–14 of the official
+  Excel structure, stored verbatim (text).
+- `trademarks.created_by_job_id`, `trademark_images.created_by_job_id` — the import job that **created**
+  the row (set once, never overwritten; back-filled from `audit_logs` INSERT entries). `import_job_id`
+  keeps meaning "last job that touched the row". Together they make delete-by-batch reliable:
+  *created by job X and not modified since* vs. *created by X but modified later* vs. *only updated by X*.
+- `admin_actions` — operation-level audit log (actor, action, target ids, serials, Storage paths, job,
+  counts, status, details). `admin_actions` and `audit_logs` are append-only (no grants + trigger).
+- `storage_cleanup_queue` — Storage objects whose database rows were deleted; removed by the admin
+  browser through the Storage API, `failed` entries keep the error and are retried.
+- Public API: `anon`/`authenticated` hold column-level SELECT on `trademarks`/`trademark_images` for the
+  public columns only (`TRADEMARK_PUBLIC_COLUMNS` / `TRADEMARK_IMAGE_PUBLIC_COLUMNS` in
+  `web/src/lib/database.types.ts` mirror the grant lists). Attorney, review fields and source
+  file/sheet/row are administrator-only; `search_trademarks` & co. no longer return the attorney.
+- See `docs/ADMIN_DATA_MANAGEMENT.md` for the functions and the safety model.

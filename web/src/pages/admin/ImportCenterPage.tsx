@@ -53,32 +53,42 @@ import {
  *                       trademark_images rows → report
  * ========================================================================== */
 
-export function ImportCenterPage() {
+/**
+ * Import Center. `mode` selects what the page shows:
+ *  - excel  → "Excel/CSV Imports" (trademark data)
+ *  - images → "ZIP Image Imports" (image batches + image index + missing-image report)
+ *  - all    → both side by side (legacy /admin/imports URL)
+ */
+export function ImportCenterPage({ mode = 'all' }: { mode?: 'all' | 'excel' | 'images' }) {
   const { t } = useTranslation()
-  useDocumentTitle(`${t('admin.import.title')} · ${t('app.shortName')}`)
+  const title = mode === 'excel' ? t('admin.nav.importsExcel') : mode === 'images' ? t('admin.nav.importsImages') : t('admin.import.title')
+  useDocumentTitle(`${title} · ${t('app.shortName')}`)
   const ready = useQuery({ queryKey: ['admin', 'import_ready'], queryFn: importCenterReady, staleTime: 60_000, retry: false })
   const blocked = ready.data ? !ready.data.ready : false
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[24px] font-bold text-ink-900">{t('admin.import.title')}</h1>
-          <p className="muted mt-1 max-w-3xl">{t('admin.import.subtitle')}</p>
+          <h1 className="text-[24px] font-bold text-ink-900">{title}</h1>
+          <p className="muted mt-1 max-w-3xl">{mode === 'excel' ? t('admin.import.excelSubtitle') : mode === 'images' ? t('admin.import.imagesSubtitle') : t('admin.import.subtitle')}</p>
         </div>
+        {mode !== 'all' && <Link to="/admin/history" className="link-green">{t('admin.nav.history')} →</Link>}
       </div>
       {blocked && (
         <div className="mt-5">
           <Callout tone="error" icon={XCircle} title={t('admin.import.notReadyTitle')} text={`${ready.data?.reason ?? ''} ${t('admin.import.notReadyHint')}`} />
         </div>
       )}
-      <div className={cn('mt-5 grid gap-5 xl:grid-cols-2', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
-        <SpreadsheetImporter />
-        <ImageImporter />
+      <div className={cn('mt-5 grid grid-cols-[minmax(0,1fr)] gap-5', mode === 'all' && 'xl:grid-cols-[repeat(2,minmax(0,1fr))]', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
+        {mode !== 'images' && <SpreadsheetImporter />}
+        {mode !== 'excel' && <ImageImporter />}
       </div>
-      <div className={cn('mt-5', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
-        <ImageIndexPanel />
-      </div>
-      <RecentImports />
+      {mode !== 'excel' && (
+        <div className={cn('mt-5', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
+          <ImageIndexPanel />
+        </div>
+      )}
+      <RecentImports type={mode === 'all' ? undefined : mode} />
     </div>
   )
 }
@@ -901,10 +911,11 @@ function MissingImagesReport() {
  * Recent imports (history + per-job report)
  * ------------------------------------------------------------------------- */
 
-function RecentImports() {
+function RecentImports({ type }: { type?: 'excel' | 'images' }) {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
-  const { data: jobs, isLoading, isError, error, refetch } = useQuery(importJobsQuery(25))
+  const { data: allJobs, isLoading, isError, error, refetch } = useQuery(importJobsQuery(type ? 60 : 25))
+  const jobs = type ? allJobs?.filter((j) => j.job_type === type).slice(0, 25) : allJobs
   const [open, setOpen] = useState<string | null>(null)
   return (
     <section className="card mt-5 overflow-hidden">

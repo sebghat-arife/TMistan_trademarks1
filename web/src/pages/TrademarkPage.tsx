@@ -12,7 +12,7 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
 import { TrademarkCard, classText } from '@/components/ResultCards'
-import type { TrademarkImageRow, TrademarkRow } from '@/lib/database.types'
+import type { TrademarkImagePublicRow, TrademarkPublicRow } from '@/lib/database.types'
 import { ErrorState, LoadingState } from '@/components/AsyncState'
 
 type Tab = 'images' | 'goods' | 'history'
@@ -58,10 +58,11 @@ export function TrademarkPage() {
   const name = tm.mark_name ?? t('fields.unnamed')
   const na = t('fields.notProvided')
   const hasHistory = !!(tm.old_owner || tm.new_owner || tm.old_address || tm.new_address)
+  // Shown under the "Source Information" heading (page + PDF table), so the value itself carries no "Source:" prefix.
   const sourceLine =
     tm.source_page != null
-      ? t('trademark.source', { gazette: tm.official_gazette_number, page: tm.source_page })
-      : t('trademark.sourceNoPage', { gazette: tm.official_gazette_number })
+      ? t('trademark.sourceValue', { gazette: tm.official_gazette_number, page: tm.source_page })
+      : t('trademark.sourceValueNoPage', { gazette: tm.official_gazette_number })
 
   return (
     <div className="container-x py-6">
@@ -151,6 +152,8 @@ export function TrademarkPage() {
             <Fact label={t('fields.publicationDate')}>{tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na}</Fact>
             {tm.objection_deadline && <Fact label={t('fields.objectionDeadline')}>{formatRegistryDate(tm.objection_deadline, lng)}</Fact>}
             {tm.record_number && <Fact label={t('fields.recordNumber')} mono>{tm.record_number}</Fact>}
+            {tm.registration_number && <Fact label={t('fields.registrationNumber')} mono>{tm.registration_number}</Fact>}
+            {tm.application_number && <Fact label={t('fields.applicationNumber')} mono>{tm.application_number}</Fact>}
           </dl>
 
           <dl className="mt-5 space-y-4 border-t border-ink-100 pt-5">
@@ -266,7 +269,7 @@ function useRecordDownload() {
     }
   }, [])
 
-  const download = async (tm: TrademarkRow, image: TrademarkImageRow | undefined, sourceLine: string) => {
+  const download = async (tm: TrademarkPublicRow, image: TrademarkImagePublicRow | undefined, sourceLine: string) => {
     if (status === 'working') return
     setStatus('working')
     try {
@@ -291,11 +294,13 @@ function useRecordDownload() {
       if (tm.mark_print && tm.mark_print !== tm.mark_name) rows.splice(1, 0, { label: t('fields.markPrint'), value: tm.mark_print })
       if (tm.objection_deadline) rows.push({ label: t('fields.objectionDeadline'), value: formatRegistryDate(tm.objection_deadline, lng) })
       if (tm.record_number) rows.push({ label: t('fields.recordNumber'), value: tm.record_number })
+      if (tm.registration_number) rows.push({ label: t('fields.registrationNumber'), value: tm.registration_number })
+      if (tm.application_number) rows.push({ label: t('fields.applicationNumber'), value: tm.application_number })
       if (tm.old_owner) rows.push({ label: t('fields.oldOwner'), value: tm.old_owner })
       if (tm.new_owner) rows.push({ label: t('fields.newOwner'), value: tm.new_owner })
       if (tm.old_address) rows.push({ label: t('fields.oldAddress'), value: tm.old_address })
       if (tm.new_address) rows.push({ label: t('fields.newAddress'), value: tm.new_address })
-      rows.push({ label: t('fields.gazette'), value: tm.official_gazette_number })
+      rows.push({ label: t('fields.gazetteNumber'), value: tm.official_gazette_number })
       rows.push({ label: t('trademark.sourceInformation'), value: sourceLine })
 
       const generated = formatToday(lng)

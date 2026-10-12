@@ -189,6 +189,39 @@ def main() -> int:
     else:
         bad(f"rpc image_search_status() → {status} {str(body)[:90]}", "Re-run supabase/APPLY_0500.sql and check the Messages tab.")
 
+    print("\n2d. Admin Data Management (migration 0600)")
+    status, body, _ = c.call("POST", "/rest/v1/rpc/admin_data_overview", {})
+    code = body.get("code") if isinstance(body, dict) else None
+    if status == 404 and code == "PGRST202":
+        print("  ! migration 0600 not applied — /admin shows 'Migration 0600 has not been applied' on every Data Management page\n"
+              "      → take a backup, then run supabase/APPLY_0600.sql in the Supabase SQL editor (additive, no row is deleted).")
+    elif status in (401, 403) or code == "42501":
+        ok("rpc admin_data_overview() present, anonymous call refused")
+        for fn, rpc_args in {"admin_search_trademarks": {"p_query": "", "p_limit": 1, "p_offset": 0},
+                             "admin_delete_trademarks": {"p_ids": [], "p_confirm": ""},
+                             "admin_delete_import_job_records": {"p_job_id": "00000000-0000-0000-0000-000000000000", "p_confirm": ""},
+                             "admin_list_admin_actions": {"p_limit": 1, "p_offset": 0}}.items():
+            st, b, _ = c.call("POST", f"/rest/v1/rpc/{fn}", rpc_args)
+            cd = b.get("code") if isinstance(b, dict) else None
+            if st in (401, 403) or cd == "42501":
+                ok(f"rpc {fn}() present, anonymous call refused ({st})")
+            else:
+                bad(f"rpc {fn}() for anon → {st} {str(b)[:70]}", "Admin functions must refuse non-admins (APPLY_0600.sql grants execute to 'authenticated' only).")
+        for table in ("admin_actions", "storage_cleanup_queue"):
+            st, b, _ = c.call("GET", f"/rest/v1/{table}?select=id&limit=1")
+            if st in (401, 403, 404) or (st == 200 and b == []):
+                ok(f"{table} is not readable by anon")
+            else:
+                bad(f"anon can read {table} ({st})", "The table must have RLS enabled and no public policies — re-run APPLY_0600.sql.")
+        st, b, _ = c.call("GET", "/rest/v1/trademarks?select=attorney_or_representative&limit=1")
+        cd = b.get("code") if isinstance(b, dict) else None
+        if st in (401, 403) or cd == "42501":
+            ok("attorney_or_representative is not readable through the public API (column grant)")
+        else:
+            bad(f"anon can select attorney_or_representative ({st})", "Column-level grants missing — re-run APPLY_0600.sql.")
+    else:
+        bad(f"rpc admin_data_overview() → {status} {str(body)[:90]}", "Re-run supabase/APPLY_0600.sql and check the Messages tab.")
+
     print("\n3. Real data through the public key")
     _, _, hdrs = c.call("GET", "/rest/v1/trademarks?select=id", headers={"Prefer": "count=exact", "Range": "0-0"})
     total = hdrs.get("Content-Range", "*/0").split("/")[-1]

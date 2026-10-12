@@ -9,6 +9,9 @@ whole import flow can be rehearsed offline:
     GET    /object/public/<bucket>/<path>       same, Supabase-style URL
     POST   /object/<bucket>/<path>              upload (multipart or raw body, x-upsert)
     DELETE /object/<bucket>                     JSON {"prefixes": [..]}
+    POST   /object/list/<bucket>                JSON {"prefix","limit","offset"} → one level
+                                                (folders: id/metadata null), as used by
+                                                the admin "Orphaned Files" scan
 
 There is NO authentication here beyond requiring *some* bearer token on writes;
 never expose this server outside a developer machine. Production uses the real
@@ -86,6 +89,8 @@ class H(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         bucket, key = self._object_parts()
+        if bucket == "list":
+            return self._list(key)
         if bucket is None or not key:
             return self._json(404, {"error": "not_found", "message": "unknown route"})
         if not self.headers.get("Authorization", "").startswith("Bearer "):
@@ -112,6 +117,32 @@ class H(http.server.SimpleHTTPRequestHandler):
         with open(target, "wb") as f:
             f.write(body)
         return self._json(200, {"Key": f"{bucket}/{key}", "Id": key})
+
+    def _list(self, bucket):
+        """supabase-js storage.list(): one directory level, files before folders by name."""
+        import datetime
+        length = int(self.headers.get("Content-Length", "0"))
+        try:
+            opts = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        except json.JSONDecodeError:
+            return self._json(400, {"error": "invalid_body", "message": "expected JSON"})
+        prefix = (opts.get("prefix") or "").strip("/")
+        limit = int(opts.get("limit") or 100)
+        offset = int(opts.get("offset") or 0)
+        base = self._safe_path(bucket, prefix) if prefix else os.path.abspath(os.path.join(root, bucket))
+        entries = []
+        if base and os.path.isdir(base):
+            for name in sorted(os.listdir(base)):
+                full = os.path.join(base, name)
+                if os.path.isdir(full):
+                    entries.append({"name": name, "id": None, "updated_at": None, "created_at": None, "last_accessed_at": None, "metadata": None})
+                else:
+                    st = os.stat(full)
+                    ts = datetime.datetime.fromtimestamp(st.st_mtime, datetime.timezone.utc).isoformat()
+                    mime = self.guess_type(full)
+                    entries.append({"name": name, "id": f"{bucket}/{prefix + '/' if prefix else ''}{name}", "updated_at": ts, "created_at": ts,
+                                    "last_accessed_at": ts, "metadata": {"size": st.st_size, "mimetype": mime, "eTag": f'"{st.st_size}-{int(st.st_mtime)}"'}})
+        return self._json(200, entries[offset:offset + limit])
 
     def do_DELETE(self):
         bucket, key = self._object_parts()

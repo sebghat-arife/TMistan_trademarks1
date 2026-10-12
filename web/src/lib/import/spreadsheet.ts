@@ -11,7 +11,10 @@ import { asciiDigits, cleanSerial, cleanText, isoFromDate } from './serial'
 
 export { asciiDigits, cleanSerial, cleanText }
 
-/** Columns the importer may write (mirrors the whitelist in migration 0400). */
+/**
+ * Columns the importer may write (mirrors the whitelist in migration 0600 —
+ * the 21 columns of the official Excel structure plus the source row).
+ */
 export const TRADEMARK_COLUMNS = [
   'serial_number',
   'official_gazette_number',
@@ -26,6 +29,8 @@ export const TRADEMARK_COLUMNS = [
   'attorney_or_representative',
   'publication_date',
   'objection_deadline',
+  'registration_number',
+  'application_number',
   'new_address',
   'old_address',
   'new_owner',
@@ -41,17 +46,19 @@ export type TrademarkColumn = (typeof TRADEMARK_COLUMNS)[number]
 const HEADER_ALIASES: Record<TrademarkColumn, string[]> = {
   serial_number: ['serialnumber', 'serial', 'serialno', 'serialnum', 'sn', 'شمارهمسلسل', 'شمارهسریال', 'مسلسل', 'سریال', 'سریالنمبر', 'شمیرهسریال', 'سیریلنمبر'],
   official_gazette_number: ['officialgazettenumber', 'gazettenumber', 'gazetteno', 'gazette', 'officialgazette', 'gazettenum', 'شمارهجریده', 'جریدهرسمی', 'شمارهجریدهرسمی', 'جریده', 'دجریدېشمېره'],
-  record_number: ['recordnumber', 'recordno', 'record', 'no', 'number', 'num', 'شماره', 'شمارهثبت', 'نمبر', 'ثبت'],
+  record_number: ['recordnumber', 'recordno', 'record', 'no', 'number', 'num', 'sno', 'شماره', 'نمبر', 'ګڼه'],
   mark_name: ['markname', 'mark', 'trademark', 'trademarkname', 'name', 'brand', 'brandname', 'نامعلامت', 'علامتتجارتی', 'نامتجارتی', 'علامت', 'نشانتجارتی', 'دنښېنوم'],
   mark_print: ['markprint', 'markasprinted', 'asprinted', 'print', 'markprinted', 'طبع', 'علامتطبعشده', 'شکلعلامت'],
-  applicant_name: ['applicantname', 'applicant', 'owner', 'ownername', 'company', 'proprietor', 'holder', 'نامدرخواستکننده', 'درخواستکننده', 'متقاضی', 'مالک', 'نامشرکت', 'دغوښتونکینوم', 'غوښتونکی'],
-  applicant_address: ['applicantaddress', 'address', 'owneraddress', 'companyaddress', 'آدرس', 'ادرس', 'آدرسدرخواستکننده', 'نشانی', 'پته'],
+  applicant_name: ['applicantname', 'applicantsname', 'applicant', 'owner', 'ownername', 'company', 'proprietor', 'holder', 'نامدرخواستکننده', 'درخواستکننده', 'متقاضی', 'مالک', 'نامشرکت', 'دغوښتونکینوم', 'غوښتونکی'],
+  applicant_address: ['applicantaddress', 'applicantsaddress', 'address', 'owneraddress', 'companyaddress', 'آدرس', 'ادرس', 'آدرسدرخواستکننده', 'نشانی', 'پته'],
   trademark_class: ['trademarkclass', 'class', 'classes', 'niceclass', 'classno', 'classnumber', 'صنف', 'صنفعلامت', 'طبقه', 'کلاس', 'ټولګی'],
   goods_and_services: ['goodsandservices', 'goodsservices', 'goods', 'services', 'products', 'goodsservice', 'اجناسوخدمات', 'اجناس', 'خدمات', 'کالاها', 'کالاهاوخدمات', 'توکيخدمتونه'],
   application_type: ['applicationtype', 'type', 'apptype', 'requesttype', 'kind', 'نوعدرخواست', 'نوع', 'نوعیت', 'دغوښتنېډول'],
   attorney_or_representative: ['attorneyorrepresentative', 'attorney', 'representative', 'agent', 'attorneyrepresentative', 'lawyer', 'وکیل', 'نماینده', 'وکیلیانماینده', 'استازی'],
   publication_date: ['publicationdate', 'published', 'publishdate', 'datepublished', 'date', 'pubdate', 'تاریخنشر', 'تاریخ', 'تاریخانتشار', 'دخپرېدونېټه', 'نېټه'],
   objection_deadline: ['objectiondeadline', 'objection', 'deadline', 'oppositiondeadline', 'objectiondate', 'مهلتاعتراض', 'اعتراض', 'ضربالاجل', 'داعتراضنېټه'],
+  registration_number: ['registrationnumber', 'registrationno', 'regno', 'regnumber', 'registration', 'شمارهثبت', 'نمبرثبت', 'ثبت', 'دثبتشمېره'],
+  application_number: ['applicationnumber', 'applicationno', 'appno', 'appnumber', 'filingnumber', 'filingno', 'شمارهدرخواست', 'نمبردرخواست', 'دغوښتنېشمېره'],
   new_address: ['newaddress', 'آدرسجدید', 'ادرسجدید', 'نویپته'],
   old_address: ['oldaddress', 'previousaddress', 'آدرسقبلی', 'ادرسقبلی', 'پخوانیپته'],
   new_owner: ['newowner', 'newownername', 'مالکجدید', 'نویمالک'],

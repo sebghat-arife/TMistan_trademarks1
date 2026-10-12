@@ -17,7 +17,11 @@ const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage').then((m
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })))
 const ImportCenterPage = lazy(() => import('@/pages/admin/ImportCenterPage').then((m) => ({ default: m.ImportCenterPage })))
-const AdminSectionPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminSectionPage })))
+const AdminTrademarksPage = lazy(() => import('@/pages/admin/AdminTrademarksPage').then((m) => ({ default: m.AdminTrademarksPage })))
+const AdminImagesPage = lazy(() => import('@/pages/admin/AdminImagesPage').then((m) => ({ default: m.AdminImagesPage })))
+const AdminImportHistoryPage = lazy(() => import('@/pages/admin/AdminImportHistoryPage').then((m) => ({ default: m.AdminImportHistoryPage })))
+const AdminStoragePage = lazy(() => import('@/pages/admin/AdminStoragePage').then((m) => ({ default: m.AdminStoragePage })))
+const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage').then((m) => ({ default: m.AdminAuditPage })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,17 +49,6 @@ function PageFallback() {
   return <div className="container-x py-10 text-sm text-ink-400">…</div>
 }
 
-const ADMIN_SECTIONS: [string, string][] = [
-  ['trademarks', 'admin.trademarks'],
-  ['gazettes', 'admin.gazettes'],
-  ['images', 'admin.images'],
-  ['applicants', 'admin.applicants'],
-  ['reviews', 'admin.reviews'],
-  ['users', 'admin.users'],
-  ['audit', 'admin.auditLogs'],
-  ['settings', 'admin.settings'],
-]
-
 export default function App() {
   if (supabaseConfigError) return <ConfigScreen message={supabaseConfigError} />
   return (
@@ -77,12 +70,19 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
             <Route path="/admin" element={<AdminLayout />}>
+              {/* Admin Data Management Center — see docs/ADMIN_DATA_MANAGEMENT.md */}
               <Route index element={<AdminDashboardPage />} />
-              <Route path="imports" element={<ImportCenterPage />} />
+              <Route path="trademarks" element={<AdminTrademarksPage />} />
+              <Route path="images" element={<AdminImagesPage mode="all" />} />
+              <Route path="images/unmatched" element={<AdminImagesPage mode="unmatched" />} />
+              <Route path="imports" element={<ImportCenterPage mode="all" />} />
+              <Route path="imports/excel" element={<ImportCenterPage mode="excel" />} />
+              <Route path="imports/images" element={<ImportCenterPage mode="images" />} />
               <Route path="import" element={<Navigate to="/admin/imports" replace />} />
-              {ADMIN_SECTIONS.map(([path, key]) => (
-                <Route key={path} path={path} element={<AdminSectionPage titleKey={key} />} />
-              ))}
+              <Route path="history" element={<AdminImportHistoryPage />} />
+              <Route path="storage" element={<AdminStoragePage />} />
+              <Route path="audit" element={<AdminAuditPage />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
             </Route>
           </Routes>
         </Suspense>

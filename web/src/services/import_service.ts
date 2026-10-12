@@ -85,8 +85,13 @@ export async function addImportItems(jobId: string, items: { item_ref: string; s
 
 export type { ImportJobItemRow }
 
-export async function listImportJobItems(jobId: string, limit = 1000): Promise<ImportJobItemRow[]> {
-  return unwrap(await supabase.from('import_job_items').select('*').eq('job_id', jobId).order('id', { ascending: true }).limit(limit)) as ImportJobItemRow[]
+/** Statuses that represent problems (since migration 0600 the item log also records inserted/updated rows for provenance). */
+export const PROBLEM_ITEM_STATUSES: ImportJobItemRow['status'][] = ['failed', 'unmatched', 'ambiguous', 'skipped']
+
+export async function listImportJobItems(jobId: string, limit = 1000, statuses: ImportJobItemRow['status'][] = PROBLEM_ITEM_STATUSES): Promise<ImportJobItemRow[]> {
+  return unwrap(
+    await supabase.from('import_job_items').select('*').eq('job_id', jobId).in('status', statuses).order('id', { ascending: true }).limit(limit),
+  ) as ImportJobItemRow[]
 }
 
 /* --------------------------- trademark rows ----------------------------- */

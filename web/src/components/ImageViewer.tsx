@@ -3,11 +3,11 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { ChevronLeft, ChevronRight, Download, Maximize2, Minus, Plus, RotateCcw, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { storagePublicUrl } from '@/lib/supabase'
-import type { TrademarkImageRow } from '@/lib/database.types'
+import type { TrademarkImagePublicRow } from '@/lib/database.types'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  images: TrademarkImageRow[]
+  images: TrademarkImagePublicRow[]
   index: number
   open: boolean
   onOpenChange: (open: boolean) => void
