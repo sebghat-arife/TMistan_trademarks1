@@ -120,3 +120,23 @@ Uniqueness: `(storage_bucket, storage_path)` and `(trademark_id, image_type, con
 - The web app probes the capability once per session (`searchByNumbersSupported`): a call with the new
   parameters either returns or fails with `PGRST202`; on failure the two fields are disabled
   (*Not available yet*) and searches are retried without them (`numbersIgnored`).
+
+## Contact & Feedback inquiries (migration 0800)
+
+- One new private table `public.contact_requests` (`id`, `created_at`, `inquiry_type`, `full_name`,
+  `email`, `organization`, `subject`, `message`, `details jsonb`, `locale`, `page_url`, `user_agent`,
+  `ip_hash`, `status new|in_progress|closed|spam`, `admin_note`, `handled_by`, `handled_at`) with CHECK
+  constraints on every length/enum. RLS is enabled with **no policies and no grants** — the table is
+  invisible to the API; only the `security definer` functions touch it.
+- Public functions (anon + authenticated): `contact_form_status()` (capability probe) and
+  `submit_contact_request(p_inquiry_type, p_full_name, p_email, p_subject, p_message, p_organization,
+  p_details, p_locale, p_page_url, p_honeypot)` → `{id, received_at}`. Validation errors use SQLSTATE
+  `22023` with a user-facing message, rate limits use `TM429` (5/h per e-mail, 10/h per hashed IP,
+  60/10 min overall). `details` is whitelisted to the known category keys and clipped to 1000 chars
+  each. The IP (from `cf-connecting-ip` / `x-forwarded-for` / `x-real-ip`) is stored only as a salted
+  SHA-256 hash (`sha256()` built-in — no extension needed).
+- Admin functions (authenticated + `admin_assert()`): `admin_contact_counts()`,
+  `admin_list_contact_requests(p_status, p_type, p_query, p_limit ≤ 200, p_offset)` (rows +
+  `total_count`), `admin_get_contact_request(p_id)`, `admin_update_contact_request(p_id, p_status,
+  p_admin_note)` (sets `handled_by/handled_at`, logs `contact.update` through `admin_record_action`).
+- Requires 0400 and 0600; independent of 0700. Additive and idempotent. See `docs/CONTACT.md`.

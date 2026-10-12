@@ -9,7 +9,10 @@
     "about": "About",
     "help": "Help",
     "login": "Login",
-    "language": "Language"
+    "language": "Language",
+    "services": "Services",
+    "dataSources": "Data Sources",
+    "contact": "Contact"
   },
   "footer": {
     "blurb": "Search and explore trademark records published in the Official Gazette of Afghanistan.",
@@ -25,7 +28,10 @@
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
     "disclaimer": "Disclaimer",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "dataSources": "Data Sources & Methodology",
+    "services": "Trademark Research Services",
+    "contact": "Contact & Feedback"
   },
   "home": {
     "hero": {
@@ -790,7 +796,8 @@
       "history": "Import History",
       "unmatched": "Unmatched Images",
       "orphans": "Orphaned Files",
-      "audit": "Audit Log"
+      "audit": "Audit Log",
+      "inquiries": "Inquiries"
     },
     "data": {
       "notReady": "Data management is not available",
@@ -1058,6 +1065,55 @@
         "actor": "Actor",
         "noRows": "No row changes recorded."
       }
+    },
+    "inquiries": {
+      "subtitle": "Messages sent through the public Contact & Feedback page. Private: only administrators can read them.",
+      "notApplied": {
+        "title": "Migration 0800 has not been applied",
+        "hint": "Run supabase/APPLY_0800.sql in the Supabase SQL editor (Dashboard → SQL). It only adds the private contact_requests table and its functions."
+      },
+      "counts": {
+        "total": "Total",
+        "new": "New",
+        "in_progress": "In progress",
+        "closed": "Closed",
+        "spam": "Spam",
+        "last_24h": "Last 24 h"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "allTypes": "All types",
+        "search": "Search name, e-mail, subject, serial or id"
+      },
+      "columns": {
+        "received": "Received",
+        "type": "Type",
+        "from": "From",
+        "subject": "Subject",
+        "status": "Status"
+      },
+      "status": {
+        "new": "New",
+        "in_progress": "In progress",
+        "closed": "Closed",
+        "spam": "Spam"
+      },
+      "detail": {
+        "message": "Message",
+        "details": "Submitted details",
+        "organization": "Organization",
+        "locale": "Language",
+        "page": "Sent from",
+        "reply": "Reply by e-mail",
+        "note": "Internal note",
+        "notePlaceholder": "Visible to administrators only",
+        "setStatus": "Set status",
+        "save": "Save",
+        "saved": "Saved",
+        "handled": "Last updated"
+      },
+      "empty": "No inquiries match these filters.",
+      "privacy": "Inquiries contain personal data. Use them only to answer the sender."
     }
   },
   "common": {
@@ -1075,5 +1131,417 @@
     "next": "Next",
     "close": "Close",
     "cancel": "Cancel"
+  },
+  "dataSources": {
+    "metaTitle": "Data Sources & Methodology | TMistan",
+    "metaDescription": "Where TMistan's trademark records come from, how they are organized, how Gazette and page references work, and the limitations to consider when researching.",
+    "eyebrow": "Transparency & Trust",
+    "title": "Data Sources & Methodology",
+    "intro1": "TMistan provides a searchable way to explore trademark records published in the Official Gazette of Afghanistan. This page explains the origin of the available records, the role of source references, and the limitations users should consider when conducting research.",
+    "intro2": "Our aim is to make published trademark information easier to find and review while helping users understand the distinction between a published record and an independently confirmed current legal status.",
+    "gazette": {
+      "title": "Official Gazette of Afghanistan",
+      "p1": "The trademark records available through TMistan are derived from the Official Gazette of Afghanistan and the source materials collected and processed for inclusion in the platform.",
+      "p2": "Where available, each record includes references such as its Gazette number and source page, helping users identify the relevant publication and locate the original information.",
+      "p3": "Users should consult the underlying publication when they need to verify a particular entry or make an important legal or business decision.",
+      "flowTitle": "From Official Gazette to Searchable Result",
+      "flow": {
+        "gazette": {
+          "title": "Official Gazette",
+          "text": "Original publication of trademark records"
+        },
+        "source": {
+          "title": "Source Document / Page",
+          "text": "Gazette number and page reference"
+        },
+        "record": {
+          "title": "TMistan Record",
+          "text": "Structured and organized data"
+        },
+        "result": {
+          "title": "Searchable Result",
+          "text": "Find and explore trademark records"
+        }
+      },
+      "notOfficial": "TMistan is an independent research platform operated by Masnad Law Firm. It is not a government registry and not an official government service."
+    },
+    "fields": {
+      "title": "How Trademark Records Are Organized",
+      "lead": "Each record in TMistan includes the following information, where available in the source data:",
+      "items": {
+        "mark": {
+          "title": "Mark Name",
+          "text": "The trademark name or wording recorded in the available source."
+        },
+        "serial": {
+          "title": "Serial Number",
+          "text": "The identifier used to locate a trademark record within TMistan."
+        },
+        "applicant": {
+          "title": "Applicant",
+          "text": "The applicant name recorded in the source, where available."
+        },
+        "class": {
+          "title": "Class",
+          "text": "The trademark class associated with the record, where available."
+        },
+        "goods": {
+          "title": "Goods and Services",
+          "text": "The description recorded for the relevant goods or services, where available."
+        },
+        "gazette": {
+          "title": "Gazette Number",
+          "text": "The Gazette issue associated with the record."
+        },
+        "date": {
+          "title": "Publication Date",
+          "text": "The date recorded for the publication, where available."
+        },
+        "page": {
+          "title": "Source Page",
+          "text": "The page reference used to locate the entry in the underlying source."
+        },
+        "other": {
+          "title": "Other Record Details",
+          "text": "Application, registration, ownership, address, or deadline information where present in the source data."
+        }
+      },
+      "note": "Not every record contains all of these fields. A value that is not present in the source is shown as N/A."
+    },
+    "quality": {
+      "title": "Data Processing & Quality Control",
+      "p1": "To make historical trademark information easier to search, source materials are organized into structured digital records. The information displayed depends on the availability and quality of the underlying material.",
+      "p2": "Record fields and trademark images may require review where the source is incomplete, unclear, or difficult to interpret. TMistan aims to present the available information in a clear and useful format while preserving source references where available.",
+      "p3": "If you identify a missing field, an apparent data discrepancy, or an image that appears to be associated with the wrong record, please contact us and provide the relevant record details.",
+      "approachTitle": "Our Approach",
+      "approach": [
+        "Organize source materials into structured digital records",
+        "Preserve source references (Gazette number, page) with every record",
+        "Flag records and images that need review in the administration tools",
+        "Associate trademark images with records by serial number",
+        "Act on user reports of missing or incorrect information"
+      ]
+    },
+    "images": {
+      "title": "Trademark Images & Record Matching",
+      "p1": "Images are displayed according to the image files and record associations available in the platform.",
+      "p2": "Where the import process matches an image filename to a trademark serial number, this is a data-association mechanism, not independent confirmation that the image is authentic or legally registered.",
+      "p3": "If you notice a missing image, an incorrect image, or a suspected mismatch between an image and its record, please report it through the Contact & Feedback page with the relevant details.",
+      "calloutTitle": "Important to Know",
+      "callout": "Image-to-serial matching is a data-association process, not a legal verification of authenticity or registration status.",
+      "report": "Report an image issue"
+    },
+    "coverage": {
+      "title": "Understanding the Available Information",
+      "p1": "TMistan displays the trademark records currently available in its database. The extent of coverage depends on the source materials collected, processed, and included in the platform.",
+      "p2": "Some records may have incomplete or unavailable fields. A missing field does not necessarily mean that the information does not exist in another source.",
+      "p3": "Historical publication information should not, by itself, be treated as confirmation of a trademark's current registration status, ownership, validity, enforceability, or legal availability.",
+      "points": [
+        "Coverage depends on the source material available.",
+        "Missing information should not be interpreted as a definitive legal conclusion.",
+        "Important decisions should be supported by appropriate source review and professional advice."
+      ]
+    },
+    "disclaimer": {
+      "title": "Important Information",
+      "text": "TMistan is an informational research platform. The records displayed are provided to help users explore trademark publications and are not a substitute for official confirmation, current-status verification, or legal advice. Users should consult the relevant source material and obtain appropriate professional advice before relying on information for legal or commercial decisions.",
+      "reportNote": "Downloadable Trademark Publication Reports carry the full approved disclaimer, reproduced here for reference.",
+      "showReport": "Show the report disclaimer"
+    },
+    "cta": {
+      "title": "Continue your research",
+      "search": "Search Trademark Records",
+      "report": "Report a Data Issue"
+    }
+  },
+  "services": {
+    "metaTitle": "Trademark Research Services | TMistan",
+    "metaDescription": "Inquire about tailored trademark research through Masnad Law Firm: availability research, similar-mark research, historical Gazette research, record review, portfolio research and customized reports.",
+    "eyebrow": "Services & Research",
+    "title": "Trademark Research & Professional Assistance",
+    "intro1": "TMistan provides access to available trademark publication records in Afghanistan. For users who require more focused research, additional review, or assistance understanding relevant records, Masnad Law Firm may be able to provide tailored professional support.",
+    "intro2": "Contact us to describe your research needs and learn whether an appropriate service is available.",
+    "request": "Request a Trademark Search",
+    "explore": "Explore Available Records",
+    "fromSearch": {
+      "title": "From Record Search to Focused Research",
+      "p1": "Finding a published trademark record is often only the first step. Depending on the circumstances, a user may need to compare similar marks, examine historical publications, review applicant information, or organize findings into a report.",
+      "p2": "TMistan helps users begin that process by making available published records easier to search. For more specific needs, users can contact Masnad Law Firm to discuss the scope of their inquiry."
+    },
+    "cards": {
+      "title": "Services You Can Inquire About",
+      "lead": "Availability, scope, timeline and any fees are confirmed by Masnad Law Firm for each inquiry. None of these services is automated or included in the free search.",
+      "deliverable": "Potential deliverable",
+      "note": "Please note",
+      "inquire": "Inquire about this service",
+      "items": {
+        "availability": {
+          "title": "Trademark Availability Research",
+          "text": "Preliminary research to identify potentially relevant trademark records in the available sources and explore whether similar or identical marks appear in the records reviewed.",
+          "deliverable": "A summary of relevant records identified during the agreed research scope.",
+          "note": "This research does not guarantee that a mark is legally available or that an application will succeed."
+        },
+        "similar": {
+          "title": "Similar Trademark Research",
+          "text": "Focused research to identify potentially similar names, wording, or trademark images within the available records.",
+          "deliverable": "A list of potentially relevant records and their available source references.",
+          "note": "Visual or textual similarity results are research leads and are not a definitive legal assessment."
+        },
+        "historical": {
+          "title": "Historical Trademark Research",
+          "text": "Research into trademark records published in available historical Gazette materials, where the relevant sources and records are available.",
+          "deliverable": "A summary of relevant historical entries, including Gazette and page references where available.",
+          "note": "Comprehensive coverage of every historical Gazette issue cannot be promised."
+        },
+        "review": {
+          "title": "Trademark Record Review",
+          "text": "Assistance reviewing available information associated with selected trademark records, such as applicant names, classifications, publication details, and source references.",
+          "deliverable": "An organized review of the selected records and any limitations identified.",
+          "note": "A database entry alone does not prove current ownership or legal status."
+        },
+        "portfolio": {
+          "title": "Trademark Portfolio Research",
+          "text": "Research support for businesses or professionals seeking to identify and organize trademark records relevant to selected applicants, brands, or classes.",
+          "deliverable": "An organized record list or research summary, subject to the available data and agreed scope.",
+          "note": "Complete portfolio identification cannot be promised without verifying coverage."
+        },
+        "custom": {
+          "title": "Customized Trademark Research Report",
+          "text": "For inquiries requiring a tailored scope, users can request a discussion about a customized trademark research report based on available records and any additional research agreed with Masnad Law Firm.",
+          "deliverable": "A report defined by the agreed scope, source availability, and professional engagement.",
+          "note": "Content, timeline, and fees must be confirmed by the firm."
+        }
+      }
+    },
+    "process": {
+      "title": "How to Request Research Assistance",
+      "steps": [
+        {
+          "title": "Describe Your Needs",
+          "text": "Tell us whether you need research on a particular brand, applicant, serial number, class, or group of records."
+        },
+        {
+          "title": "Initial Review",
+          "text": "The team reviews the inquiry to understand the requested scope and determine whether the available information is suitable."
+        },
+        {
+          "title": "Confirm Scope",
+          "text": "If the firm can assist, it confirms the proposed work, deliverables, timeline, and any applicable fees before work begins."
+        },
+        {
+          "title": "Research and Delivery",
+          "text": "Research is conducted according to the agreed scope, and the resulting deliverable is provided through the agreed communication method."
+        }
+      ],
+      "note": "Response and delivery times depend on the scope of the request and are confirmed by the firm for each engagement."
+    },
+    "audience": {
+      "title": "Who May Benefit",
+      "items": [
+        "Businesses researching brands before making commercial decisions.",
+        "Legal professionals conducting preliminary record research.",
+        "Trademark professionals organizing available publication information.",
+        "Researchers studying historical trademark publications.",
+        "Organizations reviewing records associated with selected names or applicants."
+      ],
+      "note": "TMistan and these services are not suited to every legal or regulatory situation; the firm will say so when a request falls outside what it can support."
+    },
+    "info": {
+      "title": "What Information Should You Provide?",
+      "lead": "A useful inquiry may include:",
+      "items": [
+        "Trademark or brand name.",
+        "Known serial number.",
+        "Applicant or owner name as shown in the source.",
+        "Relevant class, if known.",
+        "Gazette number or source page, if known.",
+        "Type of research requested.",
+        "Purpose and geographic scope of the inquiry.",
+        "Desired deliverable and any relevant deadline."
+      ],
+      "warning": "Please do not submit passwords, payment-card details, or unnecessary sensitive information through the inquiry form."
+    },
+    "limits": {
+      "title": "Scope & Limitations",
+      "p1": "Research results depend on the information available and the scope of the work agreed. Similarity searches and historical record reviews may identify relevant information but cannot guarantee that all potentially relevant marks have been located.",
+      "p2": "A publication record does not, by itself, establish current registration status, ownership, validity, enforceability, or legal availability. Any professional assessment and associated advice must be confirmed separately with Masnad Law Firm.",
+      "note": "A free database search on TMistan is not a formal legal opinion."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "items": [
+        {
+          "q": "Is basic searching on TMistan free?",
+          "a": "Yes. Searching the trademark publication records available on TMistan is free of charge. Fees, where they apply, concern only professional services confirmed by Masnad Law Firm before any work begins."
+        },
+        {
+          "q": "Can you search for similar trademarks?",
+          "a": "You can submit an inquiry about similarity research. The team confirms whether the requested scope can be supported by the available records and tools."
+        },
+        {
+          "q": "Can you guarantee that a trademark is available?",
+          "a": "No. A search cannot guarantee legal availability or the outcome of an application."
+        },
+        {
+          "q": "How much does a customized report cost?",
+          "a": "Fees, if applicable, depend on the scope of work and must be confirmed by Masnad Law Firm before engagement."
+        },
+        {
+          "q": "How long does research take?",
+          "a": "The timeline depends on the scope and availability of source material. A timeframe should be confirmed with the firm."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Tell Us What You Need to Research",
+      "text": "Send us the details of your trademark research inquiry. Our team can review the request and let you know whether we can assist.",
+      "request": "Request a Trademark Search",
+      "search": "Search TMistan"
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact & Feedback | TMistan",
+    "metaDescription": "Contact TMistan and Masnad Law Firm: ask a question, request trademark research, report missing or incorrect information, or get technical support.",
+    "eyebrow": "Contact & Feedback",
+    "title": "Contact TMistan",
+    "intro1": "Whether you have a question about the platform, need assistance with a trademark record, or would like to discuss a tailored research request, we welcome your inquiry.",
+    "intro2": "Choose the option that best describes your request so we can direct it appropriately.",
+    "categories": {
+      "title": "What is your inquiry about?",
+      "general": {
+        "title": "General Inquiry",
+        "text": "For questions about TMistan, its features, and available information."
+      },
+      "trademark-research": {
+        "title": "Trademark Research Request",
+        "text": "For inquiries about preliminary searches, similar marks, historical records, or customized research."
+      },
+      "data-correction": {
+        "title": "Data Correction or Missing Information",
+        "text": "For reporting an apparent discrepancy, missing field, missing image, or incorrect association between an image and a trademark record."
+      },
+      "technical-support": {
+        "title": "Technical Support",
+        "text": "For search problems, download errors, login issues, broken links, or other website functionality issues."
+      }
+    },
+    "form": {
+      "title": "Send Your Inquiry",
+      "lead": "Fields marked with * are required.",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "organization": "Organization",
+      "inquiryType": "Inquiry Type",
+      "subject": "Subject",
+      "message": "Message",
+      "optional": "optional",
+      "privacy": "I have read the <1>Privacy Policy</1> and agree that the information I provide is used to handle my inquiry.",
+      "submit": "Send Inquiry",
+      "submitting": "Sending…",
+      "chars": "{{count}} / {{max}} characters",
+      "sectionResearch": "Research details",
+      "sectionCorrection": "Record details",
+      "sectionSupport": "Problem details",
+      "research": {
+        "trademarkName": "Trademark or brand name",
+        "serial": "Serial number, if known",
+        "applicant": "Applicant name, if known",
+        "class": "Class, if known",
+        "gazette": "Gazette number, if known",
+        "researchType": "Type of research requested",
+        "researchTypes": {
+          "availability": "Trademark availability research",
+          "similar": "Similar trademark research",
+          "historical": "Historical trademark research",
+          "review": "Trademark record review",
+          "portfolio": "Trademark portfolio research",
+          "custom": "Customized trademark research report",
+          "other": "Other / not sure yet"
+        },
+        "format": "Preferred report or response format",
+        "formats": {
+          "email": "E-mail reply",
+          "pdf": "Written report (PDF)",
+          "call": "Call or meeting",
+          "other": "Other"
+        },
+        "purpose": "Purpose and geographic scope of the inquiry",
+        "deadline": "Relevant deadline, if any"
+      },
+      "correction": {
+        "serial": "Trademark serial number",
+        "mark": "Mark name, if known",
+        "gazette": "Gazette Number",
+        "page": "Source page, if known",
+        "issue": "Issue category",
+        "issues": {
+          "incorrect_text": "Incorrect text",
+          "missing_info": "Missing information",
+          "missing_image": "Missing image",
+          "incorrect_image": "Incorrect trademark image",
+          "incorrect_source": "Incorrect source reference",
+          "other": "Other"
+        },
+        "description": "Description of the issue",
+        "attachNote": "Attachments cannot be uploaded through this form yet. Describe the issue; we will ask for a file if one is needed."
+      },
+      "support": {
+        "issue": "Issue category",
+        "issues": {
+          "search": "Search problem",
+          "download": "Download error",
+          "login": "Login issue",
+          "broken_link": "Broken link",
+          "display": "Display or layout problem",
+          "other": "Other"
+        },
+        "url": "Relevant page or URL",
+        "description": "Short description of the problem",
+        "browser": "Browser / device information"
+      },
+      "errors": {
+        "required": "This field is required.",
+        "email": "Please enter a valid e-mail address.",
+        "min": "Please enter at least {{count}} characters.",
+        "max": "Please use at most {{count}} characters.",
+        "privacy": "Please confirm the privacy acknowledgment.",
+        "type": "Please choose an inquiry type.",
+        "fix": "Please correct the highlighted fields."
+      }
+    },
+    "status": {
+      "unavailableTitle": "The inquiry form is not available yet",
+      "unavailableText": "This website's database is not yet prepared to receive inquiries (database update 0800 pending). Please try again later or use the contact details on this page.",
+      "successTitle": "Thank You for Contacting TMistan",
+      "successText": "Your inquiry has been submitted successfully. Thank you for contacting TMistan. We will review your message and respond if further information or action is required.",
+      "reference": "Reference",
+      "another": "Send another inquiry",
+      "failedTitle": "Your inquiry could not be submitted",
+      "failedText": "We could not submit your inquiry at this time. Please try again. If the problem continues, use the approved contact information listed on this page.",
+      "rateLimited": "Too many inquiries were sent from this address in a short time. Please wait a while before trying again."
+    },
+    "aside": {
+      "title": "Masnad Law Firm",
+      "operator": "TMistan is operated by Masnad Law Firm, Kabul, Afghanistan.",
+      "website": "Official website",
+      "email": "E-mail",
+      "phone": "Telephone",
+      "address": "Office address",
+      "noDirect": "Further contact channels will be listed here once they are confirmed for publication. Until then, please use the inquiry form.",
+      "guidanceTitle": "Before you send",
+      "guidance": [
+        "Include the serial number, Gazette Number or source page when your inquiry concerns a specific record.",
+        "Describe the research purpose and scope so the request can be assessed correctly.",
+        "Replies are sent to the e-mail address you provide."
+      ],
+      "location": "Kabul, Afghanistan"
+    },
+    "privacyNotice": "Please provide only the information necessary to handle your inquiry. Do not include passwords, payment-card details, or unnecessary confidential information. Information submitted through this form should be handled according to TMistan's Privacy Policy.",
+    "privacyLink": "Privacy Policy",
+    "closing": {
+      "title": "Looking for Trademark Information?",
+      "text": "Start with TMistan's searchable collection of available trademark publication records.",
+      "search": "Search Trademark Records"
+    }
   }
 }

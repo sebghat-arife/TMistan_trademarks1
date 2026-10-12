@@ -43,6 +43,14 @@ Number, publication date, source page, *View record*). Application/registration-
 migration 0700; until it is applied the fields are shown as *Not available yet* and the search still
 runs. The hero photograph is a real, CC-BY-licensed picture of Darulaman Palace (`web/public/img/CREDITS.md`).
 
+**Informational pages** (`/data-sources`, `/services`, `/contact`, `docs/CONTACT.md`): *Data Sources &
+Methodology* (where the records come from, how they are organised, image/record matching, coverage,
+the report disclaimer), *Trademark Research Services* (six research services offered through Masnad
+Law Firm as inquiries — no prices, no promises) and *Contact & Feedback* (four inquiry categories with
+category-specific fields; submissions go through `submit_contact_request`, migration 0800 — validated
+and rate-limited in Postgres, stored in a private table nobody can read through the API; administrators
+triage them under Admin → Inquiries). Until 0800 is applied the form announces itself as not available.
+
 **Search by Image** (`/search?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo (or picks
 one of the *Example searches*, which are real images already published in the database), the
 browser computes a compact visual descriptor (the picture itself never leaves the tab) and Postgres
@@ -68,12 +76,13 @@ service-role key exists only on the machine that runs importers / the storage se
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0700) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0800) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
 | `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
 | `supabase/APPLY_0700.sql` | migration 0700 alone (search by application / registration number — function-only) for projects already on 0100–0600 | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number | no |
+| `supabase/APPLY_0800.sql` | migration 0800 alone (Contact & Feedback: private `contact_requests` table + submit/admin functions) for projects already on 0100–0600 (0700 not required) | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
@@ -157,14 +166,15 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 
 1. **Backup** (Dashboard → Database → Backups).
 2. **Schema** — SQL Editor → New query → paste the whole of `supabase/APPLY_ALL.sql` → Run.
-   It is the concatenation of `supabase/migrations/…0100` … `…0700`; additive and
+   It is the concatenation of `supabase/migrations/…0100` … `…0800`; additive and
    idempotent (safe to re-run), it never drops or rewrites `public.trademarks` rows and keeps the
    `(official_gazette_number, serial_number)` uniqueness. The result panel prints the post-checks
    (trademark count, gazettes, policies, anon-readable rows). A project that already has 0100–0300
    only needs **`supabase/APPLY_0400.sql`** (Import Center), one on 0100–0400 only
    **`supabase/APPLY_0500.sql`** (Search by Image), and one on 0100–0500 only
    **`supabase/APPLY_0600.sql`** (Admin Data Management), and one on 0100–0600 only
-   **`supabase/APPLY_0700.sql`** (search by application / registration number). Read the *Messages* tab: a WARNING about
+   **`supabase/APPLY_0700.sql`** (search by application / registration number) and **`supabase/APPLY_0800.sql`**
+   (Contact & Feedback inbox). Read the *Messages* tab: a WARNING about
    `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
@@ -186,12 +196,19 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 10. **Search by application / registration number** — until 0700 is applied the two fields in
    Advanced search read *Not available yet* and the app silently searches without them (it detects
    the missing parameters at runtime); paste `supabase/APPLY_0700.sql` (function-only, no data touched).
+11. **Contact & Feedback** — until 0800 is applied `/contact` shows *"The inquiry form is not available
+   yet"* and Admin → Inquiries shows *"Migration 0800 has not been applied"*; paste
+   `supabase/APPLY_0800.sql` (one new private table + functions, nothing existing touched). Then set the
+   approved contact details (`SITE_CONTACT_EMAIL` / `SITE_CONTACT_PHONE` / `SITE_CONTACT_ADDRESS`) as
+   Render environment variables if Masnad wants them published — nothing is shown until they are set.
+   See `docs/CONTACT.md`.
 
 Status of the production project `tzzslhpqbfjklazihssc` (checked 2026-10-12, read-only):
 0100–0600 applied by the project owner (`registration_number`/`application_number` columns and the
 admin data-management functions exist); 159 published trademarks in 2 gazettes with 159 indexed
-images. **0700 (`APPLY_0700.sql`) has not been applied yet** — paste it when the application /
-registration-number filters are wanted (see step 10).
+images. **0700 (`APPLY_0700.sql`) and 0800 (`APPLY_0800.sql`) have not been applied yet** — paste 0700
+when the application / registration-number filters are wanted (step 10) and 0800 to switch on the
+contact form (step 11); both are additive and independent of each other.
 
 ## Optional Python importer (operator machine, service-role key)
 

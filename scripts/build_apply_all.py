@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0700) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql and APPLY_0700.sql."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0800) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql and APPLY_0800.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -134,3 +134,53 @@ union all select 'published trademarks', (select count(*)::text from public.trad
 """
 p0700.write_text(h0700 + f"\n-- {'#'*76}\n-- {m0700.name}\n-- {'#'*76}\n" + m0700.read_text() + f0700)
 print("wrote supabase/APPLY_0700.sql")
+
+# APPLY_0800.sql — Contact & Feedback inbox, for projects already on 0100–0600 (0700 not required).
+m0800 = root / "supabase" / "migrations" / "20261013000800_contact_requests.sql"
+p0800 = root / "supabase" / "APPLY_0800.sql"
+h0800 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 0800 (Contact & Feedback form + admin Inquiries inbox)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261013000800_contact_requests.sql by
+-- scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisites: 0400 (admin_assert) and 0600 (admin_record_action) are in
+-- place. 0700 is NOT required.
+--
+-- Safe by construction — ADDITIVE ONLY:
+--   • adds ONE new private table public.contact_requests (RLS on, no
+--     policies, no grants — nobody can read it through the API)
+--   • adds the public function submit_contact_request() (server-side
+--     validation, rate limiting, honeypot) and contact_form_status()
+--   • adds admin-only functions admin_contact_counts / admin_list_contact_requests /
+--     admin_get_contact_request / admin_update_contact_request (admin_assert)
+--   • touches no existing table, column, index, policy, storage object or data row
+--   • idempotent — running it twice is harmless
+--
+-- Afterwards: /contact actually accepts submissions (until then it shows
+-- "The inquiry form is not available yet") and Admin → Inquiries lists them.
+-- ============================================================================
+begin;
+"""
+f0800 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'contact_requests table' as object,
+       (select count(*)::text from pg_tables where schemaname = 'public' and tablename = 'contact_requests') as value
+union all select 'RLS enabled',
+       (select relrowsecurity::text from pg_class where oid = 'public.contact_requests'::regclass)
+union all select 'anon/authenticated table grants (must be 0)',
+       (select count(*)::text from information_schema.role_table_grants
+         where table_schema = 'public' and table_name = 'contact_requests' and grantee in ('anon', 'authenticated'))
+union all select 'anon may call submit_contact_request',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'submit_contact_request' and grantee = 'anon' and privilege_type = 'EXECUTE')
+union all select 'contact functions',
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname in ('contact_form_status','submit_contact_request','admin_contact_counts','admin_list_contact_requests','admin_get_contact_request','admin_update_contact_request'))
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks;
+"""
+p0800.write_text(h0800 + f"\n-- {'#'*76}\n-- {m0800.name}\n-- {'#'*76}\n" + m0800.read_text() + f0800)
+print("wrote supabase/APPLY_0800.sql")

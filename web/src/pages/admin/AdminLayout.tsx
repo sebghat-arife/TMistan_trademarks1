@@ -1,6 +1,6 @@
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FileClock, FileSpreadsheet, HardDrive, History, ImageOff, Image as ImageIcon, Images, LayoutDashboard, LogOut, Tag } from 'lucide-react'
+import { FileClock, FileSpreadsheet, HardDrive, History, ImageOff, Image as ImageIcon, Images, Inbox, LayoutDashboard, LogOut, Tag } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/Logo'
@@ -17,6 +17,7 @@ export const ADMIN_NAV = [
   { to: '/admin/images/unmatched', key: 'admin.nav.unmatched', Icon: ImageOff },
   { to: '/admin/storage', key: 'admin.nav.orphans', Icon: HardDrive },
   { to: '/admin/audit', key: 'admin.nav.audit', Icon: FileClock },
+  { to: '/admin/inquiries', key: 'admin.nav.inquiries', Icon: Inbox },
 ] as const
 
 /** Dark sidebar shell from the mock-up. Only reachable when `is_admin()` is true. */

@@ -273,3 +273,25 @@ select.sfield-control { @apply appearance-none pe-9; }
 .opt input:checked ~ .opt-dot { @apply border-brand-600 bg-brand-600; }
 .opt input:focus-visible ~ .opt-dot { @apply outline-2 outline-offset-2 outline-brand-600; }
 .opt input:disabled ~ * { @apply opacity-50; }
+
+/* ── Informational pages (Data Sources, Services, Contact) ─────────────────── */
+.page-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(180deg,#f3f7f4_0%,#fbfcfb_100%)]; }
+.page-hero-photo {
+  @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[52%] bg-cover bg-no-repeat md:block;
+  background-image: url('/img/legal-documents-desk.jpg');
+  background-position: var(--hero-pos, 70% 50%);
+  opacity: var(--hero-opacity, 0.5);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+}
+[dir='rtl'] .page-hero-photo {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+  mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+}
+.num-badge { @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[14px] font-bold text-white; }
+.prose-p { @apply text-[15px] leading-[1.75] text-ink-700; }
+.faq > summary { @apply flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold text-ink-900 marker:hidden; }
+.faq > summary::-webkit-details-marker { display: none; }
+.faq[open] > summary svg { transform: rotate(180deg); }
+/* Honeypot field: off-screen for people, present for bots */
+.hp-field { position: absolute; inset-inline-start: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }

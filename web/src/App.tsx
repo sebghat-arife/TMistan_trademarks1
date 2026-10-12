@@ -13,6 +13,9 @@ const TrademarkPage = lazy(() => import('@/pages/TrademarkPage').then((m) => ({ 
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const HelpPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.HelpPage })))
 const LegalPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.LegalPage })))
+const DataSourcesPage = lazy(() => import('@/pages/DataSourcesPage').then((m) => ({ default: m.DataSourcesPage })))
+const ServicesPage = lazy(() => import('@/pages/ServicesPage').then((m) => ({ default: m.ServicesPage })))
+const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })))
 const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })))
@@ -22,6 +25,7 @@ const AdminImagesPage = lazy(() => import('@/pages/admin/AdminImagesPage').then(
 const AdminImportHistoryPage = lazy(() => import('@/pages/admin/AdminImportHistoryPage').then((m) => ({ default: m.AdminImportHistoryPage })))
 const AdminStoragePage = lazy(() => import('@/pages/admin/AdminStoragePage').then((m) => ({ default: m.AdminStoragePage })))
 const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage').then((m) => ({ default: m.AdminAuditPage })))
+const AdminInquiriesPage = lazy(() => import('@/pages/admin/AdminInquiriesPage').then((m) => ({ default: m.AdminInquiriesPage })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +67,9 @@ export default function App() {
               <Route path="/trademark/:serial" element={<TrademarkPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/help" element={<HelpPage />} />
+              <Route path="/data-sources" element={<DataSourcesPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/terms" element={<LegalPage kind="terms" />} />
               <Route path="/privacy" element={<LegalPage kind="privacy" />} />
               <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
@@ -82,6 +89,7 @@ export default function App() {
               <Route path="history" element={<AdminImportHistoryPage />} />
               <Route path="storage" element={<AdminStoragePage />} />
               <Route path="audit" element={<AdminAuditPage />} />
+              <Route path="inquiries" element={<AdminInquiriesPage />} />
               <Route path="*" element={<Navigate to="/admin" replace />} />
             </Route>
           </Routes>

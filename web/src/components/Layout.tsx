@@ -9,8 +9,11 @@ import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 
 const NAV = [
   { to: '/search', key: 'nav.search' },
+  { to: '/services', key: 'nav.services' },
+  { to: '/data-sources', key: 'nav.dataSources' },
   { to: '/about', key: 'nav.about' },
   { to: '/help', key: 'nav.help' },
+  { to: '/contact', key: 'nav.contact' },
 ] as const
 
 // Brand glyphs (lucide no longer ships brand icons). Links come from the
@@ -38,14 +41,14 @@ export function Layout() {
             <Logo className="h-[52px]" />
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-5 md:flex lg:gap-7" aria-label="Primary">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 className={({ isActive }) =>
                   cn(
-                    'relative py-5 text-[15px] font-medium text-ink-800 transition-colors hover:text-brand-600',
+                    'relative whitespace-nowrap py-5 text-[14px] font-medium text-ink-800 transition-colors hover:text-brand-600 lg:text-[15px]',
                     isActive && 'text-ink-900 after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:rounded-full after:bg-brand-600',
                   )
                 }
@@ -113,10 +116,10 @@ export function Layout() {
               ))}
             </div>
           </div>
-          <FooterCol title={t('footer.platform')} links={[['/search', t('nav.search')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
+          <FooterCol title={t('footer.platform')} links={[['/search', t('nav.search')], ['/services', t('footer.services')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
           <FooterCol
             title={t('footer.information')}
-            links={[['/about', t('footer.aboutTMistan')], ['/#how-it-works', t('footer.howItWorks')], ['/#sources', t('footer.sources')], ['/help', t('nav.help')]]}
+            links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
           />
           <div>
             <h3 className="text-[15px] font-semibold">{t('footer.masnad')}</h3>
