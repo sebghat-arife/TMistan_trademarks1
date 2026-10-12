@@ -77,6 +77,6 @@ Gazette scan) produces a degenerate descriptor and is never a meaningful match.
 
 `web/src/lib/imageSearch/descriptor.ts` (descriptor + decoding) ·
 `web/src/services/image_search_service.ts` (RPC wrappers, indexing helpers) ·
-`web/src/components/ImageSearchPanel.tsx` (public UI) · `web/src/pages/admin/ImageIndexPanel.tsx`
+`web/src/components/search/{ImageSearchCard,ImageSearchResults,ImageSearchExamples,SearchTips}.tsx` + `useImageSearch.ts` (public UI: upload / preview / Exact match ≥ 0.85 · Similar images ≥ 0.55 · Advanced search = similar + client-side refine of the returned candidates by class, gazette, application type; example tiles are real published images) · `web/src/pages/admin/ImageIndexPanel.tsx`
 (admin index panel) · `supabase/migrations/20261011000500_image_search.sql` · `supabase/APPLY_0500.sql`
 · i18n keys `search.image.*`, `admin.index.*`, `admin.import.indexing*`.

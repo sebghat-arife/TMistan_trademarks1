@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → 0200 → 0300 → 0400 → 0500 → 0600), supabase/APPLY_0400.sql (0400 only), supabase/APPLY_0500.sql (0500 only) and supabase/APPLY_0600.sql (0600 only)."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0700) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql and APPLY_0700.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -88,3 +88,49 @@ union all select 'published trademarks', (select count(*)::text from public.trad
 """
 p0600.write_text(h0600 + f"\n-- {'#'*76}\n-- {m0600.name}\n-- {'#'*76}\n" + m0600.read_text() + f0600)
 print("wrote supabase/APPLY_0600.sql")
+
+# APPLY_0700.sql — search by application / registration number, for projects already on 0100–0600.
+m0700 = root / "supabase" / "migrations" / "20261013000700_search_numbers.sql"
+p0700 = root / "supabase" / "APPLY_0700.sql"
+h0700 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 0700 (search by application / registration number)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261013000700_search_numbers.sql by
+-- scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisite: migration 0600 (APPLY_0600.sql) is in place — it adds the
+-- trademarks.application_number / registration_number columns.
+--
+-- Safe by construction — FUNCTION ONLY:
+--   • re-creates public.search_trademarks() with two extra optional
+--     parameters (p_application_number, p_registration_number) and lets the
+--     keyword search match those two columns
+--   • touches no table, column, index, policy, storage object or data row
+--   • idempotent — running it twice is harmless
+--
+-- Afterwards: Search → Advanced search → "Application number" and
+-- "Registration number" become editable, and typing a number into the main
+-- search box finds the record. Nothing else changes.
+-- ============================================================================
+begin;
+"""
+f0700 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'search_trademarks overloads (must be 1)' as object,
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'search_trademarks') as value
+union all select 'has p_application_number',
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'search_trademarks'
+           and 'p_application_number' = any(p.proargnames))
+union all select 'anon may execute',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'search_trademarks' and grantee = 'anon' and privilege_type = 'EXECUTE')
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks
+union all select 'published trademarks', (select count(*)::text from public.trademarks where is_published);
+"""
+p0700.write_text(h0700 + f"\n-- {'#'*76}\n-- {m0700.name}\n-- {'#'*76}\n" + m0700.read_text() + f0700)
+print("wrote supabase/APPLY_0700.sql")

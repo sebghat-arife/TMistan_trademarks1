@@ -196,3 +196,80 @@
   @page { size: A4; margin: 14mm; }
   html, body { background: #fff !important; }
 }
+
+/* ── Search page ────────────────────────────────────────────────────────
+   Hero band with a real photograph (Darulaman Palace, Kabul — see
+   public/img/CREDITS.md) on the end side from md up. Below md the photo is not
+   fetched at all (CSS background). It fades into the band on the text side and
+   into the page background at the bottom so the search card stays legible. */
+.search-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--color-mist-50) 0%, #fbfcfb 55%, var(--color-ink-50) 100%);
+}
+.search-hero-photo {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 62%;
+  display: none;
+  z-index: -1;
+  background-size: cover;
+  background-position: 68% 38%;
+  opacity: .94;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 26%, rgba(0,0,0,.85) 52%, #000 70%);
+          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 26%, rgba(0,0,0,.85) 52%, #000 70%);
+}
+[dir="rtl"] .search-hero-photo {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.35) 26%, rgba(0,0,0,.85) 52%, #000 70%);
+          mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.35) 26%, rgba(0,0,0,.85) 52%, #000 70%);
+}
+.search-hero-photo::after {
+  /* soft wash + bottom fade so the photograph never competes with the controls */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(248,249,250,0) 0%, rgba(248,249,250,0) 58%, rgba(248,249,250,.75) 86%, var(--color-ink-50) 100%),
+    linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18));
+}
+@media (min-width: 768px) {
+  .search-hero-photo { display: block; background-image: url('/img/search-hero-darulaman.jpg'); }
+}
+.search-hero-credit {
+  position: absolute;
+  inset-inline-end: 12px;
+  bottom: 8px;
+  display: none;
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgba(51,59,68,.65);
+}
+.search-hero-credit:hover { color: rgba(51,59,68,.95); }
+@media (min-width: 768px) { .search-hero-credit { display: block; } }
+
+/* Segmented control (Search by Name or Details | Search by Image) */
+.seg { @apply inline-flex max-w-full rounded-lg bg-white p-1 shadow-[0_1px_2px_rgba(16,35,58,.06)] ring-1 ring-ink-200; }
+.seg-item {
+  @apply inline-flex min-h-10 min-w-0 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-center text-[13px] leading-tight font-semibold text-ink-700 transition-colors
+         hover:bg-ink-50 hover:text-ink-900 sm:px-4 sm:text-[14px];
+}
+.seg-item[aria-selected="true"] { @apply bg-brand-600 text-white shadow-sm hover:bg-brand-600 hover:text-white; }
+
+/* Form fields on the Search page: label with a small line icon above the control */
+.sfield { @apply flex min-w-0 flex-col gap-1.5; }
+.sfield-label { @apply inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-700; }
+.sfield-label svg { @apply h-3.5 w-3.5 text-ink-400; }
+.sfield-control {
+  @apply h-11 w-full min-w-0 rounded-md border border-ink-200 bg-white px-3 text-[14px] text-ink-900 placeholder:text-ink-400
+         focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none disabled:cursor-not-allowed disabled:bg-ink-50 disabled:text-ink-400;
+}
+select.sfield-control { @apply appearance-none pe-9; }
+
+/* Radio-style option rows (Search Options) */
+.opt { @apply flex cursor-pointer items-start gap-3 rounded-lg border border-transparent px-2.5 py-2 transition-colors hover:bg-ink-50; }
+.opt-dot { @apply mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink-300 bg-white transition-colors; }
+.opt input:checked ~ .opt-dot { @apply border-brand-600 bg-brand-600; }
+.opt input:focus-visible ~ .opt-dot { @apply outline-2 outline-offset-2 outline-brand-600; }
+.opt input:disabled ~ * { @apply opacity-50; }

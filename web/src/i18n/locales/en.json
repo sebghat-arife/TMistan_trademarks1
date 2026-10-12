@@ -250,7 +250,7 @@
       "modeImage": "Search by Image",
       "title": "Search by Image",
       "lead": "Upload an image of a logo or trademark to find visually similar images among the published records.",
-      "dropTitle": "Drag and drop an image here",
+      "dropTitle": "Drag and drop your image here",
       "dropOr": "or",
       "browse": "browse files",
       "formats": "PNG, JPEG, WebP, GIF or BMP · up to {{mb}} MB",
@@ -258,7 +258,7 @@
       "previewAlt": "Selected image",
       "replace": "Replace image",
       "remove": "Remove image",
-      "submit": "Search by Image",
+      "submit": "Search",
       "analysing": "Analysing image…",
       "searching": "Searching…",
       "errors": {
@@ -281,7 +281,131 @@
         "high": "High visual similarity",
         "moderate": "Moderate visual similarity",
         "low": "Low visual similarity"
+      },
+      "uploadTitle": "Upload Trademark Image",
+      "uploadLead": "Upload a clear image of the trademark (logo, wordmark, or design).",
+      "uploadFormats": "We support common image formats (JPG, PNG, WEBP).",
+      "chooseFile": "Choose File",
+      "dropMeta": "JPG, PNG, WEBP · Max size: {{mb}} MB",
+      "selected": "Selected image",
+      "exampleFrom": "Example image from record {{serial}}",
+      "options": {
+        "title": "Search Options",
+        "exact": {
+          "title": "Exact match",
+          "text": "Find identical or near-identical image representations"
+        },
+        "similar": {
+          "title": "Similar images",
+          "text": "Find visually similar trademark records"
+        },
+        "advanced": {
+          "title": "Advanced search",
+          "text": "Refine the results by class, gazette number or application type"
+        },
+        "advancedNote": "Filters refine the {{count}} most similar records returned by the image search.",
+        "refineTitle": "Refine results"
+      },
+      "needImage": "Choose an image to start the search.",
+      "tips": {
+        "title": "Tips for better results",
+        "resolution": "Use a clear, high-resolution image (ideally 300 DPI or higher).",
+        "crop": "Crop the image to focus on the trademark (e.g., remove background or extra text).",
+        "formats": "JPG, PNG and WEBP formats are supported.",
+        "background": "Avoid unnecessary backgrounds where possible.",
+        "more": "View more search tips"
+      },
+      "examples": {
+        "title": "Example searches",
+        "lead": "Try the image search with trademark images already published in this database.",
+        "try": "Search with this image",
+        "loading": "Loading examples…",
+        "failed": "The example image could not be loaded."
+      },
+      "resultsRefined_one": "{{count}} of {{total}} similar records match the filters",
+      "resultsRefined_other": "{{count}} of {{total}} similar records match the filters",
+      "noRefined": "None of the similar records match the selected filters.",
+      "noRefinedHint": "Remove a filter or choose “Similar images” to see all visually similar records.",
+      "modeExactNote": "Exact match shows records with at least {{percent}}% visual similarity."
+    },
+    "eyebrow": "Trademark Research Platform",
+    "titleRich": "Search Trademarks in <1>Afghanistan</1>",
+    "lead": "Search trademark records published in the Official Gazette of Afghanistan.",
+    "keywordPlaceholder": "Enter trademark name, applicant, serial number, or application number",
+    "searchButton": "Search",
+    "photoCredit": "Photo: Darulaman Palace, Kabul — Qasimmirzaie, Wikimedia Commons (CC BY 4.0)",
+    "advanced": {
+      "toggle": "Advanced search",
+      "title": "Advanced Search",
+      "clear": "Clear all",
+      "fields": {
+        "mark": "Trademark name",
+        "serial": "Serial number",
+        "applicant": "Applicant's name",
+        "applicationNumber": "Application number",
+        "registrationNumber": "Registration number",
+        "classes": "Class",
+        "gazette": "Official Gazette number",
+        "date": "Publication date",
+        "type": "Application type",
+        "goods": "Goods & services"
+      },
+      "placeholders": {
+        "mark": "Enter trademark name",
+        "serial": "Enter serial number",
+        "applicant": "Enter applicant name",
+        "applicationNumber": "Enter application number",
+        "registrationNumber": "Enter registration number",
+        "classes": "Select class",
+        "gazette": "Enter gazette number",
+        "anyGazette": "Any gazette",
+        "from": "From",
+        "to": "To",
+        "type": "Select application type",
+        "anyType": "Any application type",
+        "goods": "Enter goods or services",
+        "unavailable": "Not available yet"
+      },
+      "classesSelected_one": "Class {{list}}",
+      "classesSelected_other": "Classes {{list}}",
+      "classesHint": "Select one or more Nice classes (1–45). Counts show published records per class.",
+      "classesDone": "Done",
+      "classesClear": "Clear classes",
+      "numbersUnavailable": "Searching by application or registration number becomes available once database update 0700 is applied to this project.",
+      "numbersIgnored": "Application and registration numbers are not searchable on this database yet (database update 0700 pending). The results below apply the other criteria only."
+    },
+    "active": {
+      "label": "Active filters:",
+      "clear": "Clear all",
+      "remove": "Remove filter {{name}}"
+    },
+    "aside": {
+      "title": "Official Gazette Records",
+      "text": "All trademark data is sourced from the Official Gazette of Afghanistan.",
+      "stats": "{{records}} published records · {{gazettes}} gazette issues"
+    },
+    "trust": {
+      "sources": {
+        "title": "Trusted Sources",
+        "text": "Based on Official Gazette publications of Afghanistan."
+      },
+      "legal": {
+        "title": "Legal Expertise",
+        "text": "Developed by Masnad Law Firm, with deep legal knowledge."
+      },
+      "efficient": {
+        "title": "Efficient Research",
+        "text": "Find relevant trademarks faster with advanced search and filters."
+      },
+      "secure": {
+        "title": "Secure & Transparent",
+        "text": "Clear source information and reliable records."
       }
+    },
+    "results": {
+      "open": "View record",
+      "published": "Published",
+      "page": "Page {{page}}"
     }
   },
   "filters": {

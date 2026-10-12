@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ArrowRight } from 'lucide-react'
 import type { TrademarkSearchResult } from '@/lib/database.types'
 import { cn, formatRegistryDate, splitHighlight, trademarkPath } from '@/lib/utils'
 import { TrademarkImage } from './TrademarkImage'
@@ -29,13 +30,13 @@ export function classText(classes: number[] | null, raw: string | null | undefin
 
 /* ── Card ──────────────────────────────────────────────────────────────── */
 
-export function TrademarkCard({ r, query, className }: { r: TrademarkSearchResult; query?: string; className?: string }) {
-  const { t } = useTranslation()
+export function TrademarkCard({ r, query, className, detailed }: { r: TrademarkSearchResult; query?: string; className?: string; /** Also show publication date, source page and an explicit "View record" action. */ detailed?: boolean }) {
+  const { t, i18n } = useTranslation()
   const name = r.mark_name ?? t('fields.unnamed')
   return (
     <Link
       to={trademarkPath(r.serial_number, r.official_gazette_number)}
-      className={cn('card group flex flex-col p-4 no-underline transition-shadow hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]', className)}
+      className={cn('card group flex flex-col p-4 no-underline transition-shadow hover:border-brand-300 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]', className)}
     >
       <TrademarkImage
         bucket={r.primary_image_bucket}
@@ -55,7 +56,18 @@ export function TrademarkCard({ r, query, className }: { r: TrademarkSearchResul
         <Row label={t('fields.applicant')}>
           <span className="bidi-auto line-clamp-2"><Highlight text={r.applicant_name || t('fields.notProvided')} query={query} /></span>
         </Row>
+        {detailed && (
+          <>
+            <Row label={t('fields.publicationDate')} mono>{r.publication_date ? formatRegistryDate(r.publication_date, i18n.resolvedLanguage) : t('fields.notProvided')}</Row>
+            <Row label={t('fields.page')} mono>{r.source_page?.trim() || t('fields.notProvided')}</Row>
+          </>
+        )}
       </dl>
+      {detailed && (
+        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[13px] font-semibold text-brand-700 group-hover:underline">
+          {t('search.results.open')} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
+        </span>
+      )}
     </Link>
   )
 }
@@ -69,12 +81,12 @@ function Row({ label, children, mono }: { label: string; children: React.ReactNo
   )
 }
 
-export function ResultGrid({ results, query, columns = 4 }: { results: TrademarkSearchResult[]; query?: string; columns?: 4 | 5 }) {
+export function ResultGrid({ results, query, columns = 4, detailed }: { results: TrademarkSearchResult[]; query?: string; columns?: 4 | 5; detailed?: boolean }) {
   return (
     <ul className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-5')}>
       {results.map((r) => (
         <li key={r.id} className="flex">
-          <TrademarkCard r={r} query={query} className="w-full" />
+          <TrademarkCard r={r} query={query} className="w-full" detailed={detailed} />
         </li>
       ))}
     </ul>
@@ -87,14 +99,14 @@ export function ResultTable({ results, query, compact }: { results: TrademarkSea
   const { t, i18n } = useTranslation()
   return (
     <div className="card overflow-x-auto">
-      <table className="w-full min-w-[720px] text-[14px]">
+      <table className="w-full min-w-[800px] text-[14px]">
         <thead>
           <tr className="border-b border-ink-200 text-start [&>th]:px-4 [&>th]:py-3 [&>th]:text-start [&>th]:text-[13px] [&>th]:font-semibold [&>th]:text-ink-800">
             <th className="w-32">{t('fields.serialNumber')}</th>
             <th>{t('fields.mark')}</th>
             <th>{t('fields.applicant')}</th>
             <th className="w-20">{t('fields.class')}</th>
-            {compact ? <th className="w-16">{t('fields.page')}</th> : <><th className="w-24">{t('fields.gazette')}</th><th className="w-36">{t('fields.publicationDate')}</th></>}
+            {compact ? <th className="w-16">{t('fields.page')}</th> : <><th className="w-24">{t('fields.gazette')}</th><th className="w-36">{t('fields.publicationDate')}</th><th className="w-16">{t('fields.page')}</th></>}
           </tr>
         </thead>
         <tbody className="divide-y divide-ink-100">
@@ -119,6 +131,7 @@ export function ResultTable({ results, query, compact }: { results: TrademarkSea
                 <>
                   <td className="px-4 py-3 tabular-nums text-ink-800">{r.official_gazette_number}</td>
                   <td className="px-4 py-3 tabular-nums text-ink-700">{r.publication_date ? formatRegistryDate(r.publication_date, i18n.resolvedLanguage) : t('fields.notProvided')}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-700">{r.source_page?.trim() || t('fields.notProvided')}</td>
                 </>
               )}
             </tr>

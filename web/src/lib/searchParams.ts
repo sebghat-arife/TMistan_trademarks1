@@ -9,6 +9,10 @@ export interface SearchState {
   mark: string
   applicant: string
   serial: string
+  /** Application number (column added by migration 0600; searchable after migration 0700). */
+  applicationNumber: string
+  /** Registration number (column added by migration 0600; searchable after migration 0700). */
+  registrationNumber: string
   gazette: string
   classes: number[]
   goods: string
@@ -27,6 +31,8 @@ export const DEFAULT_STATE: SearchState = {
   mark: '',
   applicant: '',
   serial: '',
+  applicationNumber: '',
+  registrationNumber: '',
   gazette: '',
   classes: [],
   goods: '',
@@ -51,6 +57,8 @@ export function parseSearchParams(sp: URLSearchParams): SearchState {
     mark: sp.get('mark') ?? '',
     applicant: sp.get('applicant') ?? '',
     serial: sp.get('serial') ?? '',
+    applicationNumber: sp.get('appno') ?? '',
+    registrationNumber: sp.get('regno') ?? '',
     gazette: sp.get('gazette') ?? '',
     classes: (sp.get('class') ?? '')
       .split(',')
@@ -78,6 +86,8 @@ export function toSearchParams(s: SearchState): URLSearchParams {
   set('mark', s.mark.trim())
   set('applicant', s.applicant.trim())
   set('serial', s.serial.trim())
+  set('appno', s.applicationNumber.trim())
+  set('regno', s.registrationNumber.trim())
   set('gazette', s.gazette.trim())
   if (s.classes.length) sp.set('class', [...s.classes].sort((a, b) => a - b).join(','))
   set('goods', s.goods.trim())
@@ -94,7 +104,7 @@ export function toSearchParams(s: SearchState): URLSearchParams {
 
 export function toRpcArgs(s: SearchState): SearchTrademarksArgs {
   const nz = (v: string) => (v.trim() === '' ? null : v.trim())
-  return {
+  const args: SearchTrademarksArgs = {
     p_query: nz(s.q),
     p_mark: nz(s.mark),
     p_applicant: nz(s.applicant),
@@ -110,11 +120,17 @@ export function toRpcArgs(s: SearchState): SearchTrademarksArgs {
     p_limit: s.perPage,
     p_offset: (s.page - 1) * s.perPage,
   }
+  // Only sent when used: these parameters exist from migration 0700 on, and PostgREST
+  // resolves functions by parameter *names* — omitting them keeps every other search
+  // working on databases that have not been updated yet.
+  if (nz(s.applicationNumber)) args.p_application_number = nz(s.applicationNumber)
+  if (nz(s.registrationNumber)) args.p_registration_number = nz(s.registrationNumber)
+  return args
 }
 
 export function countActiveFilters(s: SearchState): number {
   let n = 0
-  for (const k of ['mark', 'applicant', 'serial', 'gazette', 'goods', 'type', 'from', 'to'] as const) {
+  for (const k of ['mark', 'applicant', 'serial', 'applicationNumber', 'registrationNumber', 'gazette', 'goods', 'type', 'from', 'to'] as const) {
     if (s[k].trim() !== '') n++
   }
   if (s.classes.length) n++
@@ -123,4 +139,12 @@ export function countActiveFilters(s: SearchState): number {
 
 export function hasAnyCriteria(s: SearchState): boolean {
   return s.q.trim() !== '' || countActiveFilters(s) > 0
+}
+
+/** Keys of the advanced-search fields (everything except the keyword box, sorting and paging). */
+export const ADVANCED_TEXT_KEYS = ['mark', 'serial', 'applicant', 'applicationNumber', 'registrationNumber', 'gazette', 'goods', 'type', 'from', 'to'] as const
+
+/** A patch that clears every advanced criterion (keyword, sort, view and paging untouched). */
+export const CLEARED_FILTERS: Pick<SearchState, (typeof ADVANCED_TEXT_KEYS)[number] | 'classes' | 'page'> = {
+  mark: '', serial: '', applicant: '', applicationNumber: '', registrationNumber: '', gazette: '', goods: '', type: '', from: '', to: '', classes: [], page: 1,
 }

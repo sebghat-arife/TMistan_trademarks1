@@ -156,6 +156,10 @@ export type SearchTrademarksArgs = {
   p_sort?: 'relevance' | 'newest' | 'oldest' | 'mark_asc' | 'mark_desc' | 'serial'
   p_limit?: number
   p_offset?: number
+  /** Migration 0700 — only include when set (see lib/searchParams.toRpcArgs). */
+  p_application_number?: string | null
+  /** Migration 0700 — only include when set (see lib/searchParams.toRpcArgs). */
+  p_registration_number?: string | null
 }
 
 export type FilterOptions = {

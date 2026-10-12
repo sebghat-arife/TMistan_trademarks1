@@ -106,3 +106,17 @@ Uniqueness: `(storage_bucket, storage_path)` and `(trademark_id, image_type, con
   `web/src/lib/database.types.ts` mirror the grant lists). Attorney, review fields and source
   file/sheet/row are administrator-only; `search_trademarks` & co. no longer return the attorney.
 - See `docs/ADMIN_DATA_MANAGEMENT.md` for the functions and the safety model.
+
+## Search by application / registration number (migration 0700)
+
+- Function-only: `search_trademarks()` is dropped and re-created with two extra optional parameters,
+  `p_application_number` and `p_registration_number` (substring match on `normalize_text(...)`, so
+  `77821` finds `R-77821` and Persian / Arabic-Indic digits work). The keyword search (`p_query`) also
+  matches those two columns; an exact number match ranks 9 (just under an exact mark/serial match, 10).
+- Why drop first: adding parameters to an existing function creates a second overload and PostgREST
+  can then not choose between them — every search would fail. After 0700 exactly one
+  `search_trademarks` exists; the 0600 call shape (15 arguments) still resolves.
+- No table, column, index, policy or row changes; `trademark_search_result` is unchanged. Requires 0600.
+- The web app probes the capability once per session (`searchByNumbersSupported`): a call with the new
+  parameters either returns or fails with `PGRST202`; on failure the two fields are disabled
+  (*Not available yet*) and searches are retried without them (`numbersIgnored`).

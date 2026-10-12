@@ -3,7 +3,7 @@ import type { PostgrestError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { TRADEMARK_PUBLIC_COLUMNS } from '@/lib/database.types'
 import type { SearchTrademarksArgs, TrademarkImagePublicRow, TrademarkPublicRow, TrademarkSearchResult } from '@/lib/database.types'
-import { unwrap, unwrapNullable } from './_shared'
+import { toDataError, unwrap, unwrapNullable } from './_shared'
 import { listTrademarkImages } from './image_service'
 
 /* ---------------------------------------------------------------------------
@@ -62,13 +62,51 @@ function withCompatColumns<T extends Partial<TrademarkPublicRow>>(row: T): T {
 export interface TrademarkPage {
   items: TrademarkSearchResult[]
   total: number
+  /**
+   * True when the request carried application/registration-number criteria but the
+   * database does not have migration 0700 yet: the search was re-run without those
+   * two criteria so the visitor still gets results, and the page says so.
+   */
+  numbersIgnored?: boolean
+}
+
+const NUMBER_PARAMS = ['p_application_number', 'p_registration_number'] as const
+
+/** PostgREST could not find a function with these parameter names (migration 0700 missing). */
+function isUnknownParams(err: unknown): boolean {
+  const e = err as { code?: string; message?: string } | null
+  return !!e && (e.code === 'PGRST202' || /schema cache/i.test(e.message ?? ''))
 }
 
 /** Search + list + filter + sort + paginate (single database round-trip). */
 export async function searchTrademarks(args: SearchTrademarksArgs): Promise<TrademarkPage> {
-  const rows = (unwrap(await supabase.rpc('search_trademarks', args)) ?? []) as TrademarkSearchResult[]
+  const usesNumbers = NUMBER_PARAMS.some((k) => args[k] != null)
+  const res = await supabase.rpc('search_trademarks', args)
+  if (res.error && usesNumbers && isUnknownParams(res.error)) {
+    const fallback: SearchTrademarksArgs = { ...args }
+    for (const k of NUMBER_PARAMS) delete fallback[k]
+    const rows = (unwrap(await supabase.rpc('search_trademarks', fallback)) ?? []) as TrademarkSearchResult[]
+    return { items: rows, total: rows[0]?.total_count ?? 0, numbersIgnored: true }
+  }
+  const rows = (unwrap(res) ?? []) as TrademarkSearchResult[]
   return { items: rows, total: rows[0]?.total_count ?? 0 }
 }
+
+/**
+ * Can this database search by application / registration number (migration 0700)?
+ * PostgREST matches functions by parameter names, so a call naming the new
+ * parameters either runs (1 row) or fails immediately with PGRST202 — no table
+ * scan either way. Cached for the session by the caller.
+ */
+export async function searchByNumbersSupported(): Promise<boolean> {
+  const res = await supabase.rpc('search_trademarks', { p_application_number: null, p_registration_number: null, p_limit: 1 })
+  if (!res.error) return true
+  if (isUnknownParams(res.error)) return false
+  throw toDataError(res.error)
+}
+
+export const searchByNumbersSupportedQuery = () =>
+  queryOptions({ queryKey: ['trademarks', 'numbers-supported'], queryFn: searchByNumbersSupported, staleTime: Infinity, retry: false })
 
 export const searchTrademarksQuery = (args: SearchTrademarksArgs) =>
   queryOptions({
@@ -123,6 +161,15 @@ export async function getTrademarkById(id: string): Promise<TrademarkPublicRow |
     await selectTrademarks((select) => supabase.from('trademarks').select(select).eq('id', id).maybeSingle()),
   ) as unknown as TrademarkPublicRow | null
   return row ? withCompatColumns(row) : null
+}
+
+/** Several published trademarks by id (public columns only; order of `ids` is not preserved). */
+export async function getTrademarksByIds(ids: string[]): Promise<TrademarkPublicRow[]> {
+  if (ids.length === 0) return []
+  const rows = unwrap(
+    await selectTrademarks((select) => supabase.from('trademarks').select(select).in('id', ids).eq('is_published', true)),
+  ) as unknown as TrademarkPublicRow[]
+  return rows.map(withCompatColumns)
 }
 
 /** Text-similar marks (pg_trgm on the normalised mark name). */

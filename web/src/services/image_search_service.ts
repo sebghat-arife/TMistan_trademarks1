@@ -1,8 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
 import { supabase, storagePublicUrl } from '@/lib/supabase'
-import type { TrademarkSearchResult } from '@/lib/database.types'
+import { TRADEMARK_IMAGE_PUBLIC_COLUMNS } from '@/lib/database.types'
+import type { TrademarkImagePublicRow, TrademarkPublicRow, TrademarkSearchResult } from '@/lib/database.types'
 import { DESCRIPTOR_VERSION, describeImage, toVector, type Descriptor } from '@/lib/imageSearch/descriptor'
-import { DataError, toDataError } from './_shared'
+import { DataError, toDataError, unwrap } from './_shared'
+import { getTrademarksByIds } from './trademark_service'
 
 /* ---------------------------------------------------------------------------
  * Search by Image — browser half.
@@ -21,7 +23,11 @@ import { DataError, toDataError } from './_shared'
 
 /** Below this cosine similarity a candidate is not shown (calibrated on the published image set). */
 export const IMAGE_SEARCH_MIN_SIMILARITY = 0.55
+/** "Exact match" mode: identical or near-identical representations only (same descriptor, stricter cut-off). */
+export const IMAGE_SEARCH_EXACT_MIN_SIMILARITY = 0.85
 export const IMAGE_SEARCH_LIMIT = 24
+/** Server-side maximum for p_limit (search_trademarks_by_image clamps to 50). */
+export const IMAGE_SEARCH_MAX_LIMIT = 50
 
 export type ImageSearchResult = TrademarkSearchResult & { similarity: number; matched_image_id: string }
 
@@ -252,3 +258,51 @@ export async function indexUploadedImages(
   }
   return report
 }
+
+/* ---------------------------------------------------------------------------
+ * Example images for "Search by Image" — real, published trademark images from
+ * this database (never stock logos), so the examples demonstrate the feature on
+ * records that actually exist here.
+ * ------------------------------------------------------------------------- */
+
+export type ImageSearchExample = {
+  image: TrademarkImagePublicRow
+  trademark: Pick<TrademarkPublicRow, 'id' | 'serial_number' | 'mark_name' | 'official_gazette_number' | 'trademark_class' | 'class_numbers'>
+  url: string
+}
+
+export async function listImageSearchExamples(limit = 6): Promise<ImageSearchExample[]> {
+  // Newest matched images first; a trademark appears once even if it has several images.
+  const rows = unwrap(
+    await supabase
+      .from('trademark_images')
+      .select(TRADEMARK_IMAGE_PUBLIC_COLUMNS.join(','))
+      .eq('status', 'matched')
+      .not('trademark_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .limit(limit * 4),
+  ) as unknown as TrademarkImagePublicRow[]
+  const picked: TrademarkImagePublicRow[] = []
+  const seen = new Set<string>()
+  for (const r of rows) {
+    if (!r.trademark_id || seen.has(r.trademark_id)) continue
+    seen.add(r.trademark_id)
+    picked.push(r)
+    if (picked.length >= limit) break
+  }
+  if (picked.length === 0) return []
+  const marks = await getTrademarksByIds(picked.map((r) => r.trademark_id as string))
+  const byId = new Map(marks.map((m) => [m.id, m]))
+  const out: ImageSearchExample[] = []
+  for (const image of picked) {
+    const trademark = byId.get(image.trademark_id as string)
+    const url = storagePublicUrl(image.storage_bucket, image.storage_path)
+    if (!trademark || !url || !trademark.is_published) continue
+    out.push({ image, trademark, url })
+  }
+  return out
+}
+
+export const imageSearchExamplesQuery = (limit = 6) =>
+  queryOptions({ queryKey: ['image-search', 'examples', limit], queryFn: () => listImageSearchExamples(limit), staleTime: 5 * 60_000 })
