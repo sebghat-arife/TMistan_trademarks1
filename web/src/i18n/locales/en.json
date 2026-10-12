@@ -632,7 +632,9 @@
       "indexDoneTitle": "Visual search index updated",
       "indexDoneText": "{{indexed}} image descriptors stored for Search by Image · {{failed}} failed.",
       "excelSubtitle": "Import trademark records from the official Excel/CSV structure (21 columns). Every file is parsed in the browser, the column mapping is shown before anything is written, and re-importing the same serial numbers updates existing records instead of creating duplicates.",
-      "imagesSubtitle": "Upload trademark images as a ZIP or as individual files. Each file is matched to a record by the serial number in its file name — never by row order — and stored in Supabase Storage."
+      "imagesSubtitle": "Upload trademark images as a ZIP or as individual files. Each file is matched to a record by the serial number in its file name — never by row order — and stored in Supabase Storage.",
+      "missing0600Title": "Registration/Application Number columns are not stored yet",
+      "missing0600Hint": "Migration 0600 (supabase/APPLY_0600.sql) has not been applied to this Supabase project. Imports still work, but the “Registration Number” and “Application Number” columns cannot be saved until it is applied. The other 19 columns are saved normally."
     },
     "index": {
       "title": "Visual search index",

@@ -23,6 +23,7 @@ import {
 } from '@/lib/import/spreadsheet'
 import { type ImageCandidate, type IntakeResult, intakeImages, isImageFile, isZipFile } from '@/lib/import/images'
 import { ImageIndexPanel } from './ImageIndexPanel'
+import { dataManagementReady } from '@/services/admin_data_service'
 import {
   type ImageImportProgress,
   type ImageUploadPlanItem,
@@ -65,6 +66,10 @@ export function ImportCenterPage({ mode = 'all' }: { mode?: 'all' | 'excel' | 'i
   useDocumentTitle(`${title} · ${t('app.shortName')}`)
   const ready = useQuery({ queryKey: ['admin', 'import_ready'], queryFn: importCenterReady, staleTime: 60_000, retry: false })
   const blocked = ready.data ? !ready.data.ready : false
+  // Migration 0600 adds the Registration/Application Number columns; until it is applied the
+  // importer still works but cannot store those two columns — say so instead of dropping them silently.
+  const dm = useQuery({ queryKey: ['admin', 'data_ready'], queryFn: dataManagementReady, staleTime: 60_000, retry: false })
+  const missing0600 = mode !== 'images' && dm.data?.ready === false && dm.data.reason === 'schema_missing'
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -77,6 +82,11 @@ export function ImportCenterPage({ mode = 'all' }: { mode?: 'all' | 'excel' | 'i
       {blocked && (
         <div className="mt-5">
           <Callout tone="error" icon={XCircle} title={t('admin.import.notReadyTitle')} text={`${ready.data?.reason ?? ''} ${t('admin.import.notReadyHint')}`} />
+        </div>
+      )}
+      {!blocked && missing0600 && (
+        <div className="mt-5">
+          <Callout tone="warn" icon={AlertTriangle} title={t('admin.import.missing0600Title')} text={t('admin.import.missing0600Hint')} />
         </div>
       )}
       <div className={cn('mt-5 grid grid-cols-[minmax(0,1fr)] gap-5', mode === 'all' && 'xl:grid-cols-[repeat(2,minmax(0,1fr))]', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>

@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
+import type { PostgrestError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { TRADEMARK_PUBLIC_COLUMNS } from '@/lib/database.types'
 import type { SearchTrademarksArgs, TrademarkImagePublicRow, TrademarkPublicRow, TrademarkSearchResult } from '@/lib/database.types'
@@ -22,6 +23,41 @@ import { listTrademarkImages } from './image_service'
  * never reach the browser anyway).
  */
 const TRADEMARK_PUBLIC_SELECT = TRADEMARK_PUBLIC_COLUMNS.join(',')
+
+/**
+ * Schema compatibility: `registration_number` / `application_number` are added by
+ * migration 0600. Until the project owner applies it, PostgREST answers the
+ * explicit column list with 42703 ("column … does not exist"). In that case the
+ * read is retried once without those columns (remembered for the session) and
+ * the missing fields are reported as `null`, so public pages keep working on
+ * both schema versions. Nothing is ever selected with `*`.
+ */
+const COLUMNS_ADDED_BY_0600 = ['registration_number', 'application_number'] as const
+const TRADEMARK_LEGACY_SELECT = TRADEMARK_PUBLIC_COLUMNS.filter((c) => !(COLUMNS_ADDED_BY_0600 as readonly string[]).includes(c)).join(',')
+let trademarkSchemaIsLegacy = false
+
+function isMissing0600Column(err: { code?: string; message?: string } | null): boolean {
+  if (!err) return false
+  const msg = err.message ?? ''
+  return (err.code === '42703' || /does not exist/i.test(msg)) && COLUMNS_ADDED_BY_0600.some((c) => msg.includes(c))
+}
+
+type SelectResult<T> = { data: T | null; error: PostgrestError | null }
+
+/** Run a `trademarks` read with the public column list, falling back to the pre-0600 list once. */
+async function selectTrademarks<T>(run: (select: string) => PromiseLike<SelectResult<T>>): Promise<SelectResult<T>> {
+  if (!trademarkSchemaIsLegacy) {
+    const res = await run(TRADEMARK_PUBLIC_SELECT)
+    if (!isMissing0600Column(res.error)) return res
+    trademarkSchemaIsLegacy = true
+  }
+  return run(TRADEMARK_LEGACY_SELECT)
+}
+
+/** Guarantee the 0600 fields exist on a row (null when the column is not there yet). */
+function withCompatColumns<T extends Partial<TrademarkPublicRow>>(row: T): T {
+  return { registration_number: null, application_number: null, ...row }
+}
 
 export interface TrademarkPage {
   items: TrademarkSearchResult[]
@@ -63,10 +99,14 @@ export interface TrademarkDetail {
  * Returns `null` when nothing matches (the page renders a not-found state).
  */
 export async function getTrademarkBySerial(serial: string, gazette?: string | null): Promise<TrademarkDetail | null> {
-  let q = supabase.from('trademarks').select(TRADEMARK_PUBLIC_SELECT).eq('serial_number', serial)
-  if (gazette) q = q.eq('official_gazette_number', gazette)
-  const rows = unwrap(await q.order('publication_date', { ascending: false, nullsFirst: false }).limit(1)) as unknown as TrademarkPublicRow[]
-  const trademark = rows[0]
+  const rows = unwrap(
+    await selectTrademarks((select) => {
+      let q = supabase.from('trademarks').select(select).eq('serial_number', serial)
+      if (gazette) q = q.eq('official_gazette_number', gazette)
+      return q.order('publication_date', { ascending: false, nullsFirst: false }).limit(1)
+    }),
+  ) as unknown as TrademarkPublicRow[]
+  const trademark = rows[0] ? withCompatColumns(rows[0]) : undefined
   if (!trademark) return null
   const images = await listTrademarkImages(trademark.id)
   return { trademark, images }
@@ -79,7 +119,10 @@ export const trademarkBySerialQuery = (serial: string, gazette?: string | null) 
   })
 
 export async function getTrademarkById(id: string): Promise<TrademarkPublicRow | null> {
-  return unwrapNullable(await supabase.from('trademarks').select(TRADEMARK_PUBLIC_SELECT).eq('id', id).maybeSingle()) as unknown as TrademarkPublicRow | null
+  const row = unwrapNullable(
+    await selectTrademarks((select) => supabase.from('trademarks').select(select).eq('id', id).maybeSingle()),
+  ) as unknown as TrademarkPublicRow | null
+  return row ? withCompatColumns(row) : null
 }
 
 /** Text-similar marks (pg_trgm on the normalised mark name). */
