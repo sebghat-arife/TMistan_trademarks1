@@ -31,7 +31,11 @@
     "rights": "All rights reserved.",
     "dataSources": "Data Sources & Methodology",
     "services": "Trademark Research Services",
-    "contact": "Contact & Feedback"
+    "contact": "Contact & Feedback",
+    "legalHub": "Legal Information",
+    "ip": "Intellectual Property",
+    "knowledge": "Knowledge Center",
+    "corrections": "Data Corrections"
   },
   "home": {
     "hero": {
@@ -507,7 +511,8 @@
       "page": "Page {{page}} of {{total}}"
     },
     "sourceValue": "OG {{gazette}} — Page {{page}}",
-    "sourceValueNoPage": "OG {{gazette}}"
+    "sourceValueNoPage": "OG {{gazette}}",
+    "reportIssue": "Report an issue with this record"
   },
   "about": {
     "title": "About TMistan",
@@ -567,26 +572,268 @@
     "q6": "Why does a record have no image?",
     "a6": "Images are shown where one is available for the record. Records without an image show “No image on file for this trademark”.",
     "q7": "How does “Download Record” work?",
-    "a7": "“Download Record” on a record page opens your browser’s print dialog with a clean, printable version of the record. Choose “Save as PDF” to download it, or print it directly.",
+    "a7": "“Download Record” on a record page generates a printable PDF of the record — the Trademark Publication Report — with its source reference and disclaimer, and downloads it.",
     "glossary": "Glossary",
     "g": {
       "class": "Class — one of the 45 Nice Classification categories of goods (1–34) and services (35–45).",
       "gazette": "Gazette — an issue of the Official Gazette in which trademark applications are published.",
       "objection": "Objection deadline — the last date on which a third party may oppose the application.",
       "applicant": "Applicant — the person or company that filed the trademark application."
+    },
+    "knowledge": {
+      "title": "Looking for step-by-step guides?",
+      "text": "The Knowledge Center explains how to search, how to read Official Gazette entries, how trademark classes work and what a search can and cannot tell you.",
+      "button": "Open the Knowledge Center"
     }
   },
   "legal": {
-    "termsTitle": "Terms of Use",
-    "terms": "TMistan reproduces trademark publications from the Official Gazette of Afghanistan for research and information purposes. The printed gazette remains the authoritative publication. Records are provided as transcribed; TMistan makes no warranty as to completeness or accuracy and accepts no liability for decisions made on the basis of this information.",
-    "privacyTitle": "Privacy Policy",
-    "privacy": "Public pages of TMistan do not require an account and do not collect personal data beyond standard server logs. Administrator accounts are used only to maintain the registry. No data is sold or shared with third parties.",
-    "disclaimerTitle": "Disclaimer",
-    "disclaimer": [
-      "TMistan is an independent research platform and a product of Masnad Law Firm. It is not the official Government trademark registry of Afghanistan and is not a substitute for official legal records and procedures.",
-      "Records are reproduced as published in the Official Gazette of Afghanistan and may differ from the printed publication through transcription. TMistan does not perform official trademark clearance, does not guarantee the availability of any trademark, and does not provide legal advice.",
-      "For legal or procedural matters, refer to the official publication and the responsible authorities, or seek professional advice."
-    ]
+    "metaTitle": "Legal Information & Policies | TMistan",
+    "metaDescription": "Terms of Use, Privacy Policy, Disclaimer and Intellectual Property information for TMistan, the trademark research platform operated by Masnad Law Firm.",
+    "label": "Legal Information & Policies",
+    "title": "Legal Information & Policies",
+    "intro": "This page explains the terms, policies, and limitations that apply when using TMistan. Please review the relevant policies before relying on information displayed by the platform or submitting information through its forms.",
+    "trust": {
+      "transparent": {
+        "title": "Transparent",
+        "text": "Clear policies"
+      },
+      "userFocused": {
+        "title": "User-focused",
+        "text": "Your trust matters"
+      },
+      "responsible": {
+        "title": "Responsible",
+        "text": "Ethical use of data"
+      }
+    },
+    "overview": {
+      "label": "Our policies",
+      "title": "Policy Overview",
+      "text": "Choose a policy below to learn more about how TMistan works and what to expect when using our platform.",
+      "read": "Read policy"
+    },
+    "notice": {
+      "title": "Important",
+      "text": "The policy content on this page provides general information about the TMistan platform and should be reviewed by qualified legal counsel before publication or use in a legal or business decision."
+    },
+    "back": "Back to Legal Information & Policies",
+    "policyLabel": "Legal policy",
+    "draft": "Draft prepared {{date}} — pending approval by Masnad Law Firm",
+    "ownerNoteTitle": "To be completed before publication",
+    "nav": {
+      "title": "Policy Navigation"
+    },
+    "help": {
+      "title": "Need Help?",
+      "text": "If you have any questions about these terms or need assistance, please visit our Help page or contact us.",
+      "button": "Go to Help"
+    },
+    "trustPanel": {
+      "title": "Your Trust Matters",
+      "text": "We are committed to transparency, responsible data use, and providing a reliable platform for trademark research in Afghanistan."
+    },
+    "closing": {
+      "label": "Questions",
+      "title": "Something unclear in these policies?",
+      "text": "Send us a message and we will explain how a policy applies to your situation. For legal advice about a specific trademark, please consult a qualified professional.",
+      "button": "Contact us"
+    },
+    "policies": {
+      "terms": {
+        "title": "Terms of Use",
+        "short": "Rules for accessing and using TMistan, including acceptable use and prohibited activities.",
+        "intro": [
+          "**Welcome to TMistan.** These Terms of Use govern your access to and use of the TMistan platform, including all content, features and services provided through the website.",
+          "By accessing or using TMistan, you agree to these Terms of Use. If you do not agree with these terms, please do not use the platform."
+        ],
+        "sections": [
+          {
+            "title": "About TMistan",
+            "text": "TMistan is an independent research platform operated by Masnad Law Firm. It provides a searchable way to explore trademark records published in the Official Gazette of Afghanistan and is designed to help lawyers, businesses, entrepreneurs and researchers find and review trademark information more easily. TMistan is not a government authority or an official registry, and the records it displays do not replace the official publication."
+          },
+          {
+            "title": "Use of the Platform",
+            "text": "You may use TMistan for informational and research purposes only. By accessing or using the platform, you agree to:",
+            "style": "check",
+            "items": [
+              "Use the platform in a lawful and responsible manner.",
+              "Respect the rights of others and comply with applicable laws and regulations.",
+              "Provide truthful and accurate information when submitting forms or requests.",
+              "Avoid misuse, interference, or attempts to gain unauthorized access.",
+              "Not submit malicious files, automated traffic, or content that may harm the platform or other users."
+            ]
+          },
+          {
+            "title": "Prohibited Activities",
+            "text": "You must not use TMistan to:",
+            "style": "bullet",
+            "items": [
+              "Attempt to access areas of the platform without authorization.",
+              "Interfere with the platform's operation or security.",
+              "Submit false, misleading, or inaccurate information.",
+              "Upload harmful, illegal, or copyrighted content without permission.",
+              "Engage in any activity that could damage the platform or its users.",
+              "Copy or download the database systematically by automated means without written permission.",
+              "Present a search result or record as an official certificate, clearance or legal determination."
+            ]
+          },
+          {
+            "title": "Nature of the Information",
+            "text": "Records are transcribed from published sources and displayed as they are available to us. A search result, record, image or publication reference does not by itself establish the registration, ownership, validity, enforceability or current status of a trademark. A value that is missing from a record is shown as N/A and does not mean that the information does not exist elsewhere. Please read the Disclaimer and the Data Sources & Methodology page."
+          },
+          {
+            "title": "Submissions and Correction Requests",
+            "text": "Messages sent through the Contact page and requests sent through the Data Correction & Verification page are requests for review. They do not automatically change a record and do not guarantee a correction, a response time or a particular outcome. Reviews are carried out against the available source material and are documented internally."
+          },
+          {
+            "title": "Third-Party Content and Links",
+            "text": "Trademarks, logos, names and Gazette material shown on the platform belong to their respective rights holders and are displayed for information and research. Links to external websites are provided for convenience; TMistan does not control those websites and does not endorse their content."
+          },
+          {
+            "title": "Availability and Changes",
+            "text": "TMistan may be interrupted for maintenance or technical reasons and may change its features, content and these Terms. Material changes are published on this page together with the revision date."
+          },
+          {
+            "title": "Intellectual Property",
+            "text": "The TMistan name, logo, interface and original written content are protected by applicable intellectual-property laws. The Intellectual Property policy explains what you may do with the content and how to raise a rights concern."
+          },
+          {
+            "title": "Contact",
+            "text": "Questions about these Terms can be sent through the Contact page (choose General Inquiry)."
+          }
+        ],
+        "note": "Governing law, place of jurisdiction, the legal entity operating the platform and its registered address are to be supplied and approved by Masnad Law Firm. They have deliberately not been invented here."
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "short": "Learn what personal data is collected and how it is handled and protected.",
+        "intro": [
+          "This policy describes what information TMistan processes when you browse the website and when you submit a form, who can see it and how long it is kept. It is written to match how the platform actually works.",
+          "TMistan is operated by Masnad Law Firm, Kabul, Afghanistan."
+        ],
+        "sections": [
+          {
+            "title": "Browsing without an account",
+            "text": "The public pages do not require registration. The website does not use advertising or analytics cookies. Your language choice is stored in your own browser (local storage) so that the interface opens in the same language next time; it is not sent to us."
+          },
+          {
+            "title": "Hosting and technical logs",
+            "text": "The website is served by Render and the database and file storage are provided by Supabase. Like any hosting provider, these services keep technical logs of requests (IP address, time, requested page, browser type) for security and operation. We do not combine those logs with form submissions."
+          },
+          {
+            "title": "Information you submit",
+            "text": "When you use the Contact page or the Data Correction & Verification page we store what you type: your name, e-mail address, organisation (optional), subject, message and the record details you provide, together with the interface language, the page from which you sent the form, your browser type and a one-way hash of your IP address. The IP address itself is not stored; the hash only lets us limit abuse. Files attached to a correction request are stored in private storage that is not publicly accessible."
+          },
+          {
+            "title": "Searches and image search",
+            "text": "Keyword searches are processed by the database and are not linked to you. For image search, a compact numeric description of the picture is computed in your browser and compared with the index; the picture itself is not uploaded or stored."
+          },
+          {
+            "title": "Why we process this information",
+            "style": "bullet",
+            "items": [
+              "To answer your inquiry or research request.",
+              "To review a reported discrepancy against the source material and record the outcome.",
+              "To keep the platform secure and prevent abuse (rate limiting, spam filtering).",
+              "To improve the reliability of the records we display."
+            ]
+          },
+          {
+            "title": "Who can access it",
+            "text": "Submissions are visible only to authorised administrators of Masnad Law Firm through a protected administration area. They are not public and cannot be read through the website's data interface. Administrators sign in with an e-mail address and password; a session token is stored in the administrator's browser."
+          },
+          {
+            "title": "Sharing",
+            "text": "We do not sell personal data. Data is processed on our behalf by the hosting providers named above. We may disclose information where the law requires it."
+          },
+          {
+            "title": "Retention",
+            "text": "Submissions are kept for as long as they are needed to handle the request and to keep a record of how a data correction was decided. You may ask us to delete a submission; we may keep a minimal record of a completed correction so that the history of a record stays traceable."
+          },
+          {
+            "title": "Your requests",
+            "text": "To ask what information we hold about you, to correct it or to have it deleted, use the Contact page (General Inquiry) and quote the reference you received when you submitted the form."
+          },
+          {
+            "title": "Security",
+            "text": "Access to the database is restricted by role-based permissions and row-level security, and submissions are written only through validated server functions. No system is perfectly secure, so please do not send passwords, payment details or unnecessary sensitive information."
+          },
+          {
+            "title": "Changes to this policy",
+            "text": "Updates are published on this page together with the revision date."
+          }
+        ],
+        "note": "A dedicated privacy contact (e-mail address or postal address) is to be supplied by Masnad Law Firm. Until then, requests are received through the Contact page."
+      },
+      "disclaimer": {
+        "title": "Disclaimer",
+        "short": "Understand the limits of information on the platform and the nature of search results.",
+        "intro": [
+          "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan."
+        ],
+        "sections": [
+          {
+            "title": "Informational purpose",
+            "text": "The information displayed on this platform is provided for general informational and research purposes. Although reasonable care may be taken to organize, display, and maintain the available records, TMistan does not guarantee that all information is complete, accurate, current, or free from errors or omissions."
+          },
+          {
+            "title": "What a record does not prove",
+            "text": "A search result, database entry, image, publication reference, or other record displayed by TMistan should not, by itself, be treated as conclusive proof of trademark registration, ownership, validity, enforceability, or current legal status."
+          },
+          {
+            "title": "Consult the source and a professional",
+            "text": "Where a decision depends on a trademark record, users should consult the relevant Official Gazette and appropriate authoritative sources. Users requiring a legal determination or advice concerning a particular trademark should consult a qualified professional."
+          },
+          {
+            "title": "Not a government authority",
+            "text": "TMistan is an information and research platform. Unless expressly established and authorized otherwise, it should not be represented as a government authority, official registry, or substitute for an official record or legal determination."
+          },
+          {
+            "title": "No legal advice",
+            "text": "Nothing on this platform constitutes legal advice or creates a lawyer-client relationship."
+          }
+        ]
+      },
+      "ip": {
+        "title": "Intellectual Property",
+        "short": "Learn about ownership, attribution, reuse and rights concerns.",
+        "intro": [
+          "This policy explains who owns the different materials you see on TMistan, what you may do with them and how a rights holder can raise a concern."
+        ],
+        "sections": [
+          {
+            "title": "TMistan materials",
+            "text": "The TMistan name and logo, the design of the interface, the original explanatory texts (including the Knowledge Center articles) and the software that runs the platform belong to Masnad Law Firm or its licensors and are protected by applicable intellectual-property laws."
+          },
+          {
+            "title": "Third-party material",
+            "text": "Trademarks, logos, brand names, applicant names and the content of Gazette publications shown on the platform belong to their respective rights holders. Displaying a record does not mean that TMistan owns the mark or the artwork, and it does not imply any relationship between TMistan and the rights holder."
+          },
+          {
+            "title": "Source publications",
+            "text": "Gazette material is reproduced for reference and research. The printed Official Gazette of Afghanistan remains the authoritative publication; where a record and the publication differ, the publication prevails."
+          },
+          {
+            "title": "What you may do",
+            "style": "check",
+            "items": [
+              "View and search the records and read the articles for your own research.",
+              "Print or download a record report for personal, educational or professional reference, keeping the disclaimer it contains.",
+              "Quote short extracts with the attribution “Source: Official Gazette of Afghanistan, via TMistan”."
+            ],
+            "after": "Systematic copying, bulk downloading, scraping or commercial redistribution of the database, the images or the articles requires written permission from Masnad Law Firm."
+          },
+          {
+            "title": "Raising a rights concern",
+            "text": "If you believe that material displayed on TMistan infringes your rights or is attributed incorrectly, send a request through the Contact page (General Inquiry) with the serial number of the record, your relationship to the rights concerned and what you ask us to do. Every request is reviewed; we may contact you for evidence and may limit the display of an item while the review is ongoing. Content is not removed automatically because a claim was made."
+          },
+          {
+            "title": "Trademark notice",
+            "text": "TMistan is a brand of Masnad Law Firm. All other names, marks and logos are the property of their respective owners."
+          }
+        ]
+      }
+    }
   },
   "admin": {
     "login": "Login",
@@ -797,7 +1044,8 @@
       "unmatched": "Unmatched Images",
       "orphans": "Orphaned Files",
       "audit": "Audit Log",
-      "inquiries": "Inquiries"
+      "inquiries": "Inquiries",
+      "corrections": "Data Corrections"
     },
     "data": {
       "notReady": "Data management is not available",
@@ -1114,6 +1362,74 @@
       },
       "empty": "No inquiries match these filters.",
       "privacy": "Inquiries contain personal data. Use them only to answer the sender."
+    },
+    "corrections": {
+      "subtitle": "Requests sent through the public Data Correction & Verification page. Private: only administrators can read them. A request never changes a trademark record by itself.",
+      "notApplied": {
+        "title": "Migration 0900 has not been applied",
+        "hint": "Run supabase/APPLY_0900.sql in the Supabase SQL editor (Dashboard → SQL). It adds the private correction_requests tables, their functions and the evidence bucket policies."
+      },
+      "counts": {
+        "total": "Total",
+        "received": "Received",
+        "under_review": "Under review",
+        "more_info_needed": "More info needed",
+        "resolved": "Resolved",
+        "closed_no_change": "Closed — no change",
+        "last_24h": "Last 24 h"
+      },
+      "filters": {
+        "allStatuses": "All statuses",
+        "allTypes": "All types",
+        "search": "Search reference, name, e-mail, serial or id"
+      },
+      "columns": {
+        "received": "Received",
+        "reference": "Reference",
+        "type": "Type",
+        "from": "From",
+        "record": "Record",
+        "status": "Status"
+      },
+      "status": {
+        "received": "Received",
+        "under_review": "Under review",
+        "more_info_needed": "More information needed",
+        "resolved": "Resolved",
+        "closed_no_change": "Closed — no change"
+      },
+      "detail": {
+        "description": "Details of the issue",
+        "record": "Related record (as entered)",
+        "linked": "Linked trademark record",
+        "notLinked": "Not linked to a record",
+        "openRecord": "Open public record",
+        "manageRecord": "Open in Trademark Records",
+        "link": "Link to serial number",
+        "linkPlaceholder": "e.g. 1022-073",
+        "linkHint": "Linking only helps reviewers find the record. It never changes the record.",
+        "files": "Evidence files",
+        "noFiles": "No files attached",
+        "open": "Open",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this file? This cannot be undone.",
+        "history": "Status history",
+        "internalNote": "Internal note",
+        "internalPlaceholder": "Visible to administrators only",
+        "publicNote": "Outcome / note to the requester",
+        "publicPlaceholder": "Shown to the requester when they check the status with their reference",
+        "setStatus": "Set status",
+        "noBack": "A request cannot return to “Received”.",
+        "save": "Save",
+        "saved": "Saved",
+        "reply": "Reply by e-mail",
+        "handled": "Last updated",
+        "locale": "Language",
+        "page": "Sent from",
+        "system": "system"
+      },
+      "empty": "No requests match these filters.",
+      "privacy": "Requests contain personal data. Use them only to review the request and to contact the requester."
     }
   },
   "common": {
@@ -1542,6 +1858,336 @@
       "title": "Looking for Trademark Information?",
       "text": "Start with TMistan's searchable collection of available trademark publication records.",
       "search": "Search Trademark Records"
+    },
+    "correctionPointer": "For an error in a specific record you can also use the dedicated <1>Data Correction & Verification Requests</1> page — it gives you a reference number to check the outcome."
+  },
+  "knowledge": {
+    "metaTitle": "Trademark Knowledge Center | TMistan",
+    "metaDescription": "Clear, practical guides on searching trademark records in Afghanistan, reading Official Gazette entries, trademark classes and the limits of a search.",
+    "label": "Knowledge Center",
+    "title": "Trademark Knowledge Center",
+    "intro": "Learn how to search, interpret and understand trademark records in Afghanistan. Our knowledge center provides clear, practical guides and helpful resources to make your research experience easier and more effective.",
+    "benefits": {
+      "guides": {
+        "title": "Step-by-step guides",
+        "text": "Learn at your own pace"
+      },
+      "tips": {
+        "title": "Practical tips",
+        "text": "Search smarter"
+      },
+      "concepts": {
+        "title": "Key concepts",
+        "text": "Build your knowledge"
+      },
+      "clear": {
+        "title": "Clear explanations",
+        "text": "Use TMistan with confidence"
+      }
+    },
+    "topics": {
+      "label": "Learning categories",
+      "title": "Browse by Topic",
+      "text": "Explore our guides and resources organized by topic. Choose a category below to find relevant articles, step-by-step guides and helpful tips."
+    },
+    "categories": {
+      "fundamentals": {
+        "title": "Trademark Fundamentals",
+        "text": "What a trademark is, the forms it takes and why published records matter."
+      },
+      "searching": {
+        "title": "Searching Trademark Records",
+        "text": "Learn how to use search features, filters and advanced options to find the information you need."
+      },
+      "gazette": {
+        "title": "Understanding Gazette Entries",
+        "text": "Find out how to read and interpret Official Gazette information and references."
+      },
+      "classes": {
+        "title": "Trademark Classes",
+        "text": "Learn about classes, goods and services, and how they are organized."
+      },
+      "limits": {
+        "title": "Limits & Important Considerations",
+        "text": "Understand what TMistan includes, what it doesn't, and how to use the information responsibly."
+      }
+    },
+    "labels": {
+      "bestPractices": "Best practices"
+    },
+    "search": {
+      "placeholder": "Search articles, topics or keywords...",
+      "button": "Search",
+      "label": "Search articles",
+      "clear": "Clear search",
+      "all": "All topics",
+      "resultsTitle": "All Articles",
+      "results_one": "{{count}} article",
+      "results_other": "{{count}} articles",
+      "for": "for “{{query}}”",
+      "empty": "No articles match this search.",
+      "emptyHint": "Try a different word, or choose a topic above to browse the available guides.",
+      "showAll": "Show all articles"
+    },
+    "featured": {
+      "label": "Featured articles",
+      "title": "Popular Guides",
+      "text": "Start with these helpful resources, or browse all articles to explore more topics."
+    },
+    "readTime": "{{count}} min read",
+    "read": "Read article",
+    "quickLinks": {
+      "title": "Quick Links",
+      "howTo": "How to Use TMistan",
+      "classes": "Trademark Classes",
+      "gazette": "Official Gazette",
+      "faq": "Frequently Asked Questions"
+    },
+    "help": {
+      "title": "Need More Help?",
+      "text": "Visit our Help page for answers to common questions, a glossary of terms and ways to contact us.",
+      "button": "Go to Help"
+    },
+    "keep": {
+      "title": "Keep Learning",
+      "text": "These guides describe TMistan as it works today and are revised when the platform changes. The date on each article tells you when it was written."
+    },
+    "path": {
+      "title": "Your Learning Path",
+      "text": "Build your knowledge step by step. Explore our guides and resources to become more confident when researching trademark records.",
+      "button": "Browse All Articles"
+    },
+    "article": {
+      "back": "Back to Knowledge Center",
+      "written": "Written {{date}}",
+      "words": "{{count}} words",
+      "toc": "In this article",
+      "checklist": "Checklist",
+      "example": "Example",
+      "meaning": "What this means for your search",
+      "related": "Related articles",
+      "next": "Next step",
+      "disclaimerTitle": "Educational content",
+      "disclaimer": "This article explains how to use TMistan and general trademark concepts. It is not legal advice, does not describe the current legal status of any mark and does not create a lawyer-client relationship. For decisions with legal or commercial consequences, consult a qualified professional.",
+      "englishOnly": "This article is currently available in English only.",
+      "notFound": "This article does not exist.",
+      "policies": "See also the <1>Disclaimer</1> and the <3>Data Sources & Methodology</3> page."
+    },
+    "articles": {
+      "what-is-a-trademark": {
+        "title": "What Is a Trademark?",
+        "summary": "The basics every researcher should know before opening a search: what a trademark protects, the forms it can take, and why published records matter."
+      },
+      "how-to-search-trademark-records": {
+        "title": "How to Search Trademark Records in TMistan",
+        "summary": "A step-by-step guide to using the search features and filters effectively."
+      },
+      "how-to-read-gazette-entries": {
+        "title": "How to Read Official Gazette Entries",
+        "summary": "Learn how to interpret Gazette numbers, publication dates and source references."
+      },
+      "understanding-trademark-classes": {
+        "title": "Understanding Trademark Classes",
+        "summary": "Get familiar with the class system and how goods and services are categorised."
+      },
+      "preliminary-trademark-search": {
+        "title": "How to Conduct a Preliminary Trademark Search",
+        "summary": "Practical tips to help you find the relevant and accurate information."
+      },
+      "what-a-search-can-and-cannot-tell-you": {
+        "title": "What a Trademark Search Can and Cannot Tell You",
+        "summary": "Understand what TMistan includes, what it doesn’t, and how to use the information responsibly."
+      }
+    }
+  },
+  "corrections": {
+    "metaTitle": "Data Correction & Verification Requests | TMistan",
+    "metaDescription": "Report an incorrect name, classification issue, image problem, publication reference, duplicate record or other discrepancy in a TMistan trademark record. Requests are reviewed against the source materials.",
+    "label": "Data Correction & Verification Requests",
+    "title": "Data Correction & Verification Requests",
+    "intro": "Help us keep TMistan accurate and reliable. If you find a potential error, missing information, or a discrepancy in a record, you can submit a correction or verification request. Our team will review your submission against the original source materials.",
+    "benefits": {
+      "report": {
+        "title": "Report issues",
+        "text": "Share the details of the problem"
+      },
+      "review": {
+        "title": "We review",
+        "text": "Compare with source materials"
+      },
+      "track": {
+        "title": "Track progress",
+        "text": "Check the status of your request"
+      },
+      "better": {
+        "title": "Better data",
+        "text": "Help improve TMistan for everyone"
+      }
+    },
+    "types": {
+      "label": "What you can report",
+      "title": "What You Can Report",
+      "text": "You can submit a request for the following types of issues:",
+      "items": {
+        "incorrect_name": {
+          "title": "Incorrect Name",
+          "text": "Errors in trademark name, applicant name, or other text information."
+        },
+        "classification": {
+          "title": "Classification Issues",
+          "text": "Wrong or missing trademark class or goods and services details."
+        },
+        "image": {
+          "title": "Image Problems",
+          "text": "Missing image, incorrect image, or suspected mismatch with the record."
+        },
+        "publication_reference": {
+          "title": "Publication Reference",
+          "text": "Incorrect Gazette number, publication date, or source page information."
+        },
+        "duplicate": {
+          "title": "Duplicate Records",
+          "text": "Possible duplicate entries or related record issues."
+        },
+        "other": {
+          "title": "Other Discrepancies",
+          "text": "Any other issue you believe needs attention."
+        }
+      },
+      "selected": "Selected"
+    },
+    "form": {
+      "label": "Submit a request",
+      "title": "Data Correction Request Form",
+      "text": "Please provide as much detail as possible. The more information you share, the easier it will be for us to review your request.",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "email": "Email Address",
+      "emailPlaceholder": "your.email@example.com",
+      "type": "Request Type",
+      "typePlaceholder": "Select a request type",
+      "record": "Related Record (Serial Number or Gazette No.)",
+      "recordPlaceholder": "e.g. 1022-073 or Gazette 1022",
+      "recordHint": "The serial number is shown on every record page (issue–position, e.g. 1022-073).",
+      "details": "Details of the Issue",
+      "detailsPlaceholder": "Please describe the issue in detail. Include any relevant information, such as the record number, page reference, or what you believe is incorrect.",
+      "counter": "{{count}} / {{max}} characters",
+      "attach": "Attach Supporting Documents (Optional)",
+      "attachText": "You can upload relevant files such as images, documents, or screenshots.",
+      "choose": "Choose File",
+      "noFile": "No file chosen",
+      "filesChosen_one": "{{count}} file chosen",
+      "filesChosen_other": "{{count}} files chosen",
+      "formats": "Supported formats: JPG, PNG, PDF",
+      "maxSize": "Max file size: {{mb}} MB",
+      "maxFiles": "Up to {{count}} files",
+      "remove": "Remove {{name}}",
+      "confirm": "I confirm that the information provided is accurate and complete to the best of my knowledge.",
+      "submit": "Submit Request",
+      "submitting": "Submitting…",
+      "uploading": "Uploading attachments…",
+      "optional": "optional",
+      "privacy": "Your name and e-mail address are used only to review this request and to contact you if we need more information. See the <1>Privacy Policy</1>.",
+      "errors": {
+        "required": "This field is required.",
+        "email": "Please enter a valid e-mail address.",
+        "min": "Please enter at least {{count}} characters.",
+        "max": "Please use at most {{count}} characters.",
+        "type": "Please choose a request type.",
+        "confirm": "Please confirm that the information is accurate.",
+        "fileType": "{{name}}: only JPG, PNG or PDF files can be attached.",
+        "fileSize": "{{name}}: files must be smaller than {{mb}} MB.",
+        "fileCount": "You can attach at most {{count}} files.",
+        "fix": "Please correct the highlighted fields."
+      }
+    },
+    "status": {
+      "unavailableTitle": "The request form is not available yet",
+      "unavailableText": "The correction request form is temporarily unavailable while the platform's database is being updated. Please try again later, or report the issue through the Contact page.",
+      "contactLink": "Open the Contact page",
+      "successTitle": "Your request has been received",
+      "successText": "Thank you. Your request has been stored and will be reviewed against the source materials. Keep your reference number: together with your e-mail address it lets you check the status of the request on this page at any time.",
+      "reference": "Reference number",
+      "copy": "Copy",
+      "copied": "Copied",
+      "receivedAt": "Received",
+      "attachments": "Attachments",
+      "uploadOk": "Uploaded",
+      "uploadFailed": "Could not be uploaded",
+      "uploadFailedHint": "The request itself was stored. If the file matters, mention it when we contact you, or submit a new request with the file attached.",
+      "another": "Submit another request",
+      "checkNow": "Check the status",
+      "failedTitle": "Your request could not be submitted",
+      "failedText": "We could not submit your request at this time. Please try again. If the problem continues, use the Contact page.",
+      "rateLimited": "Too many requests were sent from this address in a short time. Please wait a while before trying again."
+    },
+    "check": {
+      "label": "Already submitted a request?",
+      "title": "Check the Status of a Request",
+      "text": "Enter the reference number you received together with the e-mail address you used. Only that combination returns a result.",
+      "reference": "Reference number",
+      "referencePlaceholder": "CR-XXXXXXXX",
+      "email": "Email Address",
+      "button": "Check status",
+      "checking": "Checking…",
+      "noMatch": "No request matches this reference number and e-mail address.",
+      "failed": "The status could not be checked right now. Please try again.",
+      "submitted": "Submitted",
+      "updated": "Last updated",
+      "type": "Request type",
+      "note": "Note from the review team",
+      "statuses": {
+        "received": "Received",
+        "under_review": "Under review",
+        "more_info_needed": "More information needed",
+        "resolved": "Resolved",
+        "closed_no_change": "Closed — no change"
+      },
+      "statusText": {
+        "received": "Your request has been stored and is waiting for review.",
+        "under_review": "The request is being compared with the source materials.",
+        "more_info_needed": "We need more information to continue. Please see the note below and contact us with the details.",
+        "resolved": "The review is complete and the information displayed on TMistan was updated where appropriate.",
+        "closed_no_change": "The review is complete. The displayed information matches the source materials, so no change was made."
+      }
+    },
+    "process": {
+      "title": "Our Review Process",
+      "text": "Your request will be reviewed by our team against the original source materials. We may contact you for additional information if needed.",
+      "steps": {
+        "receive": {
+          "title": "Receive your request",
+          "text": "We confirm that your submission is complete and give you a reference number."
+        },
+        "review": {
+          "title": "Review and verify",
+          "text": "We compare with source documents and records."
+        },
+        "update": {
+          "title": "Update the record",
+          "text": "If the issue is valid, we update the information in TMistan."
+        },
+        "outcome": {
+          "title": "Check the outcome",
+          "text": "Use your reference number and e-mail address on this page to see the status and the outcome. We may also contact you by e-mail if we need more information."
+        }
+      }
+    },
+    "important": {
+      "title": "Important",
+      "text": "Please note that TMistan does not directly modify official government records. We only update the information displayed on our platform based on verified source materials."
+    },
+    "help": {
+      "title": "Need Help?",
+      "text": "If you have questions about this process or need assistance, please visit our Help page or contact us.",
+      "button": "Go to Help",
+      "contact": "Contact us"
+    },
+    "closing": {
+      "label": "Our commitment",
+      "title": "More Accurate Records. A Stronger Research Community.",
+      "text": "Your feedback helps us improve the quality and reliability of TMistan. Together, we can make trademark information in Afghanistan easier to find, verify, and trust.",
+      "button": "Learn More About Our Process"
     }
   }
 }

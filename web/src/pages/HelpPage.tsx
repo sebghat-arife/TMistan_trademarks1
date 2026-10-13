@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ArrowRight, BookOpen } from 'lucide-react'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 /** Help — questions and answers that describe what the site actually does today. */
@@ -24,44 +26,29 @@ export function HelpPage() {
             </details>
           ))}
         </section>
-        <section id="glossary" className="card h-fit p-5">
-          <h2 className="text-[17px] font-semibold text-ink-900">{t('help.glossary')}</h2>
-          <ul className="mt-3 space-y-3 text-[14px] leading-relaxed text-ink-700">
-            {glossary.map((k) => (
-              <li key={k}>{t(`help.g.${k}`)}</li>
-            ))}
-          </ul>
-        </section>
-      </div>
-    </div>
-  )
-}
-
-export type LegalKind = 'terms' | 'privacy' | 'disclaimer'
-
-const LEGAL_KEYS: Record<LegalKind, { title: string; body: string }> = {
-  terms: { title: 'legal.termsTitle', body: 'legal.terms' },
-  privacy: { title: 'legal.privacyTitle', body: 'legal.privacy' },
-  disclaimer: { title: 'legal.disclaimerTitle', body: 'legal.disclaimer' },
-}
-
-export function LegalPage({ kind }: { kind: LegalKind }) {
-  const { t } = useTranslation()
-  const keys = LEGAL_KEYS[kind]
-  const title = t(keys.title)
-  useDocumentTitle(`${title} · ${t('app.shortName')}`)
-  // A legal text may be a single string or a list of paragraphs.
-  const body = t(keys.body, { returnObjects: true }) as string | string[]
-  const paragraphs = Array.isArray(body) ? body : [body]
-  return (
-    <div className="container-x py-8">
-      <div className="card max-w-3xl p-6 md:p-8">
-        <h1 className="text-[28px] font-bold text-ink-900">{title}</h1>
-        {paragraphs.map((para, i) => (
-          <p key={i} className="mt-4 text-[15px] leading-relaxed text-ink-700">
-            {para}
-          </p>
-        ))}
+        <div className="space-y-4">
+          <section id="glossary" className="card h-fit p-5">
+            <h2 className="text-[17px] font-semibold text-ink-900">{t('help.glossary')}</h2>
+            <ul className="mt-3 space-y-3 text-[14px] leading-relaxed text-ink-700">
+              {glossary.map((k) => (
+                <li key={k}>{t(`help.g.${k}`)}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="rounded-xl border border-brand-100 bg-brand-50/70 p-5" data-testid="help-knowledge">
+            <div className="flex gap-3">
+              <span className="icon-circle h-10 w-10 bg-white"><BookOpen className="h-5 w-5" aria-hidden /></span>
+              <div>
+                <h2 className="text-[16px] font-semibold text-ink-900">{t('help.knowledge.title')}</h2>
+                <p className="mt-1 text-[13.5px] leading-relaxed text-ink-700">{t('help.knowledge.text')}</p>
+                <Link to="/knowledge-center" className="btn btn-secondary mt-3 h-9 text-[13px]">
+                  {t('help.knowledge.button')}
+                  <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   )

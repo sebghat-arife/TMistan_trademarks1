@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0800) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql and APPLY_0800.sql."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0900) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql and APPLY_0900.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -184,3 +184,71 @@ union all select 'trademarks (unchanged)', count(*)::text from public.trademarks
 """
 p0800.write_text(h0800 + f"\n-- {'#'*76}\n-- {m0800.name}\n-- {'#'*76}\n" + m0800.read_text() + f0800)
 print("wrote supabase/APPLY_0800.sql")
+
+# APPLY_0900.sql — Data Correction & Verification requests, for projects already on 0100–0600 (0700/0800 not required).
+m0900 = root / "supabase" / "migrations" / "20261013000900_correction_requests.sql"
+p0900 = root / "supabase" / "APPLY_0900.sql"
+h0900 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 0900 (Data Correction & Verification Requests + admin queue)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261013000900_correction_requests.sql by
+-- scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisites: 0400 (admin_assert, is_admin) and 0600 (admin_record_action)
+-- are in place. 0700 and 0800 are NOT required.
+--
+-- Safe by construction — ADDITIVE ONLY:
+--   • adds TWO new private tables public.correction_requests and
+--     public.correction_request_events (RLS on, no policies, no grants —
+--     nobody can read them through the API)
+--   • adds the public functions correction_form_status(),
+--     submit_correction_request() (server-side validation, rate limiting,
+--     honeypot, non-sequential reference), correction_request_status()
+--     (needs reference + e-mail) and correction_upload_allowed()
+--   • adds admin-only functions admin_correction_counts /
+--     admin_list_correction_requests / admin_get_correction_request /
+--     admin_update_correction_request (admin_assert, validated status
+--     transitions, history rows, audit log)
+--   • Storage: creates the PRIVATE bucket `correction-evidence` (5 MB,
+--     JPG/PNG/PDF) and three storage.objects policies (visitor upload within
+--     15 minutes of a submission, admin read/delete). If the SQL editor role
+--     may not write storage.buckets you will see a NOTICE — then run
+--     `python3 scripts/setup_storage.py` once from a trusted machine (uses
+--     the secret key, never the browser) and re-run this file for the policies.
+--   • touches no existing table, column, index, policy, storage object or
+--     data row; visitors can never write to public.trademarks
+--   • idempotent — running it twice is harmless
+--
+-- Afterwards: /data-corrections accepts requests (until then it shows
+-- "The request form is not available yet") and Admin → Data Corrections
+-- lists them.
+-- ============================================================================
+begin;
+"""
+f0900 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'correction tables' as object,
+       (select count(*)::text from pg_tables where schemaname = 'public' and tablename in ('correction_requests', 'correction_request_events')) as value
+union all select 'RLS enabled (requests)',
+       (select relrowsecurity::text from pg_class where oid = 'public.correction_requests'::regclass)
+union all select 'anon/authenticated table grants (must be 0)',
+       (select count(*)::text from information_schema.role_table_grants
+         where table_schema = 'public' and table_name in ('correction_requests', 'correction_request_events') and grantee in ('anon', 'authenticated'))
+union all select 'anon may call submit_correction_request',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'submit_correction_request' and grantee = 'anon' and privilege_type = 'EXECUTE')
+union all select 'correction functions (expect 8)',
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname in ('correction_form_status','submit_correction_request','correction_request_status','correction_upload_allowed',
+               'admin_correction_counts','admin_list_correction_requests','admin_get_correction_request','admin_update_correction_request'))
+union all select 'bucket correction-evidence (expect 1; else run scripts/setup_storage.py)',
+       (select count(*)::text from storage.buckets where id = 'correction-evidence')
+union all select 'storage policies (expect 3)',
+       (select count(*)::text from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname like 'tmistan % correction evidence')
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks;
+"""
+p0900.write_text(h0900 + f"\n-- {'#'*76}\n-- {m0900.name}\n-- {'#'*76}\n" + m0900.read_text() + f0900)
+print("wrote supabase/APPLY_0900.sql")

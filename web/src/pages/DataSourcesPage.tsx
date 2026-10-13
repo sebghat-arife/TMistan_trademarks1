@@ -156,7 +156,7 @@ export function DataSourcesPage() {
                 {t('dataSources.images.calloutTitle')}
               </h3>
               <p className="mt-3 text-[14px] leading-relaxed text-ink-700">{t('dataSources.images.callout')}</p>
-              <Link to="/contact?type=data-correction&issue=incorrect_image" className="link-green mt-4 inline-flex items-center gap-1.5">
+              <Link to="/data-corrections?type=image" className="link-green mt-4 inline-flex items-center gap-1.5">
                 {t('dataSources.images.report')}
                 <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
               </Link>
@@ -208,7 +208,7 @@ export function DataSourcesPage() {
               <Search className="h-4 w-4" aria-hidden />
               {t('dataSources.cta.search')}
             </Link>
-            <Link to="/contact?type=data-correction" className="btn border-white/30 bg-white/10 text-white hover:bg-white/20">
+            <Link to="/data-corrections" className="btn border-white/30 bg-white/10 text-white hover:bg-white/20">
               {t('dataSources.cta.report')}
             </Link>
           </div>

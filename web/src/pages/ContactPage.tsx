@@ -346,6 +346,12 @@ export function ContactPage() {
                         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
                         <span>{t('contact.form.correction.attachNote')}</span>
                       </p>
+                      <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600 sm:col-span-2" data-testid="contact-correction-pointer">
+                        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden />
+                        <span>
+                          <Trans i18nKey="contact.correctionPointer" components={{ 1: <Link to="/data-corrections" className="font-semibold text-brand-700 underline underline-offset-2" /> }} />
+                        </span>
+                      </p>
                     </Group>
                   )}
 
@@ -393,7 +399,7 @@ export function ContactPage() {
                         className="mt-1 h-4 w-4 shrink-0 accent-brand-600"
                       />
                       <span>
-                        <Trans i18nKey="contact.form.privacy" components={{ 1: <Link to="/privacy" className="font-semibold text-brand-600 underline underline-offset-2" /> }} />
+                        <Trans i18nKey="contact.form.privacy" components={{ 1: <Link to="/legal/privacy" className="font-semibold text-brand-600 underline underline-offset-2" /> }} />
                         <span aria-hidden className="text-red-600"> *</span>
                       </span>
                     </label>
@@ -426,7 +432,7 @@ export function ContactPage() {
                     </button>
                     <p className="flex items-center gap-1.5 text-[12.5px] text-ink-500">
                       <ShieldCheck className="h-3.5 w-3.5 text-brand-600" aria-hidden />
-                      <Link to="/privacy" className="hover:underline">{t('contact.privacyLink')}</Link>
+                      <Link to="/legal/privacy" className="hover:underline">{t('contact.privacyLink')}</Link>
                     </p>
                   </div>
                 </fieldset>

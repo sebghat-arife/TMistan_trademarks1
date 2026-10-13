@@ -119,7 +119,7 @@ export function Layout() {
           <FooterCol title={t('footer.platform')} links={[['/search', t('nav.search')], ['/services', t('footer.services')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
           <FooterCol
             title={t('footer.information')}
-            links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
+            links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/knowledge-center', t('footer.knowledge')], ['/data-corrections', t('footer.corrections')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
           />
           <div>
             <h3 className="text-[15px] font-semibold">{t('footer.masnad')}</h3>
@@ -131,7 +131,7 @@ export function Layout() {
               </a>
             )}
           </div>
-          <FooterCol title={t('footer.legal')} links={[['/terms', t('footer.terms')], ['/privacy', t('footer.privacy')], ['/disclaimer', t('footer.disclaimer')]]} />
+          <FooterCol title={t('footer.legal')} links={[['/legal', t('footer.legalHub')], ['/legal/terms', t('footer.terms')], ['/legal/privacy', t('footer.privacy')], ['/legal/disclaimer', t('footer.disclaimer')], ['/legal/intellectual-property', t('footer.ip')]]} />
         </div>
         <div className="container-x flex flex-col items-center justify-between gap-4 border-t border-white/10 py-5 text-[13px] text-white/70 sm:flex-row">
           <span>© {new Date().getFullYear()} TMistan — {t('footer.rights')}</span>

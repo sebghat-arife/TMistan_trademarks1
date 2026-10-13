@@ -295,3 +295,41 @@ select.sfield-control { @apply appearance-none pe-9; }
 .faq[open] > summary svg { transform: rotate(180deg); }
 /* Honeypot field: off-screen for people, present for bots */
 .hp-field { position: absolute; inset-inline-start: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+/* ── Editorial pages (Legal, Knowledge Center, Data Corrections) ─────────── */
+.split-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(135deg,#e6f1eb_0%,#f3f8f5_45%,#fbfcfb_100%)]; }
+.split-hero-media {
+  @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[56%] bg-cover bg-no-repeat md:block;
+  background-image: var(--hero-img);
+  background-position: var(--hero-pos, 60% 50%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 13% 100%);
+}
+[dir='rtl'] .split-hero-media { clip-path: polygon(0 0, 100% 0, 87% 100%, 0 100%); }
+.split-hero-band {
+  @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[56%] md:block;
+  background: linear-gradient(135deg, rgba(222, 239, 230, 0.85), rgba(222, 239, 230, 0.25));
+  clip-path: polygon(0 0, 9% 0, 22% 100%, 13% 100%);
+}
+[dir='rtl'] .split-hero-band { clip-path: polygon(91% 0, 100% 0, 87% 100%, 78% 100%); }
+.section-label { @apply inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700; }
+.section-label::before { content: ''; @apply inline-block h-px w-6 bg-brand-600; }
+.ed-card { @apply rounded-lg border border-ink-200 bg-white p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgba(16,35,58,0.25)]; }
+.ed-title { @apply font-serif text-[17px] font-semibold leading-snug text-navy-900; }
+.ed-panel { @apply rounded-xl border border-brand-100 bg-brand-50/70 p-5; }
+.ed-h2 { @apply font-serif text-[28px] font-semibold leading-tight tracking-[-0.01em] text-navy-900 md:text-[32px]; }
+.policy-nav-link { @apply flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-[14px] text-ink-700 transition-colors hover:bg-ink-50; }
+.policy-nav-link.active { @apply border-brand-200 bg-brand-50 font-semibold text-brand-800; }
+.mountains { @apply pointer-events-none absolute inset-x-0 bottom-0 h-28 w-full opacity-[0.12]; }
+.prose-ed p { @apply text-[15px] leading-[1.75] text-ink-700; }
+.prose-ed p + p { @apply mt-3; }
+
+/* Knowledge Center article body (static English content) */
+.article-body > p { @apply text-[15.5px] leading-[1.8] text-ink-700; }
+.article-body > p + p { @apply mt-4; }
+.article-body > h2 { @apply mb-3 mt-10 font-serif text-[24px] font-semibold leading-snug text-navy-900; }
+.article-body > h2 + p { @apply mt-0; }
+.article-body > ul, .article-body > ol { @apply my-4 space-y-2 ps-6 text-[15px] leading-[1.75] text-ink-700; }
+.article-body > ul { @apply list-disc; }
+.article-body > ol { @apply list-decimal; }
+.article-body > ul > li::marker, .article-body > ol > li::marker { @apply text-brand-600; }
+.article-body > p + ul, .article-body > p + ol { @apply mt-3; }

@@ -140,3 +140,35 @@ Uniqueness: `(storage_bucket, storage_path)` and `(trademark_id, image_type, con
   `total_count`), `admin_get_contact_request(p_id)`, `admin_update_contact_request(p_id, p_status,
   p_admin_note)` (sets `handled_by/handled_at`, logs `contact.update` through `admin_record_action`).
 - Requires 0400 and 0600; independent of 0700. Additive and idempotent. See `docs/CONTACT.md`.
+
+## Data correction requests (migration 0900)
+
+- Two new private tables. `public.correction_requests` (`id`, `reference` unique `CR-XXXXXXXX`,
+  `created_at`, `updated_at`, `request_type incorrect_name|classification|image|publication_reference|duplicate|other`,
+  `full_name`, `email`, `related_record`, `trademark_id → trademarks(id) on delete set null`,
+  `description`, `locale`, `page_url`, `user_agent`, `ip_hash`, `status
+  received|under_review|more_info_needed|resolved|closed_no_change`, `internal_note`, `public_note`,
+  `handled_by`, `handled_at`) and `public.correction_request_events` (`request_id`, `created_at`,
+  `actor_id`, `from_status`, `to_status`, `note`) — the status history. RLS on, **no policies, no
+  grants**: invisible to the API, touched only by `security definer` functions.
+- Public functions (anon + authenticated): `correction_form_status()` (capability probe),
+  `submit_correction_request(p_request_type, p_full_name, p_email, p_description, p_related_record,
+  p_locale, p_page_url, p_honeypot)` → `{id, reference, received_at, upload_until}` (validation
+  `22023`, rate limits `TM429`: 5/h per e-mail, 10/h per hashed IP, 60/10 min overall; honeypot
+  returns a fake success; a `related_record` equal to a serial number links `trademark_id`),
+  `correction_request_status(p_reference, p_email)` → `{reference, status, request_type, created_at,
+  updated_at, public_note}` or `null` (both values must match), and `correction_upload_allowed(p_name)`
+  used by the Storage policy (`<request-uuid>/<8–40 chars>.(jpg|jpeg|png|pdf)`, request younger than
+  15 minutes, fewer than 3 files, fewer than 40 uploads/hour in the bucket).
+- Admin functions (authenticated + `admin_assert()`): `admin_correction_counts()`,
+  `admin_list_correction_requests(p_status, p_type, p_query, p_limit ≤ 200, p_offset)` (rows +
+  `total_count`), `admin_get_correction_request(p_id)` (row without `ip_hash` + `events` + `files`
+  from `storage.objects`), `admin_update_correction_request(p_id, p_status, p_internal_note,
+  p_public_note, p_trademark_serial)` (no return to `received`; serial must exist; writes an event
+  row and `handled_by/handled_at`; logs `correction.update` through `admin_record_action`).
+- Storage: private bucket `correction-evidence` (5 MB, JPEG/PNG/PDF) with three policies on
+  `storage.objects` — `tmistan visitor upload correction evidence` (insert, anon + authenticated,
+  gated by `correction_upload_allowed`), `tmistan admin select/delete correction evidence`
+  (authenticated + `is_admin()`). Administrators read files through signed URLs only.
+- Requires 0400 and 0600; independent of 0700 and 0800. Additive and idempotent. See
+  `docs/CORRECTIONS.md`.

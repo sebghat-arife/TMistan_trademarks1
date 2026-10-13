@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Download, Loader2, Maximize2 } from 'lucide-react'
+import { ChevronRight, Download, Flag, Loader2, Maximize2 } from 'lucide-react'
 import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
 import { cn, formatRegistryDate, formatToday, trademarkPath } from '@/lib/utils'
 import { storagePublicUrl } from '@/lib/supabase'
@@ -167,6 +167,10 @@ export function TrademarkPage() {
           <div className="mt-5 border-t border-ink-100 pt-5">
             <h2 className="text-[15px] font-semibold text-ink-900">{t('trademark.sourceInformation')}</h2>
             <p className="mt-1.5 text-[14px] text-ink-700">{sourceLine}</p>
+            <Link to={`/data-corrections?serial=${encodeURIComponent(tm.serial_number)}`} className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-700 hover:underline" data-testid="report-issue-link">
+              <Flag className="h-3.5 w-3.5" aria-hidden />
+              {t('trademark.reportIssue')}
+            </Link>
           </div>
         </div>
       </div>

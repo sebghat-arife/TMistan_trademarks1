@@ -51,6 +51,15 @@ category-specific fields; submissions go through `submit_contact_request`, migra
 and rate-limited in Postgres, stored in a private table nobody can read through the API; administrators
 triage them under Admin → Inquiries). Until 0800 is applied the form announces itself as not available.
 
+**Legal, Knowledge Center and Data Corrections** (`/legal`, `/knowledge-center`, `/data-corrections`,
+`docs/CORRECTIONS.md`): the four policies (Terms, Privacy, Disclaimer, Intellectual Property — three of
+them marked as drafts pending Masnad's approval) in a hub-plus-reader layout; six educational articles
+with real screenshots of the interface, topic filters and a search box; and the Data Correction &
+Verification form (`submit_correction_request`, migration 0900 — validated and rate-limited in
+Postgres, private evidence bucket, `CR-` reference + e-mail status check, admin queue with status
+history under Admin → Data Corrections). Until 0900 is applied the form announces itself as not
+available. Visitors never write to `public.trademarks`.
+
 **Search by Image** (`/search?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo (or picks
 one of the *Example searches*, which are real images already published in the database), the
 browser computes a compact visual descriptor (the picture itself never leaves the tab) and Postgres
@@ -76,13 +85,14 @@ service-role key exists only on the machine that runs importers / the storage se
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0800) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0900) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
 | `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
 | `supabase/APPLY_0700.sql` | migration 0700 alone (search by application / registration number — function-only) for projects already on 0100–0600 | no |
 | `supabase/APPLY_0800.sql` | migration 0800 alone (Contact & Feedback: private `contact_requests` table + submit/admin functions) for projects already on 0100–0600 (0700 not required) | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries | no |
+| `supabase/APPLY_0900.sql` | migration 0900 alone (Data Correction requests: two private tables, submit/status/admin functions, private evidence bucket + policies) for projects already on 0100–0600 (0700/0800 not required) | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
@@ -166,15 +176,15 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
 
 1. **Backup** (Dashboard → Database → Backups).
 2. **Schema** — SQL Editor → New query → paste the whole of `supabase/APPLY_ALL.sql` → Run.
-   It is the concatenation of `supabase/migrations/…0100` … `…0800`; additive and
+   It is the concatenation of `supabase/migrations/…0100` … `…0900`; additive and
    idempotent (safe to re-run), it never drops or rewrites `public.trademarks` rows and keeps the
    `(official_gazette_number, serial_number)` uniqueness. The result panel prints the post-checks
    (trademark count, gazettes, policies, anon-readable rows). A project that already has 0100–0300
    only needs **`supabase/APPLY_0400.sql`** (Import Center), one on 0100–0400 only
    **`supabase/APPLY_0500.sql`** (Search by Image), and one on 0100–0500 only
    **`supabase/APPLY_0600.sql`** (Admin Data Management), and one on 0100–0600 only
-   **`supabase/APPLY_0700.sql`** (search by application / registration number) and **`supabase/APPLY_0800.sql`**
-   (Contact & Feedback inbox). Read the *Messages* tab: a WARNING about
+   **`supabase/APPLY_0700.sql`** (search by application / registration number), **`supabase/APPLY_0800.sql`**
+   (Contact & Feedback inbox) and **`supabase/APPLY_0900.sql`** (Data Correction requests). Read the *Messages* tab: a WARNING about
    `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
@@ -202,13 +212,20 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
    approved contact details (`SITE_CONTACT_EMAIL` / `SITE_CONTACT_PHONE` / `SITE_CONTACT_ADDRESS`) as
    Render environment variables if Masnad wants them published — nothing is shown until they are set.
    See `docs/CONTACT.md`.
+12. **Data Correction & Verification requests** — until 0900 is applied `/data-corrections` shows
+   *"The request form is not available yet"* and Admin → Data Corrections shows *"Migration 0900 has not
+   been applied"*; paste `supabase/APPLY_0900.sql` (two new private tables + functions + the private
+   `correction-evidence` bucket and its policies, nothing existing touched). If the result panel reports
+   `bucket correction-evidence = 0`, run `python3 scripts/setup_storage.py` once and re-run the file.
+   See `docs/CORRECTIONS.md`.
 
 Status of the production project `tzzslhpqbfjklazihssc` (checked 2026-10-12, read-only):
 0100–0600 applied by the project owner (`registration_number`/`application_number` columns and the
 admin data-management functions exist); 159 published trademarks in 2 gazettes with 159 indexed
-images. **0700 (`APPLY_0700.sql`) and 0800 (`APPLY_0800.sql`) have not been applied yet** — paste 0700
-when the application / registration-number filters are wanted (step 10) and 0800 to switch on the
-contact form (step 11); both are additive and independent of each other.
+images. **0700 (`APPLY_0700.sql`), 0800 (`APPLY_0800.sql`) and 0900 (`APPLY_0900.sql`) have not been
+applied yet** — paste 0700 when the application / registration-number filters are wanted (step 10),
+0800 to switch on the contact form (step 11) and 0900 to switch on the data-correction form (step 12);
+all three are additive and independent of each other.
 
 ## Optional Python importer (operator machine, service-role key)
 
@@ -281,6 +298,12 @@ docker run --rm -p 8080:8080 -e PORT=8080 tmistan      # nginx, SPA fallback, /h
   ids passed, enqueue Storage paths for cleanup in the same transaction and write an append-only
   `admin_actions` row; `admin_actions`/`audit_logs` reject UPDATE/DELETE even from the owner. Column-level
   grants hide attorney, review notes and source file/sheet/row from the public API.
+- Forms (0800 Contact, 0900 Data Corrections): the tables have RLS with **no policies and no grants**, so
+  anonymous reads return nothing even with the publishable key; the only way in is a `SECURITY DEFINER`
+  submit function that validates, rate-limits (per e-mail, per hashed IP, global) and never touches
+  `public.trademarks`. Evidence goes to the private `correction-evidence` bucket through a policy gated
+  by `correction_upload_allowed()` (15-minute window, 3 files, name pattern); administrators read it via
+  signed URLs. Admin queue functions call `admin_assert()` first and audit every status change.
 - `vite.config.ts` and the `Dockerfile` reject `sb_secret_*` / service-role JWTs as the public key; the built
   bundle is grepped for `sb_secret_`, `service_role`, `SUPABASE_SERVICE_ROLE_KEY` (zero hits).
 - `.gitignore` excludes every `.env*` except `*.example`; `render.yaml` never references the secret key.

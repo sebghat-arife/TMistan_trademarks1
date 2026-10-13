@@ -11,9 +11,10 @@ reports.
 Why a script and not SQL: on hosted Supabase the SQL editor role no longer
 owns storage.objects (April 2025 change), so bucket/policy statements in a
 migration fail with "must be owner of table objects". The Storage API is the
-supported way. No storage.objects policy is created for anon/authenticated,
-so the browser can only READ objects of the public bucket; every write goes
-through the service role (importers).
+supported way. Apart from the correction-evidence
+policies in migration 0900 no storage.objects policy exists for
+anon/authenticated, so the browser can only READ objects of the public bucket;
+every other write goes through the service role (importers).
 """
 from __future__ import annotations
 
@@ -37,6 +38,16 @@ BUCKETS = [
         "name": "source-documents",
         "public": False,
         "file_size_limit": 50 * 1024 * 1024,   # free-tier global max is 50 MB
+    },
+    {
+        # Evidence attached to Data Correction requests (migration 0900). Private:
+        # visitors may only INSERT (gated by correction_upload_allowed()), admins
+        # read through signed URLs. The migration also tries to create this row.
+        "id": "correction-evidence",
+        "name": "correction-evidence",
+        "public": False,
+        "file_size_limit": 5 * 1024 * 1024,
+        "allowed_mime_types": ["image/jpeg", "image/png", "application/pdf"],
     },
 ]
 

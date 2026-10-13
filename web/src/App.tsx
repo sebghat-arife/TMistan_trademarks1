@@ -12,7 +12,10 @@ const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ defaul
 const TrademarkPage = lazy(() => import('@/pages/TrademarkPage').then((m) => ({ default: m.TrademarkPage })))
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const HelpPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.HelpPage })))
-const LegalPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.LegalPage })))
+const LegalPage = lazy(() => import('@/pages/LegalPage').then((m) => ({ default: m.LegalPage })))
+const KnowledgeCenterPage = lazy(() => import('@/pages/KnowledgeCenterPage').then((m) => ({ default: m.KnowledgeCenterPage })))
+const KnowledgeArticlePage = lazy(() => import('@/pages/KnowledgeArticlePage').then((m) => ({ default: m.KnowledgeArticlePage })))
+const DataCorrectionsPage = lazy(() => import('@/pages/DataCorrectionsPage').then((m) => ({ default: m.DataCorrectionsPage })))
 const DataSourcesPage = lazy(() => import('@/pages/DataSourcesPage').then((m) => ({ default: m.DataSourcesPage })))
 const ServicesPage = lazy(() => import('@/pages/ServicesPage').then((m) => ({ default: m.ServicesPage })))
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })))
@@ -26,6 +29,7 @@ const AdminImportHistoryPage = lazy(() => import('@/pages/admin/AdminImportHisto
 const AdminStoragePage = lazy(() => import('@/pages/admin/AdminStoragePage').then((m) => ({ default: m.AdminStoragePage })))
 const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage').then((m) => ({ default: m.AdminAuditPage })))
 const AdminInquiriesPage = lazy(() => import('@/pages/admin/AdminInquiriesPage').then((m) => ({ default: m.AdminInquiriesPage })))
+const AdminCorrectionsPage = lazy(() => import('@/pages/admin/AdminCorrectionsPage').then((m) => ({ default: m.AdminCorrectionsPage })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,9 +74,14 @@ export default function App() {
               <Route path="/data-sources" element={<DataSourcesPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="/terms" element={<LegalPage kind="terms" />} />
-              <Route path="/privacy" element={<LegalPage kind="privacy" />} />
-              <Route path="/disclaimer" element={<LegalPage kind="disclaimer" />} />
+              <Route path="/knowledge-center" element={<KnowledgeCenterPage />} />
+              <Route path="/knowledge-center/:slug" element={<KnowledgeArticlePage />} />
+              <Route path="/data-corrections" element={<DataCorrectionsPage />} />
+              <Route path="/legal/:policy?" element={<LegalPage />} />
+              {/* Former policy URLs keep working */}
+              <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
+              <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
+              <Route path="/disclaimer" element={<Navigate to="/legal/disclaimer" replace />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
@@ -90,6 +99,7 @@ export default function App() {
               <Route path="storage" element={<AdminStoragePage />} />
               <Route path="audit" element={<AdminAuditPage />} />
               <Route path="inquiries" element={<AdminInquiriesPage />} />
+              <Route path="corrections" element={<AdminCorrectionsPage />} />
               <Route path="*" element={<Navigate to="/admin" replace />} />
             </Route>
           </Routes>
