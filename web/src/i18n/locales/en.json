@@ -519,9 +519,74 @@
   },
   "about": {
     "title": "About TMistan",
-    "subtitle": "Search and Explore Trademark Records in Afghanistan",
-    "intro": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
-    "intro2": "It brings these published records together in one place so that they can be searched and reviewed through a simple, organized digital experience.",
+    "label": "About TMistan",
+    "metaDescription": "TMistan is a trademark research platform providing access to trademark records published in the Official Gazette of Afghanistan — our mission, values and what the platform offers.",
+    "intro": "TMistan is a trademark research platform that provides easy access to trademark records published in Afghanistan's Official Gazette. Our goal is to make trademark information more transparent, accessible, and useful for everyone.",
+    "photoCredit": "Photo: Central Kabul, 2009 — Olga Mielnikiewicz, via Wikimedia Commons, CC BY-SA 4.0 (cropped)",
+    "trust": {
+      "sources": {
+        "title": "Trusted Information",
+        "text": "From official sources"
+      },
+      "researchers": {
+        "title": "Built for Researchers",
+        "text": "Students, professionals, businesses"
+      },
+      "transparency": {
+        "title": "Greater Transparency",
+        "text": "More accessible data"
+      }
+    },
+    "mission": {
+      "label": "Our mission",
+      "title": "Our Mission",
+      "text": "To provide accurate, easy-to-use and reliable access to trademark information from Afghanistan's Official Gazette, helping researchers, businesses and the public make informed decisions.",
+      "quote": "Better access to trademark information supports innovation, fair competition and a stronger intellectual property ecosystem in Afghanistan."
+    },
+    "values": {
+      "label": "Our values",
+      "title": "Our Values",
+      "text": "Our values guide everything we do — from the information we provide to the way we support our users and community.",
+      "items": {
+        "accuracy": {
+          "title": "Accuracy",
+          "text": "We focus on reliable information from official publications and show the source of every record."
+        },
+        "transparency": {
+          "title": "Transparency",
+          "text": "We make our sources, methods and limitations clear."
+        },
+        "accessibility": {
+          "title": "Accessibility",
+          "text": "We ensure the platform is easy to use for everyone, anywhere."
+        },
+        "responsibility": {
+          "title": "Responsibility",
+          "text": "We support ethical use of data and respect intellectual property rights."
+        }
+      }
+    },
+    "glance": {
+      "title": "Platform at a Glance",
+      "items": {
+        "records": {
+          "title": "Trademark Records",
+          "text": "From Afghanistan's Official Gazette"
+        },
+        "search": {
+          "title": "Search & Explore",
+          "text": "Find the information you need"
+        },
+        "learn": {
+          "title": "Research & Learn",
+          "text": "Guides, resources and more"
+        },
+        "users": {
+          "title": "User-Focused",
+          "text": "Built for a better research experience"
+        }
+      }
+    },
     "findTitle": "What You Can Find",
     "findIntro": "Each record on TMistan presents the information as published, including:",
     "find": [
@@ -532,36 +597,127 @@
       "Publication information (Official Gazette number and page)",
       "Trademark image, where available"
     ],
-    "purposeTitle": "Our Purpose",
-    "purpose": "TMistan was created to make trademark information published in the Official Gazette of Afghanistan easier to find. Instead of reviewing printed issues page by page, users can search across the published records by keyword and refine the results.",
-    "sourceTitle": "Source-Based Information",
-    "source": "Every record on TMistan is based on a publication in the Official Gazette of Afghanistan and shows its source: the gazette number and the page on which it was published. Where a piece of information is not available in the published record, it is shown as N/A.",
-    "audienceTitle": "For Researchers, Businesses, and Professionals",
-    "audienceIntro": "TMistan is intended for anyone who needs to look up trademark records in Afghanistan, including:",
-    "audience": [
-      "Business owners and entrepreneurs",
-      "Legal professionals and trademark agents",
-      "Researchers and students",
-      "Members of the public"
-    ],
+    "help": {
+      "title": "Need Help?",
+      "text": "Have questions or need assistance? Visit our Help page or contact us.",
+      "button": "Go to Help"
+    },
+    "offer": {
+      "label": "What we offer",
+      "title": "What We Offer",
+      "text": "TMistan provides a range of features and resources to help you find, understand and use trademark information effectively.",
+      "learnMore": "Learn more",
+      "items": {
+        "database": {
+          "title": "Searchable Database",
+          "text": "Find trademark records using multiple search options and filters."
+        },
+        "gazette": {
+          "title": "Official Gazette Access",
+          "text": "View and interpret publication details, gazette numbers and references."
+        },
+        "images": {
+          "title": "Images & Documents",
+          "text": "Access trademark images and related source materials where available."
+        },
+        "reports": {
+          "title": "Printable Records",
+          "text": "Download a clean, printable report of any record, with its source reference and disclaimer."
+        }
+      }
+    },
+    "tomorrow": {
+      "title": "Built for a Better Tomorrow",
+      "text": "By making trademark information more accessible, TMistan supports innovation, fair competition and economic growth in Afghanistan."
+    },
     "toolTitle": "A Digital Research Tool",
     "tool": "TMistan is a digital research and information tool. It is not a government authority, does not register trademarks and does not replace the Official Gazette or the responsible authorities. For official or legal purposes, please refer to the original publication.",
-    "approachTitle": "Our Approach",
-    "approach": {
-      "accessibility": "Accessibility",
-      "accessibilityText": "Making published trademark records easy to search and explore.",
-      "transparency": "Source Transparency",
-      "transparencyText": "Showing the Official Gazette number and page for every record.",
-      "clarity": "Clarity",
-      "clarityText": "Presenting information in a clear, consistent format."
+    "sourceTitle": "Source-Based Information",
+    "source": "Every record on TMistan is based on a publication in the Official Gazette of Afghanistan and shows its source: the gazette number and the page on which it was published. Where a piece of information is not available in the published record, it is shown as N/A.",
+    "numbers": {
+      "label": "TMistan in numbers",
+      "title": "TMistan in Numbers",
+      "text": "Live figures from the TMistan database — nothing here is estimated.",
+      "records": "Trademark records",
+      "gazettes": "Gazette issues",
+      "applicants": "Applicants",
+      "classes": "Trademark classes represented",
+      "unavailable": "The figures could not be loaded right now.",
+      "tagline": "Knowledge builds stronger economies.",
+      "photoCredit": "Photo: Kabul, view from Gul-e-Surkh Square — Siar Fisher, via Wikimedia Commons, CC BY 3.0 (cropped)"
     },
-    "closingTitle": "TMistan",
-    "closingSubtitle": "Search Trademarks in Afghanistan",
-    "closingText": "Explore trademark records published in the Official Gazette of Afghanistan through a simple, searchable digital platform."
+    "commitment": {
+      "label": "Our commitment",
+      "title": "More Accurate Records. A Stronger Research Community.",
+      "text": "Your feedback helps us improve the quality and reliability of TMistan. Together, we can make trademark information in Afghanistan easier to find, verify, and trust.",
+      "button": "Learn More About Our Process"
+    }
   },
   "help": {
     "title": "Help Center",
-    "subtitle": "How to use TMistan.",
+    "label": "Help Center",
+    "heroTitle": "How Can We Help You?",
+    "intro": "Find answers to common questions, get step-by-step guidance, and learn how to use TMistan. If you need additional assistance, our team is here to help.",
+    "metaDescription": "Help Center for TMistan: how to search trademark records, read Official Gazette references, understand classes, report a possible error and contact the team.",
+    "photoCredit": "Photo: Computer lab at Herat University — S.K. Vemmer, U.S. Department of State, public domain, via Wikimedia Commons (cropped)",
+    "search": {
+      "label": "Search help",
+      "placeholder": "Search help articles, topics or keywords...",
+      "button": "Search",
+      "clear": "Clear search",
+      "resultsTitle": "Search results",
+      "for": "for “{{query}}”",
+      "faqs": "Questions and answers",
+      "articles": "Knowledge Center articles",
+      "readArticle": "Read article",
+      "empty": "No help topics match “{{query}}”. Try a different word, browse the topics below or contact us."
+    },
+    "topics": {
+      "label": "Help topics",
+      "title": "Browse by Topic",
+      "text": "Choose a topic below to find the information you need.",
+      "items": {
+        "searching": {
+          "title": "Searching & Records",
+          "text": "Learn how to search trademark records and use filters and advanced options.",
+          "link": "View articles"
+        },
+        "gazette": {
+          "title": "Gazette & Publications",
+          "text": "Find out how to read and understand Official Gazette entries and references.",
+          "link": "View articles"
+        },
+        "classes": {
+          "title": "Classes & Goods/Services",
+          "text": "Learn about trademark classes and how goods and services are organized.",
+          "link": "View articles"
+        },
+        "corrections": {
+          "title": "Reporting & Corrections",
+          "text": "Report a possible error in a record and learn how requests are reviewed.",
+          "link": "Open the request form"
+        },
+        "legal": {
+          "title": "Policies & Legal",
+          "text": "Read our terms, privacy policy, and other important information.",
+          "link": "Read the policies"
+        },
+        "technical": {
+          "title": "Technical Support",
+          "text": "Get help with common issues, errors and troubleshooting.",
+          "link": "Contact support"
+        }
+      }
+    },
+    "before": {
+      "title": "Before You Get Started",
+      "text": "The Help Center is designed to answer common questions and guide you through using TMistan. If you need assistance with a specific issue, please contact our support team."
+    },
+    "faq": {
+      "label": "Frequently asked questions",
+      "title": "Common Questions",
+      "text": "Quick answers to the most frequently asked questions from our users."
+    },
     "q1": "How do I search?",
     "a1": "Enter a keyword in the search box — a trademark name, applicant name, serial number (for example 1011-002), Official Gazette number (for example 1011), class number or a word from the goods and services — and press Search.",
     "q2": "How do I refine the results?",
@@ -576,6 +732,16 @@
     "a6": "Images are shown where one is available for the record. Records without an image show “No image on file for this trademark”.",
     "q7": "How does “Download Record” work?",
     "a7": "“Download Record” on a record page generates a printable PDF of the record — the Trademark Publication Report — with its source reference and disclaimer, and downloads it.",
+    "q8": "Can I report incorrect information in a record?",
+    "a8": "Yes. Open the record and use “Report an issue”, or go to the Data Corrections page and describe what appears to be wrong and which record it concerns. Requests are reviewed against the published source material; submitting a request does not change a record automatically.",
+    "q9": "Is there a fee to use TMistan?",
+    "a9": "No. Searching records, opening record pages and downloading record reports on TMistan are currently free of charge, and no account is needed.",
+    "q10": "How do I contact support?",
+    "a10": "Use the Contact page to send us a message. Where an e-mail address or telephone number is published in the Contact Support panel on this page, you can also reach us directly.",
+    "q11": "What is the Official Gazette and how do I find it?",
+    "a11": "The Official Gazette of Afghanistan is the publication in which trademark applications are published. Every TMistan record is taken from an issue of the gazette and shows its source as the gazette number and page, for example “OG 1011 — Page 3”. The Data Sources & Methodology page lists the issues covered.",
+    "q12": "What do trademark classes mean?",
+    "a12": "Trademark classes are the 45 categories of the Nice Classification: classes 1–34 cover goods and classes 35–45 cover services. The class shown on a record is the class in which the application was published. The Knowledge Center article “Understanding Trademark Classes” explains them in more detail.",
     "glossary": "Glossary",
     "g": {
       "class": "Class — one of the 45 Nice Classification categories of goods (1–34) and services (35–45).",
@@ -583,10 +749,31 @@
       "objection": "Objection deadline — the last date on which a third party may oppose the application.",
       "applicant": "Applicant — the person or company that filed the trademark application."
     },
+    "support": {
+      "title": "Contact Support",
+      "text": "Can't find what you're looking for? Reach out to our team for personalized assistance.",
+      "email": "Email Us",
+      "phone": "Call Us",
+      "form": "Contact Form",
+      "formSub": "Send us a message online"
+    },
+    "quick": {
+      "title": "Quick Links",
+      "faq": "Frequently Asked Questions",
+      "howTo": "How to Use TMistan",
+      "classes": "Trademark Classes",
+      "gazette": "Official Gazette",
+      "contact": "Contact Us"
+    },
     "knowledge": {
-      "title": "Looking for step-by-step guides?",
-      "text": "The Knowledge Center explains how to search, how to read Official Gazette entries, how trademark classes work and what a search can and cannot tell you.",
-      "button": "Open the Knowledge Center"
+      "title": "Need More Help?",
+      "text": "Visit our knowledge center for step-by-step guides and detailed resources.",
+      "button": "Go to Knowledge Center"
+    },
+    "closing": {
+      "title": "We're Here to Help",
+      "text": "Your feedback and questions help us improve TMistan. Don't hesitate to reach out — we're happy to assist you.",
+      "button": "Contact Support"
     }
   },
   "legal": {

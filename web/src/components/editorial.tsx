@@ -135,7 +135,7 @@ export function InfoBanner({ Icon, title, children, tone = 'green', className }:
   )
 }
 
-export function SidePanel({ title, Icon, children, tone = 'light', className }: { title?: string; Icon?: LucideIcon; children: ReactNode; tone?: 'light' | 'green' | 'dark' | 'white'; className?: string }) {
+export function SidePanel({ title, Icon, children, tone = 'light', className, testId }: { title?: string; Icon?: LucideIcon; children: ReactNode; tone?: 'light' | 'green' | 'dark' | 'white'; className?: string; testId?: string }) {
   const tones = {
     light: 'ed-panel',
     green: 'ed-panel',
@@ -143,7 +143,7 @@ export function SidePanel({ title, Icon, children, tone = 'light', className }: 
     dark: 'rounded-xl bg-teal-900 p-5 text-white',
   }
   return (
-    <section className={cn(tones[tone], className)}>
+    <section className={cn(tones[tone], className)} data-testid={testId}>
       {title && (
         <h2 className={cn('flex items-center gap-2 font-serif text-[18px] font-semibold', tone === 'dark' ? 'text-white' : 'text-navy-900')}>
           {Icon && <Icon className={cn('h-5 w-5', tone === 'dark' ? 'text-brand-200' : 'text-brand-600')} aria-hidden />}
