@@ -311,6 +311,22 @@ select.sfield-control { @apply appearance-none pe-9; }
   clip-path: polygon(0 0, 9% 0, 22% 100%, 13% 100%);
 }
 [dir='rtl'] .split-hero-band { clip-path: polygon(91% 0, 100% 0, 87% 100%, 78% 100%); }
+.split-hero-credit {
+  position: absolute;
+  inset-inline-end: 10px;
+  bottom: 8px;
+  z-index: 1;
+  display: none;
+  max-width: 50%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 2px 7px;
+  font-size: 10px;
+  line-height: 1.3;
+  color: rgba(51, 59, 68, 0.8);
+}
+.split-hero-credit:hover { color: rgba(51, 59, 68, 1); background: rgba(255, 255, 255, 0.95); }
+@media (min-width: 768px) { .split-hero-credit { display: block; } }
 .section-label { @apply inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700; }
 .section-label::before { content: ''; @apply inline-block h-px w-6 bg-brand-600; }
 .ed-card { @apply rounded-lg border border-ink-200 bg-white p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgba(16,35,58,0.25)]; }

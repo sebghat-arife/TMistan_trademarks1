@@ -7,6 +7,9 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
+/** Hero photograph: law library of the Afghanistan Rule of Law Project, Kabul (CC BY 2.0, cropped) — see public/img/CREDITS.md. */
+const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:ARoLP_Library-Kabul.jpg'
+
 /** Policy keys ↔ routes. `/terms`, `/privacy`, `/disclaimer` redirect here (see App.tsx). */
 const POLICIES = [
   { key: 'terms', slug: 'terms', Icon: FileText },
@@ -53,7 +56,8 @@ export function LegalPage() {
         title={hubTitle}
         text={t('legal.intro')}
         image="/img/hero-legal.jpg"
-        imagePosition="62% 45%"
+        imagePosition="55% 50%"
+        credit={{ text: t('legal.photoCredit'), href: HERO_PHOTO_SOURCE }}
         benefits={trust.map(({ key, Icon }) => ({ Icon, title: t(`legal.trust.${key}.title`), text: t(`legal.trust.${key}.text`) }))}
       />
 

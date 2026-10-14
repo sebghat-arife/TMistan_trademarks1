@@ -28,6 +28,9 @@ import {
 } from 'lucide-react'
 import { ClosingBanner, FeatureCard, NumberedSteps, SectionHeading, SectionLabel, SidePanel, SplitHero } from '@/components/editorial'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+
+/** Hero image: illuminated frontispiece of the Makhzan al-Asrar, Herat, late 15th century (LACMA, public domain, cropped) — see public/img/CREDITS.md. */
+const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Illuminated_frontispiece_from_the_Makhzan_al-Asrar_(Treasury_of_Mysteries)_LACMA_M.73.5.529.jpg'
 import { cn, formatDateTime } from '@/lib/utils'
 import {
   CORRECTION_LIMITS,
@@ -220,7 +223,8 @@ export function DataCorrectionsPage() {
         title={t('corrections.title')}
         text={t('corrections.intro')}
         image="/img/hero-corrections.jpg"
-        imagePosition="60% 50%"
+        imagePosition="50% 50%"
+        credit={{ text: t('corrections.photoCredit'), href: HERO_PHOTO_SOURCE }}
         benefits={benefits.map(({ Icon, key }) => ({ Icon, title: t(`corrections.benefits.${key}.title`), text: t(`corrections.benefits.${key}.text`) }))}
       />
 

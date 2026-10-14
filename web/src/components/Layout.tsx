@@ -7,10 +7,16 @@ import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 
+// Primary navigation. Nine entries: the desktop bar is shown from the `lg`
+// breakpoint (1024px) with a compact type size and switches to the full size
+// at `xl`; narrower viewports use the menu button.
 const NAV = [
   { to: '/search', key: 'nav.search' },
   { to: '/services', key: 'nav.services' },
   { to: '/data-sources', key: 'nav.dataSources' },
+  { to: '/knowledge-center', key: 'nav.knowledge' },
+  { to: '/data-corrections', key: 'nav.corrections' },
+  { to: '/legal', key: 'nav.legal' },
   { to: '/about', key: 'nav.about' },
   { to: '/help', key: 'nav.help' },
   { to: '/contact', key: 'nav.contact' },
@@ -36,19 +42,19 @@ export function Layout() {
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
-        <div className="container-x flex h-[68px] items-center justify-between gap-6">
-          <Link to="/" className="flex items-center" aria-label="TMistan — home">
-            <Logo className="h-[52px]" />
+        <div className="container-x flex h-[68px] items-center justify-between gap-4 xl:gap-6">
+          <Link to="/" className="flex shrink-0 items-center" aria-label="TMistan — home">
+            <Logo className="h-[48px] xl:h-[52px]" />
           </Link>
 
-          <nav className="hidden items-center gap-5 md:flex lg:gap-7" aria-label="Primary">
+          <nav className="hidden min-w-0 items-center gap-3.5 lg:flex xl:gap-5" aria-label="Primary">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 className={({ isActive }) =>
                   cn(
-                    'relative whitespace-nowrap py-5 text-[14px] font-medium text-ink-800 transition-colors hover:text-brand-600 lg:text-[15px]',
+                    'relative whitespace-nowrap py-5 text-[13px] font-medium text-ink-800 transition-colors hover:text-brand-600 xl:text-[14.5px]',
                     isActive && 'text-ink-900 after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:rounded-full after:bg-brand-600',
                   )
                 }
@@ -59,17 +65,17 @@ export function Layout() {
           </nav>
 
           {/* The administrator sign-in is deliberately not linked from the public site: open /admin/login directly. */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden shrink-0 items-center gap-4 lg:flex">
             <LanguageSwitcher />
           </div>
 
-          <button type="button" className="btn-ghost md:hidden" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label={t('common.menu')}>
+          <button type="button" className="btn-ghost lg:hidden" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label={t('common.menu')}>
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
         {menuOpen && (
-          <div className="border-t border-ink-200 bg-white md:hidden">
+          <div className="border-t border-ink-200 bg-white lg:hidden">
             <div className="container-x flex flex-col gap-1 py-3">
               {NAV.map((n) => (
                 <NavLink key={n.to} to={n.to} onClick={() => setMenuOpen(false)} className={({ isActive }) => cn('rounded-md px-3 py-2 text-[15px] font-medium', isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800')}>

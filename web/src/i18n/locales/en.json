@@ -12,7 +12,10 @@
     "language": "Language",
     "services": "Services",
     "dataSources": "Data Sources",
-    "contact": "Contact"
+    "contact": "Contact",
+    "knowledge": "Knowledge Center",
+    "corrections": "Data Corrections",
+    "legal": "Legal"
   },
   "footer": {
     "blurb": "Search and explore trademark records published in the Official Gazette of Afghanistan.",
@@ -833,7 +836,8 @@
           }
         ]
       }
-    }
+    },
+    "photoCredit": "Photo: Law library of the Afghanistan Rule of Law Project, Kabul — Step (Flickr), via Wikimedia Commons, CC BY 2.0 (cropped)"
   },
   "admin": {
     "login": "Login",
@@ -1998,7 +2002,8 @@
         "title": "What a Trademark Search Can and Cannot Tell You",
         "summary": "Understand what TMistan includes, what it doesn’t, and how to use the information responsibly."
       }
-    }
+    },
+    "photoCredit": "Photo: Kabul University Central Library — stepnout (Flickr), via Wikimedia Commons, CC BY 2.0 (cropped)"
   },
   "corrections": {
     "metaTitle": "Data Correction & Verification Requests | TMistan",
@@ -2188,6 +2193,7 @@
       "title": "More Accurate Records. A Stronger Research Community.",
       "text": "Your feedback helps us improve the quality and reliability of TMistan. Together, we can make trademark information in Afghanistan easier to find, verify, and trust.",
       "button": "Learn More About Our Process"
-    }
+    },
+    "photoCredit": "Image: Makhzan al-Asrar frontispiece, Herat, late 15th century — LACMA, public domain, via Wikimedia Commons (cropped)"
   }
 }

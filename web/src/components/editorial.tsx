@@ -20,6 +20,7 @@ export function SplitHero({
   benefits,
   image,
   imagePosition = '60% 50%',
+  credit,
   actions,
   testId,
 }: {
@@ -29,6 +30,8 @@ export function SplitHero({
   benefits?: Benefit[]
   image: string
   imagePosition?: string
+  /** Attribution for the hero photograph (shown as a small link over the image on md+ screens). */
+  credit?: { text: string; href: string }
   actions?: ReactNode
   testId?: string
 }) {
@@ -38,6 +41,11 @@ export function SplitHero({
     <section className="split-hero" style={style} data-testid={testId}>
       <div className="split-hero-media" aria-hidden />
       <div className="split-hero-band" aria-hidden />
+      {credit && (
+        <a className="split-hero-credit" href={credit.href} target="_blank" rel="noreferrer">
+          {credit.text}
+        </a>
+      )}
       <div className="container-x relative py-12 md:py-14 lg:py-16">
         <div className="max-w-[560px]">
           <SectionLabel>{label}</SectionLabel>

@@ -7,6 +7,9 @@ import { ARTICLES, KNOWLEDGE_CATEGORIES, KNOWLEDGE_TOPICS, readingMinutes, searc
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { cn } from '@/lib/utils'
 
+/** Hero photograph: Kabul University Central Library (CC BY 2.0, cropped) — see public/img/CREDITS.md. */
+const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Kabul_University_Central_Library.jpg'
+
 const TOPIC_ICON: Record<KnowledgeCategory, LucideIcon> = { fundamentals: BookOpen, searching: Search, gazette: FileText, classes: Tag, limits: ShieldCheck }
 
 const isCategory = (v: string | null): v is KnowledgeCategory => !!v && (KNOWLEDGE_CATEGORIES as string[]).includes(v)
@@ -68,7 +71,8 @@ export function KnowledgeCenterPage() {
         title={t('knowledge.title')}
         text={t('knowledge.intro')}
         image="/img/hero-knowledge.jpg"
-        imagePosition="60% 50%"
+        imagePosition="40% 55%"
+        credit={{ text: t('knowledge.photoCredit'), href: HERO_PHOTO_SOURCE }}
         benefits={benefits.map(({ Icon, key }) => ({ Icon, title: t(`knowledge.benefits.${key}.title`), text: t(`knowledge.benefits.${key}.text`) }))}
       />
 

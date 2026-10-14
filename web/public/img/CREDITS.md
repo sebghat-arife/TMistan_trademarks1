@@ -14,12 +14,19 @@ The Search page shows the required attribution as a small caption on the photogr
 
 ## hero-legal.jpg · hero-knowledge.jpg · hero-corrections.jpg
 
-Decorative hero artwork for `/legal`, `/knowledge-center` and `/data-corrections`, cropped from the
-client-supplied page mock-ups (`TMistan Legal Policies Page.png`, `TMistan Trademark Knowledge
-Center.png`, `TMistan Data Correction Request Page.png`, October 2026) and upscaled. They are
-illustrative renders, not photographs of real documents; the emblem on the certificate in the
-corrections artwork was defocused so that no seal is shown. Shown at reduced opacity behind a fade,
-never as evidence. Replace the files to change the pictures.
+Photographs from Wikimedia Commons for the `/legal`, `/knowledge-center` and `/data-corrections` heroes
+(replacing the mock-up crops used in the first revision). Each page shows the attribution as a small
+caption on the picture, linking to the Commons file page. Processing for all three: cropped to a wide
+hero frame, resized (≤1600 px), slight contrast/white-balance adjustment, JPEG q76–80. No other changes.
+
+| File | Subject | Author / source | Licence |
+|---|---|---|---|
+| `hero-legal.jpg` | Law library of the Afghanistan Rule of Law Project (ARoLP), Kabul, 25 October 2008 | "Step" (Flickr user, Amherst, USA), via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:ARoLP_Library-Kabul.jpg | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) — cropped |
+| `hero-knowledge.jpg` | Kabul University Central Library, reading room, 26 October 2008 | stepnout (Flickr), via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:Kabul_University_Central_Library.jpg | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) — cropped |
+| `hero-corrections.jpg` | Illuminated double frontispiece of the *Makhzan al-Asrar* (Treasury of Mysteries), Herat, late 15th century; ink, opaque watercolour and gold on paper | Los Angeles County Museum of Art, Nasli M. Heeramaneck Collection (M.73.5.529), via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:Illuminated_frontispiece_from_the_Makhzan_al-Asrar_(Treasury_of_Mysteries)_LACMA_M.73.5.529.jpg | Public domain (work of 15th century; LACMA public-domain image) — cropped |
+
+Selection rules: freely licensed (CC BY / CC BY-SA / public domain) photographs with an Afghanistan
+subject, no flags, no official seals or emblems, no identifiable private persons in the frame.
 
 ## kc/ (Knowledge Center)
 
