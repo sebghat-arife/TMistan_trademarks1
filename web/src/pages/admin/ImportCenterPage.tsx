@@ -34,6 +34,7 @@ import {
   finishImportJob,
   importCenterReady,
   importImages,
+  lookupExistingImages,
   importJobsQuery,
   indexUploadedImages,
   type IndexRunReport,
@@ -561,6 +562,9 @@ function ImageImporter() {
       setState({ phase: 'resolving', intake: result })
       const withSerial = result.candidates.filter((c) => c.serial)
       const resolved = await resolveSerials(withSerial.map((c) => c.serial as string))
+      // What each matched trademark already has on file: identical bytes keep their
+      // object path ("unchanged"); a different picture supersedes the current one.
+      const existing = await lookupExistingImages([...resolved.values()].map((r) => r.trademark_id).filter((id): id is string => !!id))
       const match: MatchedSet = { matched: [], unmatched: [], ambiguous: [], duplicates: [], noSerial: result.candidates.filter((c) => !c.serial) }
       // one image per trademark per batch: the first file wins, the others are reported as duplicates
       const taken = new Map<string, string>()
@@ -571,7 +575,7 @@ function ImageImporter() {
         else if (taken.has(r.trademark_id)) match.duplicates.push({ candidate: c, resolution: r, keptFile: taken.get(r.trademark_id) as string })
         else {
           taken.set(r.trademark_id, c.fileName)
-          match.matched.push(planFor(c, r))
+          match.matched.push(planFor(c, r, existing.get(r.trademark_id)))
         }
       }
       setState({ phase: 'ready', intake: result, match })
@@ -738,7 +742,16 @@ function ImageImporter() {
 
           {state.phase === 'ready' && match.matched.length > 0 && (
             <div className="overflow-hidden rounded-lg border border-ink-200">
-              <div className="bg-ink-50 px-4 py-2 text-[13px] font-medium text-ink-700">{t('admin.import.matchPreview', { count: Math.min(8, match.matched.length) })}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-ink-50 px-4 py-2 text-[13px] font-medium text-ink-700">
+                <span>{t('admin.import.matchPreview', { count: Math.min(8, match.matched.length) })}</span>
+                <span className="text-[12px] font-normal text-ink-600">
+                  {t('admin.import.planSummary', {
+                    added: match.matched.filter((m) => !m.unchanged && !m.replaces).length,
+                    replaced: match.matched.filter((m) => !!m.replaces).length,
+                    unchanged: match.matched.filter((m) => m.unchanged).length,
+                  })}
+                </span>
+              </div>
               <table className="w-full text-[12px]">
                 <thead className="border-y border-ink-200 text-ink-600">
                   <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-start [&>th]:font-medium">
@@ -746,6 +759,7 @@ function ImageImporter() {
                     <th>{t('fields.serialNumber')}</th>
                     <th>{t('fields.markName')}</th>
                     <th>{t('admin.import.method')}</th>
+                    <th>{t('admin.import.planOutcome')}</th>
                     <th>{t('admin.import.storagePath')}</th>
                   </tr>
                 </thead>
@@ -756,6 +770,11 @@ function ImageImporter() {
                       <td dir="ltr" className="font-medium text-ink-900">{m.resolution.serial_number}</td>
                       <td dir="auto">{m.resolution.mark_name ?? '—'}</td>
                       <td><span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">{m.resolution.method}</span></td>
+                      <td>
+                        <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', m.unchanged ? 'bg-ink-100 text-ink-600' : m.replaces ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700')}>
+                          {m.unchanged ? t('admin.import.planUnchanged') : m.replaces ? t('admin.import.planReplaces') : t('admin.import.planNew')}
+                        </span>
+                      </td>
                       <td dir="ltr" className="text-ink-500">{m.storagePath}</td>
                     </tr>
                   ))}

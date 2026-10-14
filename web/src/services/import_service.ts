@@ -158,6 +158,68 @@ export interface ImageUploadPlanItem {
   candidate: ImageCandidate
   resolution: SerialResolution
   storagePath: string
+  /** The trademark already has this exact file (same SHA-256): the upload refreshes the object, the row stays. */
+  unchanged: boolean
+  /** Object path of the image this upload supersedes (removed after a successful link), if any. */
+  replaces: string | null
+}
+
+/** Existing image rows of the trademarks an upload batch targets (migration 1000 RPC, with a fallback). */
+export interface ExistingImage {
+  id: string
+  trademark_id: string | null
+  image_type: string
+  status: string
+  match_method: string | null
+  storage_bucket: string
+  storage_path: string
+  thumbnail_path: string | null
+  content_hash: string | null
+}
+
+const LOOKUP_BATCH = 500
+
+/**
+ * Current images of the given trademarks, keyed by trademark id. Uses
+ * `admin_trademark_images_lookup` (migration 1000); when that function is not
+ * installed yet it pages through `admin_list_images` instead, so planning works
+ * on every project state.
+ */
+export async function lookupExistingImages(trademarkIds: string[]): Promise<Map<string, ExistingImage[]>> {
+  const out = new Map<string, ExistingImage[]>()
+  const add = (row: ExistingImage) => {
+    if (!row.trademark_id) return
+    const list = out.get(row.trademark_id) ?? []
+    list.push(row)
+    out.set(row.trademark_id, list)
+  }
+  const ids = [...new Set(trademarkIds.filter(Boolean))]
+  if (ids.length === 0) return out
+  const first = await rpc('admin_trademark_images_lookup', { p_trademark_ids: ids.slice(0, LOOKUP_BATCH) })
+  if (first.error && (first.error.code === 'PGRST202' || /schema cache/i.test(first.error.message))) {
+    // Fallback (migration 1000 not applied): scan the admin image list, 200 rows per call.
+    const wanted = new Set(ids)
+    for (let offset = 0; ; offset += 200) {
+      const page = await rpc('admin_list_images', { p_query: null, p_status: 'all', p_job_id: null, p_linked: 'linked', p_limit: 200, p_offset: offset })
+      if (page.error) {
+        // Not even 0600 installed: plan without prior knowledge (every file gets a
+        // content-addressed path; the database still reports unchanged/updated).
+        if (page.error.code === 'PGRST202' || /schema cache/i.test(page.error.message)) return out
+        throw toDataError(page.error)
+      }
+      const rows = (page.data as ExistingImage[] | null) ?? []
+      for (const row of rows) if (row.trademark_id && wanted.has(row.trademark_id)) add(row)
+      if (rows.length < 200) break
+    }
+    return out
+  }
+  if (first.error) throw toDataError(first.error)
+  for (const row of (first.data as ExistingImage[]) ?? []) add(row)
+  for (let i = LOOKUP_BATCH; i < ids.length; i += LOOKUP_BATCH) {
+    const rows = await callRpc<ExistingImage[]>('admin_trademark_images_lookup', { p_trademark_ids: ids.slice(i, i + LOOKUP_BATCH) })
+    for (const row of rows ?? []) add(row)
+  }
+  return out
 }
 
 export interface ImageImportProgress {
@@ -180,10 +242,14 @@ export interface RegisterResult {
 
 async function uploadOne(item: ImageUploadPlanItem): Promise<void> {
   const blob = new Blob([item.candidate.bytes as BlobPart], { type: item.candidate.contentType })
+  // Object paths are content-addressed (see storagePathFor): a path is only ever
+  // written with the same bytes, and a corrected picture gets a new path/URL, so
+  // caching is safe and nothing stale can be served. `upsert` re-creates an
+  // object that was removed while its row survived.
   const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(item.storagePath, blob, {
     upsert: true,
     contentType: item.candidate.contentType,
-    cacheControl: '3600', // replaced images become visible within an hour on the CDN
+    cacheControl: '86400',
   })
   if (error) {
     if (/row-level security|Unauthorized|403|not allowed/i.test(error.message)) {
@@ -267,8 +333,19 @@ export async function importImages(jobId: string, plan: ImageUploadPlanItem[], o
   return p
 }
 
-export function planFor(candidate: ImageCandidate, resolution: SerialResolution): ImageUploadPlanItem {
-  return { candidate, resolution, storagePath: storagePathFor(resolution.gazette_number, resolution.serial_number ?? candidate.serial ?? candidate.stem, candidate.ext) }
+/**
+ * Decide where an upload goes. Identical bytes already stored for the trademark
+ * keep their object path (→ "unchanged", no new URL); anything else is stored
+ * under a new content-addressed path and supersedes the current logo.
+ */
+export function planFor(candidate: ImageCandidate, resolution: SerialResolution, existing: ExistingImage[] = []): ImageUploadPlanItem {
+  const current = existing.filter((e) => e.image_type === 'logo' && e.status === 'matched' && e.storage_bucket === IMAGE_BUCKET)
+  const hash = candidate.sha256.toLowerCase()
+  const same = current.find((e) => (e.content_hash ?? '').toLowerCase() === hash)
+  if (same) return { candidate, resolution, storagePath: same.storage_path, unchanged: true, replaces: null }
+  const storagePath = storagePathFor(resolution.gazette_number, resolution.serial_number ?? candidate.serial ?? candidate.stem, candidate.ext, hash)
+  const superseded = current.find((e) => e.match_method !== 'manual' && e.storage_path !== storagePath)
+  return { candidate, resolution, storagePath, unchanged: false, replaces: superseded?.storage_path ?? null }
 }
 
 /* ------------------------------ reports --------------------------------- */

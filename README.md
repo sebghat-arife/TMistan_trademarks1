@@ -85,14 +85,15 @@ service-role key exists only on the machine that runs importers / the storage se
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–0900) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–1000) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
 | `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
 | `supabase/APPLY_0700.sql` | migration 0700 alone (search by application / registration number — function-only) for projects already on 0100–0600 | no |
 | `supabase/APPLY_0800.sql` | migration 0800 alone (Contact & Feedback: private `contact_requests` table + submit/admin functions) for projects already on 0100–0600 (0700 not required) | no |
 | `supabase/APPLY_0900.sql` | migration 0900 alone (Data Correction requests: two private tables, submit/status/admin functions, private evidence bucket + policies) for projects already on 0100–0600 (0700/0800 not required) | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests | no |
+| `supabase/APPLY_1000.sql` | migration 1000 alone (image re-upload fix: Storage cleanup queue never removes a file a current image row references, `admin_trademark_images_lookup`) for projects already on 0100–0600 (0700–0900 not required) | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests · 1000 image re-upload fix (cleanup-queue guard) | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
@@ -184,7 +185,8 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
    **`supabase/APPLY_0500.sql`** (Search by Image), and one on 0100–0500 only
    **`supabase/APPLY_0600.sql`** (Admin Data Management), and one on 0100–0600 only
    **`supabase/APPLY_0700.sql`** (search by application / registration number), **`supabase/APPLY_0800.sql`**
-   (Contact & Feedback inbox) and **`supabase/APPLY_0900.sql`** (Data Correction requests). Read the *Messages* tab: a WARNING about
+   (Contact & Feedback inbox), **`supabase/APPLY_0900.sql`** (Data Correction requests) and **`supabase/APPLY_1000.sql`**
+   (image re-upload fix — apply this one on every project that already has 0600). Read the *Messages* tab: a WARNING about
    `trademarks_serial_number_key` means duplicated serial numbers exist and must be fixed.
    Do **not** run `…0000_baseline…` or `supabase/dev/00_supabase_shim.sql` — those only emulate Supabase for the offline stack.
 3. **Storage buckets** — from a trusted machine with `importers/.env` filled in:
@@ -225,7 +227,10 @@ admin data-management functions exist); 159 published trademarks in 2 gazettes w
 images. **0700 (`APPLY_0700.sql`), 0800 (`APPLY_0800.sql`) and 0900 (`APPLY_0900.sql`) have not been
 applied yet** — paste 0700 when the application / registration-number filters are wanted (step 10),
 0800 to switch on the contact form (step 11) and 0900 to switch on the data-correction form (step 12);
-all three are additive and independent of each other.
+all three are additive and independent of each other. **1000 (`APPLY_1000.sql`) should be applied now**
+(checked 2026-10-14: 57 of the 60 pending Storage-cleanup entries point at images that were re-uploaded
+after a deletion; the migration marks them `skipped` so a cleanup run can no longer remove live files).
+Do not press *Remove queued files* on `/admin/storage` before the migration is in.
 
 ## Optional Python importer (operator machine, service-role key)
 

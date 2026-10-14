@@ -42,7 +42,9 @@ MATCHING RULES  (§7 of the platform strategy)
     filenames.
 
 IDEMPOTENCY
-    • Storage path is deterministic:  <gazette>/<serial>[_<type>].<ext>
+    • Storage path is deterministic and content-addressed:
+      <gazette>/<serial>[_<type>]-<sha256[0:12]>.<ext>  (identical bytes → same path →
+      skipped; a corrected picture → new path/URL, the superseded object is removed)
     • (storage_bucket, storage_path) is UNIQUE in trademark_images
     • (trademark_id, image_type, content_hash) is UNIQUE
     → Running the importer five times yields exactly one row per image.
@@ -197,6 +199,21 @@ class Supabase:
         r = self.http.head(f"{self.url}/storage/v1/object/public/{self.bucket}/{path}")
         return r.status_code == 200
 
+    def remove(self, paths: list[str]) -> None:
+        """Delete objects (idempotent: missing keys are not an error)."""
+        paths = [p for p in paths if p]
+        if not paths:
+            return
+        if self.local_dir is not None:
+            for p in paths:
+                f = self.local_dir / self.bucket / p
+                if f.exists():
+                    f.unlink()
+            return
+        r = self.http.request("DELETE", f"{self.url}/storage/v1/object/{self.bucket}", json={"prefixes": paths})
+        if r.status_code >= 400:
+            raise RuntimeError(f"storage remove failed {r.status_code}: {r.text[:300]}")
+
 
 # --------------------------------------------------------------------------- #
 # Discovery / parsing
@@ -322,15 +339,21 @@ class Importer:
         return out
 
     def load_existing_images(self, gazettes: set[str]) -> dict[str, dict[str, Any]]:
+        """Existing image rows of the given gazettes, keyed by storage path AND by
+        ``"<trademark_id>|<image_type>"`` (current matched image of a trademark),
+        so a corrected picture can be recognised even though it is stored under
+        a new, content-addressed path."""
         out: dict[str, dict[str, Any]] = {}
         for g in sorted(gazettes):
             rows = self.sb.select("trademark_images", {
-                "select": "id,storage_path,content_hash,trademark_id,status,image_type",
+                "select": "id,storage_path,thumbnail_path,content_hash,trademark_id,status,image_type,match_method",
                 "gazette_number": f"eq.{g}",
                 "limit": "10000",
             })
             for r in rows:
                 out[r["storage_path"]] = r
+                if r.get("trademark_id") and r.get("status") == "matched":
+                    out[f"{r['trademark_id']}|{r['image_type']}"] = r
         return out
 
     # ---- job bookkeeping ---------------------------------------------------
@@ -423,19 +446,28 @@ class Importer:
 
         ext = c.path.suffix.lower().replace(".jpeg", ".jpg")
         suffix = "" if c.image_type == "logo" else f"_{c.image_type}"
-        storage_path = f"{c.gazette}/{c.serial}{suffix}{ext}"
-        thumb_path = f"thumbs/{c.gazette}/{c.serial}{suffix}.webp"
-
         data = c.path.read_bytes()
         digest = sha256(data)
-        prev = existing.get(storage_path)
+        # Content-addressed object path: a corrected picture for the same serial
+        # gets a NEW path (and URL), so neither browser/CDN caches nor a pending
+        # cleanup of the old path can hide or destroy it. Identical bytes always
+        # map to the same path, which keeps re-runs idempotent.
+        storage_path = f"{c.gazette}/{c.serial}{suffix}-{digest[:12]}{ext}"
+        thumb_path = f"thumbs/{c.gazette}/{c.serial}{suffix}-{digest[:12]}.webp"
 
-        if prev and prev.get("content_hash") == digest and prev.get("trademark_id") == tm_id:
-            return Outcome("skipped", c, "identical bytes already imported", storage_path, tm_id)
+        # The trademark's current image of this type (any path, incl. the legacy
+        # `<gazette>/<serial><ext>` form) decides between skipped / updated / inserted.
+        prev = existing.get(f"{tm_id}|{c.image_type}") or existing.get(storage_path)
+        if prev and prev.get("trademark_id") != tm_id:
+            prev = None
+        if prev and prev.get("content_hash") == digest:
+            return Outcome("skipped", c, "identical bytes already imported", prev["storage_path"], tm_id)
+        if prev and prev.get("match_method") == "manual":
+            prev = None  # an image attached by hand is kept; the imported one is added alongside it
 
         action = "updated" if prev else "inserted"
         if self.dry_run:
-            return Outcome(action, c, f"would {action[:-1]} → {storage_path}", storage_path, tm_id)
+            return Outcome(action, c, f"would {'insert' if action == 'inserted' else 'update'} → {storage_path}", storage_path, tm_id)
 
         w, h, thumb = probe_and_thumb(data)
         try:
@@ -462,14 +494,27 @@ class Importer:
             }
             if prev:
                 self.sb.update("trademark_images", {"id": f"eq.{prev['id']}"}, row)
+                row_id = prev["id"]
             else:
-                self.sb.insert("trademark_images", [row])
+                created = self.sb.insert("trademark_images", [row])
+                row_id = created[0]["id"] if created else None
             # verify
             check = self.sb.select("trademark_images", {"select": "id,trademark_id", "storage_bucket": f"eq.{self.sb.bucket}", "storage_path": f"eq.{storage_path}"})
             if not check or check[0]["trademark_id"] != tm_id:
                 raise RuntimeError("post-write verification failed")
             if not self.sb.object_exists(storage_path):
                 raise RuntimeError("object not found in storage after upload")
+            # The row now points at the new object: drop the superseded files
+            # (never before the database write has been verified).
+            if prev:
+                old = [p for p in (prev.get("storage_path"), prev.get("thumbnail_path")) if p and p not in (storage_path, thumb_path)]
+                try:
+                    self.sb.remove(old)
+                except Exception as e:  # not fatal: the row is correct, the file is merely orphaned
+                    LOG.warning("%s: superseded object(s) not removed (%s): %s", rel, e, ", ".join(old))
+            existing[f"{tm_id}|{c.image_type}"] = {**(prev or {}), "id": row_id, "storage_path": storage_path,
+                                                   "thumbnail_path": thumb_path if thumb else None, "content_hash": digest,
+                                                   "trademark_id": tm_id, "status": "matched", "image_type": c.image_type}
             return Outcome(action, c, storage_path, storage_path, tm_id)
         except Exception as e:
             LOG.error("%s: %s", rel, e)

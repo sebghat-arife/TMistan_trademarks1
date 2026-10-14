@@ -356,18 +356,35 @@ export const listStorageCleanup = (status: 'pending' | 'failed' | 'done' | 'skip
 const markCleanup = (ids: number[], status: 'done' | 'failed' | 'skipped' | 'pending', error?: string | null) =>
   callRpc<number>('admin_storage_cleanup_mark', { p_ids: ids, p_status: status, p_error: error ?? null })
 
-export interface CleanupRunResult { done: number; failed: number; errors: { path: string; message: string }[] }
+export interface CleanupRunResult { done: number; failed: number; skipped: number; skippedPaths: string[]; errors: { path: string; message: string }[] }
+
+const REUSED_PATH_NOTE = 'skipped: object is referenced by a current image row (re-uploaded after the deletion)'
 
 /**
  * Remove queued Storage objects (max `max` per run, 100 per Storage call) and
  * record the outcome per path. Objects that no longer exist count as done
  * (Storage's `remove` is idempotent and returns no error for missing keys).
+ *
+ * Guard: a queued path that an image row references AGAIN (the administrator
+ * deleted an image and re-uploaded one for the same serial number before the
+ * queue ran) is never removed — it is marked `skipped`. The database applies
+ * the same rule when listing the queue (migration 1000); this check keeps the
+ * guarantee on projects where that migration is not installed yet.
  */
 export async function runStorageCleanup(entries: CleanupEntry[], max = 500): Promise<CleanupRunResult> {
-  const batch = entries.filter((e) => e.status === 'pending' || e.status === 'failed').slice(0, max)
-  const out: CleanupRunResult = { done: 0, failed: 0, errors: [] }
+  const candidates = entries.filter((e) => e.status === 'pending' || e.status === 'failed').slice(0, max)
+  const out: CleanupRunResult = { done: 0, failed: 0, skipped: 0, skippedPaths: [], errors: [] }
+  const ours = candidates.filter((e) => e.bucket === IMAGE_BUCKET)
+  const unreferenced = new Set((await findUnreferencedPaths(ours.map((e) => e.path))).map((p) => p.path))
+  const reused = ours.filter((e) => !unreferenced.has(e.path))
+  if (reused.length) {
+    await markCleanup(reused.map((e) => e.id), 'skipped', REUSED_PATH_NOTE)
+    out.skipped += reused.length
+    out.skippedPaths.push(...reused.map((e) => e.path))
+  }
+  const batch = ours.filter((e) => unreferenced.has(e.path))
   for (let i = 0; i < batch.length; i += 100) {
-    const chunk = batch.filter((e) => e.bucket === IMAGE_BUCKET).slice(i, i + 100)
+    const chunk = batch.slice(i, i + 100)
     if (!chunk.length) continue
     const { error } = await supabase.storage.from(IMAGE_BUCKET).remove(chunk.map((e) => e.path))
     if (error) {
@@ -379,11 +396,36 @@ export async function runStorageCleanup(entries: CleanupEntry[], max = 500): Pro
       out.done += chunk.length
     }
   }
-  const foreign = batch.filter((e) => e.bucket !== IMAGE_BUCKET)
+  const foreign = candidates.filter((e) => e.bucket !== IMAGE_BUCKET)
   if (foreign.length) {
     await markCleanup(foreign.map((e) => e.id), 'skipped', 'Only the trademark-images bucket is managed from the browser')
+    out.skipped += foreign.length
   }
   return out
+}
+
+/** Sentence appended to a deletion message: how many of the queued files were removed on the spot. */
+export function storageRemovalNote(t: (key: string, opts?: Record<string, unknown>) => string, queued: number, cleaned: CleanupRunResult | null): string {
+  if (!queued || !cleaned) return ''
+  const left = Math.max(0, queued - cleaned.done - cleaned.skipped)
+  return ' ' + t('admin.data.storage.removedNow', { done: cleaned.done, left })
+}
+
+/**
+ * Remove the Storage objects a deletion just queued (same admin action),
+ * right away instead of waiting for the next manual queue run. Best effort:
+ * anything that cannot be removed now simply stays in the queue.
+ */
+export async function cleanupAfterAction(actionId: number | null | undefined): Promise<CleanupRunResult | null> {
+  if (actionId === null || actionId === undefined) return null
+  try {
+    const pending = await listStorageCleanup('pending', 500)
+    const mine = pending.filter((e) => e.action_id === actionId)
+    if (!mine.length) return { done: 0, failed: 0, skipped: 0, skippedPaths: [], errors: [] }
+    return await runStorageCleanup(mine)
+  } catch {
+    return null
+  }
 }
 
 export interface StorageObjectInfo { path: string; size: number | null; updated_at: string | null; content_type: string | null }

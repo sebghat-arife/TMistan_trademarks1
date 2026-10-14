@@ -33,12 +33,27 @@ export function cleanSerial(v: unknown): string | null {
     .replace(/\s+/g, ' ')
 }
 
+/** Length of the content-hash prefix embedded in object paths. */
+export const CONTENT_SUFFIX_LENGTH = 12
+
 /**
- * Storage object path for a matched image. Deterministic per trademark so a
- * re-upload of the same trademark's logo overwrites (upsert) instead of piling
- * up: `<gazette>/<serial>.<ext>` with path-unsafe characters replaced.
+ * Storage object path for a matched image: `<gazette>/<serial>-<sha256 prefix>.<ext>`
+ * with path-unsafe characters replaced.
+ *
+ * The path is derived from the trademark AND the file content, so a corrected
+ * picture uploaded for the same serial number gets a NEW object path (and
+ * therefore a new public URL). Overwriting the old path would keep showing the
+ * old picture for as long as browsers and the Storage CDN cache it
+ * (Cache-Control: max-age), and a removal of the old path queued by an earlier
+ * deletion could wipe the new file. Identical bytes always map to the same
+ * path, which keeps re-imports idempotent ("unchanged").
+ *
+ * Without a hash (legacy callers) the historical `<gazette>/<serial>.<ext>`
+ * form is returned; rows created by earlier versions keep that form.
  */
-export function storagePathFor(gazette: string | null, serial: string, ext: string): string {
+export function storagePathFor(gazette: string | null, serial: string, ext: string, contentHash?: string | null): string {
   const safe = (s: string) => s.replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^_+|_+$/g, '') || 'x'
-  return `${safe(gazette ?? 'unsorted')}/${safe(serial)}.${ext}`
+  const hash = (contentHash ?? '').toLowerCase().replace(/[^a-f0-9]/g, '').slice(0, CONTENT_SUFFIX_LENGTH)
+  const suffix = hash ? `-${hash}` : ''
+  return `${safe(gazette ?? 'unsorted')}/${safe(serial)}${suffix}.${ext}`
 }

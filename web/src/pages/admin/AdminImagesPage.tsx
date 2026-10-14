@@ -11,7 +11,7 @@ import type { ImageStatus, ImportJobItemRow } from '@/lib/database.types'
 import { ErrorState } from '@/components/AsyncState'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ConfirmDialog, DataManagementGate, Mono, Notice, PageHeader, Pager, Pill, Toolbar, formatBytes, shortId, useSelection } from '@/components/admin/AdminUi'
-import { type AdminImageListItem, type ImageListParams, deleteImages, listAdminImages, publicImageUrl } from '@/services/admin_data_service'
+import { type AdminImageListItem, type ImageListParams, cleanupAfterAction, deleteImages, listAdminImages, publicImageUrl, storageRemovalNote } from '@/services/admin_data_service'
 import { unwrap } from '@/services/_shared'
 
 const LIMIT = 48
@@ -69,7 +69,9 @@ function ImageTable({ mode }: { mode: 'all' | 'unmatched' }) {
     try {
       const r = await deleteImages(dialog.map((i) => i.id), token ?? '')
       setDialog(null); sel.clear()
-      setFlash(t('admin.data.images.deleted', { count: r.deleted, queued: r.storage_queued }))
+      // remove the files right away (not only when the cleanup queue is run by hand)
+      const cleaned = await cleanupAfterAction(r.action_id)
+      setFlash(t('admin.data.images.deleted', { count: r.deleted, queued: r.storage_queued }) + storageRemovalNote(t, r.storage_queued, cleaned))
       void qc.invalidateQueries({ queryKey: ['admin'] })
       void qc.invalidateQueries({ queryKey: ['trademarks'] })
     } catch (e) {

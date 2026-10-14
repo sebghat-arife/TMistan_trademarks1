@@ -10,8 +10,8 @@ import { ErrorState } from '@/components/AsyncState'
 import { StatusPill } from './ImportCenterPage'
 import { ConfirmDialog, DataManagementGate, KeyValue, Mono, Notice, PageHeader, Pager, Pill, StickyDetailCell, Toolbar, shortId, useScrollerWidth } from '@/components/admin/AdminUi'
 import {
-  type AdminImportJob, type BatchDeletePreview, cancelImportJob, deleteImportJob, deleteImportJobRecords, getImportJobDetail, listAdminImportJobs, listImportJobRecords,
-  previewDeleteImportJobRecords, purgeImportJobs,
+  type AdminImportJob, type BatchDeletePreview, cancelImportJob, cleanupAfterAction, deleteImportJob, deleteImportJobRecords, getImportJobDetail, listAdminImportJobs, listImportJobRecords,
+  previewDeleteImportJobRecords, purgeImportJobs, storageRemovalNote,
 } from '@/services/admin_data_service'
 
 const LIMIT = 30
@@ -106,7 +106,8 @@ function History() {
     if (dialog.kind === 'deleteJob') void run(async () => { const r = await deleteImportJob(dialog.job.id, token ?? ''); return t('admin.data.history.jobDeleted', { items: r.items_deleted }) })
     if (dialog.kind === 'deleteRecords') void run(async () => {
       const r = await deleteImportJobRecords(dialog.job.id, token ?? '', dialog.includeModified)
-      return t('admin.data.history.recordsDeleted', { trademarks: r.trademarks, images: r.images, queued: r.storage_queued, skipped: r.modified_skipped })
+      const cleaned = await cleanupAfterAction(r.action_id)
+      return t('admin.data.history.recordsDeleted', { trademarks: r.trademarks, images: r.images, queued: r.storage_queued, skipped: r.modified_skipped }) + storageRemovalNote(t, r.storage_queued, cleaned)
     })
     if (dialog.kind === 'purge') void run(async () => { const r = await purgeImportJobs(dialog.days, token ?? ''); return t('admin.data.history.purged', { count: r.jobs }) })
   }

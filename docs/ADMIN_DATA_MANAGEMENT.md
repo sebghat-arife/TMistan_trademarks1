@@ -45,13 +45,20 @@ pattern, by filter, or automatically.
 1. `admin_delete_trademarks` / `admin_delete_images` / `admin_delete_import_job_records` delete the
    rows (FK cascade removes image rows and image-search features) **and enqueue every Storage path in
    `storage_cleanup_queue`** in the same transaction. The audit entry carries the exact paths.
-2. The browser then removes the queued objects through the Storage API and marks them `done`; a
-   rejected deletion stays `failed` with the error text and attempt count and can be retried from
-   *Orphaned Files* (the queue is also visible in the Overview). Nothing is reported "deleted" that
-   Storage still holds.
-3. Shared objects are never removed: an image row is unique per `(bucket, path)`; the orphan scan
-   re-checks each path against the database right before deletion (`admin_unreferenced_paths`) and
-   skips paths that became referenced in the meantime.
+2. The browser then removes the queued objects through the Storage API — right after the deletion
+   for the paths of that action (the confirmation message says how many were removed on the spot)
+   and otherwise from *Orphaned Files* — and marks them `done`; a rejected deletion stays `failed`
+   with the error text and attempt count and can be retried (the queue is also visible in the
+   Overview). Nothing is reported "deleted" that Storage still holds.
+3. Shared or re-used objects are never removed: an image row is unique per `(bucket, path)`; every
+   queue run and the orphan scan re-check each path against the database right before deletion
+   (`admin_unreferenced_paths`) and mark paths that became referenced in the meantime `skipped`
+   ("file in use again"). Migration 1000 enforces the same rule in the database
+   (`admin_storage_cleanup_list` skips referenced entries before listing, `admin_register_images`
+   cancels queued removals of a path it registers), so an image re-uploaded for the same serial
+   number after a deletion can no longer be destroyed by a later cleanup run. New uploads are
+   stored under content-addressed paths (`<gazette>/<serial>-<hash>.<ext>`), so a corrected picture
+   never shares a path with the deleted one anyway (see `docs/IMPORT_CENTER.md`).
 4. Dangling references in the other direction (row without file) are listed under *Missing files*.
 
 ### Delete by import batch (provenance)

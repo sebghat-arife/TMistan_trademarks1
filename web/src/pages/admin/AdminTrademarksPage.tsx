@@ -11,7 +11,7 @@ import {
   ConfirmDialog, DataManagementGate, KeyValue, Mono, Notice, PageHeader, Pager, Pill, Toolbar, formatBytes, shortId, useSelection,
 } from '@/components/admin/AdminUi'
 import {
-  type AdminTrademarkListItem, type TrademarkSearchParams, deleteImages, deleteTrademarks, getAdminTrademark, searchAdminTrademarks, setTrademarksPublished,
+  type AdminTrademarkListItem, type TrademarkSearchParams, cleanupAfterAction, deleteImages, deleteTrademarks, getAdminTrademark, searchAdminTrademarks, setTrademarksPublished, storageRemovalNote,
 } from '@/services/admin_data_service'
 
 const LIMIT = 50
@@ -94,7 +94,8 @@ function TrademarkRecords() {
       void run(async () => {
         const r = await deleteTrademarks(dialog.ids, token ?? '')
         if (openId && dialog.ids.includes(openId)) setOpenId(null)
-        return t('admin.data.trademarks.deleted', { count: r.deleted, images: r.images_deleted, queued: r.storage_queued })
+        const cleaned = await cleanupAfterAction(r.action_id)
+        return t('admin.data.trademarks.deleted', { count: r.deleted, images: r.images_deleted, queued: r.storage_queued }) + storageRemovalNote(t, r.storage_queued, cleaned)
       })
     } else if (dialog.kind === 'archive' || dialog.kind === 'restore') {
       void run(async () => {
@@ -104,7 +105,8 @@ function TrademarkRecords() {
     } else if (dialog.kind === 'deleteImage') {
       void run(async () => {
         const r = await deleteImages([dialog.id], token ?? '')
-        return t('admin.data.images.deleted', { count: r.deleted, queued: r.storage_queued })
+        const cleaned = await cleanupAfterAction(r.action_id)
+        return t('admin.data.images.deleted', { count: r.deleted, queued: r.storage_queued }) + storageRemovalNote(t, r.storage_queued, cleaned)
       })
     }
   }

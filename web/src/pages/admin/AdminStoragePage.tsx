@@ -31,7 +31,7 @@ function CleanupQueue() {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
   const qc = useQueryClient()
-  const [status, setStatus] = useState<'pending' | 'failed' | 'done' | 'all'>('pending')
+  const [status, setStatus] = useState<'pending' | 'failed' | 'done' | 'skipped' | 'all'>('pending')
   const q = useQuery({ queryKey: ['admin', 'cleanup', status], queryFn: () => listStorageCleanup(status, 500), staleTime: 10_000 })
   const pendingQ = useQuery({ queryKey: ['admin', 'cleanup', 'pending+failed'], queryFn: async () => [...(await listStorageCleanup('pending', 500)), ...(await listStorageCleanup('failed', 500))], staleTime: 10_000 })
   const [running, setRunning] = useState(false)
@@ -63,6 +63,7 @@ function CleanupQueue() {
             <option value="pending">{t('admin.data.cleanupStatus.pending')}</option>
             <option value="failed">{t('admin.data.cleanupStatus.failed')}</option>
             <option value="done">{t('admin.data.cleanupStatus.done')}</option>
+            <option value="skipped">{t('admin.data.cleanupStatus.skipped')}</option>
             <option value="all">{t('admin.data.filters.allStatuses')}</option>
           </select>
           <button type="button" className="btn-ghost h-9 px-2" onClick={() => { void q.refetch(); void pendingQ.refetch() }} aria-label={t('admin.import.refresh')}><RefreshCw className={cn('h-4 w-4', q.isFetching && 'animate-spin')} /></button>
@@ -73,7 +74,8 @@ function CleanupQueue() {
       </div>
       {err != null && <ErrorState className="mx-5 mb-3" error={err} />}
       {result && (
-        <Notice tone={result.failed ? 'warn' : 'ok'} className="mx-5 mb-3" title={t('admin.data.storage.cleanupResult', { done: result.done, failed: result.failed })}>
+        <Notice tone={result.failed ? 'warn' : 'ok'} className="mx-5 mb-3" title={t('admin.data.storage.cleanupResult', { done: result.done, failed: result.failed, skipped: result.skipped })}>
+          {result.skipped > 0 && <p className="text-[12px]">{t('admin.data.storage.cleanupSkippedHint')}</p>}
           {result.errors.slice(0, 5).map((e) => <p key={e.path} dir="ltr" className="font-mono text-[12px]">{e.path}: {e.message}</p>)}
         </Notice>
       )}
@@ -92,7 +94,7 @@ function CleanupQueue() {
                 <td className="px-5 py-2 text-ink-700">{r.reason ?? '—'}</td>
                 <td className="px-5 py-2"><Pill tone={r.status === 'done' ? 'ok' : r.status === 'failed' ? 'error' : r.status === 'pending' ? 'info' : 'muted'}>{t(`admin.data.cleanupStatus.${r.status}`)}</Pill></td>
                 <td className="px-5 py-2">{formatNumber(r.attempts, lng)}</td>
-                <td className="max-w-[280px] truncate px-5 py-2 text-red-700" title={r.last_error ?? ''} dir="ltr">{r.last_error ?? ''}</td>
+                <td className={cn('max-w-[280px] truncate px-5 py-2', r.status === 'failed' ? 'text-red-700' : 'text-ink-500')} title={r.last_error ?? ''} dir="ltr">{r.last_error ?? ''}</td>
                 <td className="whitespace-nowrap px-5 py-2 text-ink-500">{formatDateTime(r.updated_at, lng)}</td>
               </tr>
             ))}

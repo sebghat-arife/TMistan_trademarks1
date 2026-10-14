@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 0900) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql and APPLY_0900.sql."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 1000) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql, APPLY_0900.sql and APPLY_1000.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -252,3 +252,61 @@ union all select 'trademarks (unchanged)', count(*)::text from public.trademarks
 """
 p0900.write_text(h0900 + f"\n-- {'#'*76}\n-- {m0900.name}\n-- {'#'*76}\n" + m0900.read_text() + f0900)
 print("wrote supabase/APPLY_0900.sql")
+
+# APPLY_1000.sql — image re-upload fix (cleanup-queue guard + lookup RPC), for projects already on 0100–0600.
+m1000 = root / "supabase" / "migrations" / "20261014001000_image_reupload_fix.sql"
+p1000 = root / "supabase" / "APPLY_1000.sql"
+h1000 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 1000 (image re-upload fix: Storage cleanup guard)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261014001000_image_reupload_fix.sql by
+-- scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisite: migration 0600 (APPLY_0600.sql) is in place — it created
+-- storage_cleanup_queue and the functions re-defined here. 0700–0900 are NOT
+-- required.
+--
+-- What it fixes: deleting an image only QUEUED the removal of its Storage
+-- file; an image re-uploaded for the same serial number re-used that path, so
+-- running the cleanup queue later deleted the NEW picture as well. From now on
+--   • admin_register_images cancels a queued removal of any path it registers
+--   • admin_storage_cleanup_list marks every queued path that is referenced
+--     by a current image row as `skipped` before listing (never removable)
+--   • admin_trademark_images_lookup lets the Import Center plan uploads
+--     against the images a trademark already has
+--   • queue entries that already point at a live image are marked `skipped`
+--     once (one-off data fix of the queue table only — no trademark or image
+--     row and no Storage object is touched)
+--
+-- Safe by construction — ADDITIVE ONLY:
+--   • re-creates four admin functions (same names/signatures, same callers)
+--   • adds one admin-only function and one internal helper (no API grant)
+--   • touches no trademark, gazette, applicant or image row, no Storage object
+--   • idempotent — running it twice is harmless
+-- ============================================================================
+begin;
+"""
+f1000 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'functions (expect 5)' as object,
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname in ('admin_register_images','admin_storage_cleanup_list','admin_storage_cleanup_mark',
+               'admin_trademark_images_lookup','admin_cancel_storage_cleanup')) as value
+union all select 'internal helper callable by anon/authenticated (must be 0)',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'admin_cancel_storage_cleanup' and grantee in ('anon', 'authenticated', 'PUBLIC'))
+union all select 'queue entries still pending that point at a live image (must be 0)',
+       (select count(*)::text from public.storage_cleanup_queue q
+         where q.status in ('pending', 'failed')
+           and exists (select 1 from public.trademark_images i
+                        where i.storage_bucket = q.bucket and (i.storage_path = q.path or i.thumbnail_path = q.path)))
+union all select 'queue entries skipped by this migration',
+       (select count(*)::text from public.storage_cleanup_queue where last_error like 'skipped by migration 1000:%')
+union all select 'image rows (unchanged)', count(*)::text from public.trademark_images
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks;
+"""
+p1000.write_text(h1000 + f"\n-- {'#'*76}\n-- {m1000.name}\n-- {'#'*76}\n" + m1000.read_text() + f1000)
+print("wrote supabase/APPLY_1000.sql")

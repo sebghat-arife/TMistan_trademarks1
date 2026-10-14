@@ -14,7 +14,7 @@ step goes through `SECURITY DEFINER` functions that verify `public.is_admin()` b
 │ ───────────────── storage upload (RLS: admin only) ────── rpc admin_register_images│
 └──────────────────────────────────────────────────────────────────────────────────┘
         ▼ Postgres: trademarks · import_jobs · import_job_items · trademark_images
-        ▼ Storage bucket trademark-images/<gazette>/<serial>.<ext>  (public read)
+        ▼ Storage bucket trademark-images/<gazette>/<serial>-<sha256 prefix>.<ext>  (public read)
         ▼ Public search & detail pages (search_trademarks → primary image path)
 ```
 
@@ -125,11 +125,28 @@ is fine), as are `__MACOSX`, `.DS_Store`, `Thumbs.db`.
    (file, serial, level, message). Only *Matched* files are uploaded — one image per trademark
    per batch (the first file wins; the second `1011-006.jpg` next to `1011-006.png` is reported as a
    duplicate).
-3. **Upload N images** — each file goes to `trademark-images/<gazette>/<serial>.<ext>` (upsert), then
-   `trademark_images` is upserted with `trademark_id`, `storage_path`, `content_hash`, dimensions,
-   `status = matched`, `sort_order 0` (= primary image). Progress shows Uploaded / Linked /
-   Unchanged / Failed. Re-uploading the same file is *already up to date* (same `sha256`); a new
-   file for the same serial **replaces** the old image (same storage path, hash changes).
+3. **Upload N images** — each file goes to `trademark-images/<gazette>/<serial>-<first 12 hex of
+   its SHA-256>.<ext>`, then `trademark_images` is upserted with `trademark_id`, `storage_path`,
+   `content_hash`, dimensions, `status = matched`, `sort_order 0` (= primary image). Progress shows
+   Uploaded / Linked / Unchanged / Failed. Before anything is uploaded the preview's *Outcome* column
+   says what will happen per file (`admin_trademark_images_lookup`, with a fallback scan of
+   `admin_list_images` while migration 1000 is not applied):
+   * **Already on file** — the trademark already has these exact bytes (same `sha256`): the existing
+     object path is kept and re-written with identical content (this also restores a file that was
+     removed from Storage while its row survived); the row is reported *unchanged*.
+   * **Replaces current image** — a different picture for a serial that already has one: it is stored
+     under a **new** path (different hash → different URL), the row is re-pointed, the superseded
+     object is removed right after the database confirms the link. A manually attached image is
+     never replaced; the import is added next to it.
+   * **New image** — the trademark had no image.
+
+   Why the path contains the hash: with one fixed path per serial, a corrected picture kept the old
+   URL, so browsers and the Storage CDN served the previous picture for up to an hour, and a Storage
+   removal queued by an earlier deletion of that serial's image could wipe the new file. A new path
+   per content makes the corrected image visible immediately and makes queued removals harmless
+   (migration 1000 additionally cancels queued removals of any path that is registered again).
+   Images uploaded before migration 1000 keep their legacy `<gazette>/<serial>.<ext>` path until they
+   are replaced.
 4. *Show trademarks without an image* lists (and exports) what is still missing.
 
 The public site reads `trademark_primary_images` / `search_trademarks`, so the real image appears
@@ -219,7 +236,8 @@ select count(*) from trademarks t where not exists (select 1 from trademark_imag
 ```
 
 Public check: open `/trademark/<serial>` and `/search?q=<mark>` — the card/detail image URL is
-`…/storage/v1/object/public/trademark-images/<gazette>/<serial>.<ext>`.
+`…/storage/v1/object/public/trademark-images/<gazette>/<serial>-<hash>.<ext>` (legacy uploads:
+`<gazette>/<serial>.<ext>`).
 
 ## 6. Troubleshooting
 
@@ -231,7 +249,8 @@ Public check: open `/trademark/<serial>` and `/search?q=<mark>` — the card/det
 | WARNING `trademarks_serial_number_key NOT created` | duplicated `serial_number` values exist; the message lists them. Fix the rows and re-run 0400. Imports work meanwhile (gazette+serial uniqueness), matching by serial still resolves to the oldest row. |
 | A file is *No trademark found* | The serial is not in `trademarks` — import the spreadsheet first, or fix the file name. |
 | *Ambiguous* | Two trademarks share the serial at the best matching tier; correct the data, not the file name. |
-| Import finished but the public page shows the old image | CDN cache (1 h). Hard-reload, or wait. |
+| Import finished but the public page shows the old image | Only possible for images uploaded **before** migration 1000 / this release that were re-uploaded to the *same* path: CDN cache (1 h) — hard-reload or wait. Since the content-addressed paths a corrected picture gets a new URL and shows immediately. |
+| An image disappeared after *Remove queued files* on `/admin/storage` | Pre-1000 behaviour: the queue held the path of a deleted image that was re-uploaded to the same path. Apply `supabase/APPLY_1000.sql` (marks such entries `skipped`), then re-upload the picture (it is stored under a new path). |
 | `.xls` (binary 97-2003) fails to parse | Save as `.xlsx` from Excel. |
 
 ## 7. Files
