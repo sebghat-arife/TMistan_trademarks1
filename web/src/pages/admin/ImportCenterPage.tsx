@@ -480,7 +480,7 @@ function SpreadsheetImporter() {
           {state.phase === 'done' && (
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={reset} className="btn-secondary h-9 px-4 text-[13px]"><RotateCcw className="h-4 w-4" /> {t('admin.import.importAnother')}</button>
-              <Link to="/search" className="btn-ghost h-9 px-4 text-[13px]">{t('admin.import.openSearch')} ↗</Link>
+              <Link to="/" className="btn-ghost h-9 px-4 text-[13px]">{t('admin.import.openSearch')} ↗</Link>
             </div>
           )}
         </div>

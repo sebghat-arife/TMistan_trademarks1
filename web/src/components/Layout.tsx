@@ -10,8 +10,8 @@ import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 // Primary navigation. Nine entries: the desktop bar is shown from the `lg`
 // breakpoint (1024px) with a compact type size and switches to the full size
 // at `xl`; narrower viewports use the menu button.
-const NAV = [
-  { to: '/search', key: 'nav.search' },
+const NAV: readonly { to: string; key: string; end?: boolean }[] = [
+  { to: '/', key: 'nav.search', end: true }, // the search is the landing page
   { to: '/services', key: 'nav.services' },
   { to: '/data-sources', key: 'nav.dataSources' },
   { to: '/knowledge-center', key: 'nav.knowledge' },
@@ -20,7 +20,7 @@ const NAV = [
   { to: '/about', key: 'nav.about' },
   { to: '/help', key: 'nav.help' },
   { to: '/contact', key: 'nav.contact' },
-] as const
+]
 
 // Brand glyphs (lucide no longer ships brand icons). Links come from the
 // SITE_*_URL build variables; a network without a URL is simply not rendered.
@@ -52,6 +52,7 @@ export function Layout() {
               <NavLink
                 key={n.to}
                 to={n.to}
+                end={n.end}
                 className={({ isActive }) =>
                   cn(
                     'relative whitespace-nowrap py-5 text-[13px] font-medium text-ink-800 transition-colors hover:text-brand-600 xl:text-[14.5px]',
@@ -78,7 +79,7 @@ export function Layout() {
           <div className="border-t border-ink-200 bg-white lg:hidden">
             <div className="container-x flex flex-col gap-1 py-3">
               {NAV.map((n) => (
-                <NavLink key={n.to} to={n.to} onClick={() => setMenuOpen(false)} className={({ isActive }) => cn('rounded-md px-3 py-2 text-[15px] font-medium', isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800')}>
+                <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMenuOpen(false)} className={({ isActive }) => cn('rounded-md px-3 py-2 text-[15px] font-medium', isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800')}>
                   {t(n.key)}
                 </NavLink>
               ))}
@@ -122,7 +123,7 @@ export function Layout() {
               ))}
             </div>
           </div>
-          <FooterCol title={t('footer.platform')} links={[['/search', t('nav.search')], ['/services', t('footer.services')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
+          <FooterCol title={t('footer.platform')} links={[['/', t('nav.search')], ['/services', t('footer.services')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
           <FooterCol
             title={t('footer.information')}
             links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/knowledge-center', t('footer.knowledge')], ['/data-corrections', t('footer.corrections')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}

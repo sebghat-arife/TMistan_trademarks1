@@ -128,27 +128,7 @@
 [dir="rtl"] .bidi-auto { text-align: right; }
 
 /* ── Homepage (enterprise layout) ─────────────────────────────────────── */
-
-/* Hero photograph: only loaded from md up (CSS background → not fetched on phones),
-   fades into the tinted hero background on the text side. */
-.hero-photo {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  width: 58%;
-  display: none;
-  background-size: cover;
-  background-position: 62% center;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
-          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
-}
-[dir="rtl"] .hero-photo {
-  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
-          mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,.55) 30%, #000 60%);
-}
-@media (min-width: 768px) {
-  .hero-photo { display: block; background-image: url('/img/hero-mosque.jpg'); }
-}
+/* The hero is the search (see .search-hero below); the former banner photo is gone. */
 
 /* Dark "Built for Afghanistan" band: citadel photograph on the end side under a navy wash. */
 .afg-band {

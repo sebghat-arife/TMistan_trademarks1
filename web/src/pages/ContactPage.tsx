@@ -245,7 +245,7 @@ export function ContactPage() {
                   <button type="button" className="btn btn-secondary" onClick={reset}>
                     {t('contact.status.another')}
                   </button>
-                  <Link to="/search" className="btn btn-primary">
+                  <Link to="/" className="btn btn-primary">
                     <Search className="h-4 w-4" aria-hidden />
                     {t('contact.closing.search')}
                   </Link>
@@ -500,7 +500,7 @@ export function ContactPage() {
             <h2 id="contact-closing" className="font-serif text-[24px] font-semibold">{t('contact.closing.title')}</h2>
             <p className="mt-1.5 text-[14.5px] text-white/80">{t('contact.closing.text')}</p>
           </div>
-          <Link to="/search" className="btn btn-primary shrink-0">
+          <Link to="/" className="btn btn-primary shrink-0">
             <Search className="h-4 w-4" aria-hidden />
             {t('contact.closing.search')}
           </Link>

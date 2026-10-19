@@ -90,7 +90,7 @@ export const ARTICLES: Article[] = [
       'Note the applicant’s name: searching by applicant often reveals related marks that a name search alone would miss.',
     ],
     related: ['understanding-trademark-classes', 'how-to-search-trademark-records', 'what-a-search-can-and-cannot-tell-you'],
-    next: { label: 'Start a search', to: '/search' },
+    next: { label: 'Start a search', to: '/' },
   },
 
   /* ───────────────────────────── 2. How to search ───────────────────────────── */
@@ -155,7 +155,7 @@ export const ARTICLES: Article[] = [
       'A result confirms that a record exists in TMistan’s data; it does not by itself establish the mark’s legal status.',
     ],
     related: ['preliminary-trademark-search', 'how-to-read-gazette-entries', 'understanding-trademark-classes'],
-    next: { label: 'Open the Search page', to: '/search' },
+    next: { label: 'Open the search', to: '/' },
   },
 
   /* ───────────────────────────── 3. Reading a gazette entry ───────────────────────────── */
@@ -270,7 +270,7 @@ export const ARTICLES: Article[] = [
       'Record counts per class help you estimate how much reviewing a thorough search will take.',
     ],
     related: ['how-to-search-trademark-records', 'preliminary-trademark-search', 'how-to-read-gazette-entries'],
-    next: { label: 'Search by class', to: '/search' },
+    next: { label: 'Search by class', to: '/' },
   },
 
   /* ───────────────────────────── 5. Preliminary search ───────────────────────────── */
@@ -330,7 +330,7 @@ export const ARTICLES: Article[] = [
       'Your documented findings are the useful output: they let a professional advise you without repeating the groundwork.',
     ],
     related: ['how-to-search-trademark-records', 'understanding-trademark-classes', 'what-a-search-can-and-cannot-tell-you'],
-    next: { label: 'Run your first search', to: '/search' },
+    next: { label: 'Run your first search', to: '/' },
   },
 
   /* ───────────────────────────── 6. Limits ───────────────────────────── */

@@ -204,7 +204,7 @@ export function DataSourcesPage() {
         <section aria-label={t('dataSources.cta.title')} className="mt-12 flex flex-col items-start justify-between gap-5 rounded-xl bg-navy-900 px-6 py-8 text-white md:mt-16 md:flex-row md:items-center md:px-10">
           <h2 className="font-serif text-[24px] font-semibold">{t('dataSources.cta.title')}</h2>
           <div className="flex flex-wrap gap-3">
-            <Link to="/search" className="btn btn-primary">
+            <Link to="/" className="btn btn-primary">
               <Search className="h-4 w-4" aria-hidden />
               {t('dataSources.cta.search')}
             </Link>

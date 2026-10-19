@@ -47,7 +47,7 @@ export function TrademarkPage() {
         <div className="card p-8 text-center">
           <p className="text-[15px] font-medium text-ink-900">{t('trademark.notFound')}</p>
           <p className="mt-1 font-mono text-xs text-ink-500">{serial}</p>
-          <Link to="/search" className="btn-secondary mt-4">{t('trademark.backToSearch')}</Link>
+          <Link to="/" className="btn-secondary mt-4">{t('trademark.backToSearch')}</Link>
         </div>
       </div>
     )
@@ -70,8 +70,6 @@ export function TrademarkPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[14px] text-ink-500">
           <Link to="/" className="hover:text-brand-600">{t('trademark.home')}</Link>
-          <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-          <Link to="/search" className="hover:text-brand-600">{t('trademark.searchResults')}</Link>
           <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
           <span className="bidi-auto text-ink-900">{name} ({tm.serial_number})</span>
         </nav>
@@ -147,11 +145,10 @@ export function TrademarkPage() {
           {tm.mark_print && tm.mark_print !== tm.mark_name && <p className="bidi-auto mt-1 text-[14px] text-ink-500">{t('fields.markPrint')}: {tm.mark_print}</p>}
 
           <dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
-            <Fact label={t('fields.serialNumber')} mono>{tm.serial_number}</Fact>
+            <Fact label={t('fields.tmistanSerialNumber')} mono>{tm.serial_number}</Fact>
             <Fact label={t('fields.class')}>{classText(tm.class_numbers, tm.trademark_class, na)}</Fact>
             <Fact label={t('fields.publicationDate')}>{tm.publication_date ? formatRegistryDate(tm.publication_date, lng) : na}</Fact>
             {tm.objection_deadline && <Fact label={t('fields.objectionDeadline')}>{formatRegistryDate(tm.objection_deadline, lng)}</Fact>}
-            {tm.record_number && <Fact label={t('fields.recordNumber')} mono>{tm.record_number}</Fact>}
             {tm.registration_number && <Fact label={t('fields.registrationNumber')} mono>{tm.registration_number}</Fact>}
             {tm.application_number && <Fact label={t('fields.applicationNumber')} mono>{tm.application_number}</Fact>}
           </dl>
@@ -287,7 +284,7 @@ function useRecordDownload() {
 
       const rows: { label: string; value: string }[] = [
         { label: t('fields.mark'), value: tm.mark_name || na },
-        { label: t('fields.serialNumber'), value: tm.serial_number },
+        { label: t('fields.tmistanSerialNumber'), value: tm.serial_number },
         { label: t('fields.applicant'), value: tm.applicant_name || na },
         { label: t('fields.address'), value: tm.applicant_address || na },
         { label: t('fields.class'), value: classText(tm.class_numbers, tm.trademark_class, na) },
@@ -297,7 +294,6 @@ function useRecordDownload() {
       ]
       if (tm.mark_print && tm.mark_print !== tm.mark_name) rows.splice(1, 0, { label: t('fields.markPrint'), value: tm.mark_print })
       if (tm.objection_deadline) rows.push({ label: t('fields.objectionDeadline'), value: formatRegistryDate(tm.objection_deadline, lng) })
-      if (tm.record_number) rows.push({ label: t('fields.recordNumber'), value: tm.record_number })
       if (tm.registration_number) rows.push({ label: t('fields.registrationNumber'), value: tm.registration_number })
       if (tm.application_number) rows.push({ label: t('fields.applicationNumber'), value: tm.application_number })
       if (tm.old_owner) rows.push({ label: t('fields.oldOwner'), value: tm.old_owner })
@@ -313,10 +309,10 @@ function useRecordDownload() {
         dir,
         labels: {
           platformName: t('app.shortName'),
-          tagline: t('home.hero.lead'),
+          tagline: t('app.tagline'),
           documentTitle: t('trademark.record.title'),
           generated: t('trademark.record.generated', { date: generated }),
-          serial: t('fields.serialNumber'),
+          serial: t('fields.tmistanSerialNumber'),
           source: t('trademark.sourceInformation'),
           details: t('trademark.record.details'),
           image: t('trademark.record.image'),

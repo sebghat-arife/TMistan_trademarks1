@@ -1,5 +1,5 @@
-import { useCallback, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useCallback, type CSSProperties, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
@@ -26,9 +26,9 @@ import {
 } from 'lucide-react'
 import { deriveRecordTypeStats, filterOptionsQuery, registryStatsQuery, type RecordTypeStats } from '@/services'
 import { cn, formatNumber } from '@/lib/utils'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { MASNAD_URL } from '@/lib/site'
 import { ErrorState } from '@/components/AsyncState'
+import { SearchExperience } from '@/components/search/SearchExperience'
 
 type Icon = React.ComponentType<{ className?: string }>
 
@@ -115,21 +115,20 @@ const TYPE_CARDS: { key: keyof RecordTypeStats; icon: Icon }[] = [
   { key: 'changes', icon: SquarePen },
 ]
 
+/**
+ * Landing page. The hero IS the search (the former /search page: mode switch,
+ * search card, advanced filters, results); the sections below introduce the
+ * platform and are shown while no search is running.
+ */
 export function HomePage() {
+  return <SearchExperience landing={<Landing />} />
+}
+
+function Landing() {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
-  const [q, setQ] = useState('')
   const stats = useQuery(registryStatsQuery())
   const options = useQuery(filterOptionsQuery())
   const types = deriveRecordTypeStats(options.data?.application_types)
-  useDocumentTitle(t('app.name'), t('home.hero.lead'))
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const sp = new URLSearchParams()
-    if (q.trim()) sp.set('q', q.trim())
-    navigate(`/search?${sp.toString()}`)
-  }
 
   const lng = i18n.resolvedLanguage
   const loadingTotals = stats.isPending
@@ -142,47 +141,7 @@ export function HomePage() {
 
   return (
     // -mb-12 cancels the footer's top margin so the final CTA band sits flush against it.
-    <div className="-mb-12 bg-white">
-      {/* ── Hero / Search ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-ink-200 bg-mist-50">
-        <div className="hero-photo" aria-hidden />
-        <div className="container-x relative py-16 md:py-24 lg:py-28">
-          <Reveal className="max-w-[640px] md:max-w-[50%] lg:max-w-[56%] xl:max-w-[640px]">
-            <p className="eyebrow">{t('home.hero.eyebrow')}</p>
-            <h1 className="mt-4 font-serif text-[40px] font-semibold leading-[1.08] tracking-[-0.015em] text-navy-900 sm:text-[48px] lg:text-[58px]">
-              {t('home.hero.title')}
-            </h1>
-            <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-ink-700">{t('home.hero.lead')}</p>
-            <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-ink-600">{t('home.hero.secondary')}</p>
-
-            <form
-              onSubmit={submit}
-              role="search"
-              className="mt-8 flex items-center gap-2 rounded-xl border border-ink-200 bg-white p-1.5 shadow-[0_14px_40px_-16px_rgba(16,35,58,0.28)] focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100"
-            >
-              <Search className="ms-3 h-5 w-5 shrink-0 text-ink-400" aria-hidden />
-              <input
-                type="search"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={t('home.hero.searchPlaceholder')}
-                aria-label={t('home.hero.searchPlaceholder')}
-                className="h-11 w-full min-w-0 bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
-              />
-              <button type="submit" className="btn-primary h-11 shrink-0 px-5 text-[15px]">
-                {t('home.hero.searchButton')}
-              </button>
-            </form>
-            <p className="mt-3 text-[13px] leading-relaxed text-ink-500">{t('home.hero.examples')}</p>
-
-            <Link to="/about" className="mt-7 inline-flex items-center gap-1.5 text-[14px] font-semibold text-brand-600 transition-colors hover:text-brand-700">
-              {t('home.hero.learn')}
-              <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
-
+    <div className="-mb-12 border-t border-ink-200 bg-white">
       {/* ── Why TMistan ───────────────────────────────────────────────── */}
       <section id="why" className="scroll-mt-20 bg-white">
         <div className="container-x grid gap-12 py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-20 lg:py-24">
@@ -420,10 +379,10 @@ export function HomePage() {
             <p className="mt-4 max-w-[560px] text-[15px] leading-relaxed text-ink-700">{t('home.cta.text')}</p>
           </Reveal>
           <Reveal className="flex flex-wrap gap-3" delay={100}>
-            <Link to="/search" className="btn-primary h-12 px-6 text-[15px]">
+            <a href="#search" className="btn-primary h-12 px-6 text-[15px]">
               {t('home.cta.search')}
               <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
-            </Link>
+            </a>
             <Link to="/about" className="btn-secondary h-12 px-6 text-[15px]">
               {t('home.cta.learn')}
             </Link>

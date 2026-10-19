@@ -55,7 +55,7 @@ export function ServicesPage() {
               <Send className="h-4 w-4" aria-hidden />
               {t('services.request')}
             </Link>
-            <Link to="/search" className="btn btn-secondary">
+            <Link to="/" className="btn btn-secondary">
               <Search className="h-4 w-4" aria-hidden />
               {t('services.explore')}
             </Link>
@@ -200,7 +200,7 @@ export function ServicesPage() {
                 <Send className="h-4 w-4" aria-hidden />
                 {t('services.cta.request')}
               </Link>
-              <Link to="/search" className="btn border-white/30 bg-white/10 text-white hover:bg-white/20">
+              <Link to="/" className="btn border-white/30 bg-white/10 text-white hover:bg-white/20">
                 <Search className="h-4 w-4" aria-hidden />
                 {t('services.cta.search')}
               </Link>

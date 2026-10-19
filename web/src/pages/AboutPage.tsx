@@ -48,15 +48,15 @@ const VALUES: { key: string; Icon: LucideIcon }[] = [
 ]
 
 const OFFER: { key: string; Icon: LucideIcon; to: string }[] = [
-  { key: 'database', Icon: Search, to: '/search' },
+  { key: 'database', Icon: Search, to: '/' },
   { key: 'gazette', Icon: Newspaper, to: '/data-sources' },
-  { key: 'images', Icon: ImageIcon, to: '/search' },
+  { key: 'images', Icon: ImageIcon, to: '/' },
   { key: 'reports', Icon: Printer, to: '/help#faq' },
 ]
 
 const GLANCE: { key: string; Icon: LucideIcon; to: string }[] = [
   { key: 'records', Icon: FileText, to: '/data-sources' },
-  { key: 'search', Icon: Search, to: '/search' },
+  { key: 'search', Icon: Search, to: '/' },
   { key: 'learn', Icon: BookOpen, to: '/knowledge-center' },
   { key: 'users', Icon: ShieldCheck, to: '/help' },
 ]

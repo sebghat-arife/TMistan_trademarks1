@@ -1,6 +1,6 @@
 # Search by Image
 
-`/search?mode=image` lets a visitor drop a logo / mark image and get the published trademarks whose
+`/?mode=image` (the *Search by Image* mode of the landing page; `/search?mode=image` redirects there) lets a visitor drop a logo / mark image and get the published trademarks whose
 stored image looks most similar. It is a *research aid* for finding visually comparable marks — it is
 not a clearance, availability or infringement opinion, and the UI says so.
 

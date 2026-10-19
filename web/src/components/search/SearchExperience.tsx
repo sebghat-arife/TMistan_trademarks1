@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Trans, useTranslation } from 'react-i18next'
@@ -29,20 +29,27 @@ const toDraft = (s: SearchState): FormDraft => ({
 })
 
 /**
- * /search — the URL is the single source of truth (see lib/searchParams), so
- * every search is linkable. Two modes share the hero:
+ * The search experience of the landing page (`/`): hero with the mode switch and
+ * the search card, then the results. The URL is the single source of truth (see
+ * lib/searchParams), so every search is linkable: /?q=nike&class=25. Two modes
+ * share the hero:
  *   • Search by Name or Details → database function search_trademarks
  *   • Search by Image           → browser-side descriptor + search_trademarks_by_image
  * Results, filters and paging are all server-side; nothing is filtered in the
  * browser except the optional refinement of an image search's candidate set.
+ *
+ * `landing` (the rest of the home page) is rendered below the hero while no
+ * search is running; as soon as results are shown — or the image search is
+ * open — the page is the results page and the landing sections step aside.
  */
-export function SearchPage() {
+export function SearchExperience({ landing }: { landing?: ReactNode }) {
   const { t, i18n } = useTranslation()
   const [sp, setSp] = useSearchParams()
   const state = useMemo(() => parseSearchParams(sp), [sp])
   const imageMode = sp.get('mode') === 'image'
   const enabled = !imageMode && hasAnyCriteria(state)
   const compact = enabled
+  const idle = !imageMode && !enabled
 
   // Form draft, re-derived whenever the URL changes (back/forward, chips, links).
   const urlKey = sp.toString()
@@ -86,7 +93,8 @@ export function SearchPage() {
       ? `${t('search.image.title')} · ${t('app.shortName')}`
       : enabled
         ? `${state.q.trim() ? `${state.q.trim()} — ` : ''}${t('search.resultsTitle')} · ${t('app.shortName')}`
-        : `${t('search.title')} · ${t('app.shortName')}`,
+        : t('app.name'),
+    idle ? t('search.lead') : undefined,
   )
 
   const submit = (e: React.FormEvent) => {
@@ -103,7 +111,7 @@ export function SearchPage() {
   return (
     <div>
       {/* ── Hero: heading, mode switch, search card (+ aside) ─────────────── */}
-      <section className="search-hero" data-testid="search-hero">
+      <section id="search" className="search-hero scroll-mt-[68px]" data-testid="search-hero">
         <div className="search-hero-photo" aria-hidden />
         <a className="search-hero-credit" href={HERO_PHOTO_SOURCE} target="_blank" rel="noreferrer">{t('search.photoCredit')}</a>
         <div className={cn('container-x relative', compact ? 'pb-7 pt-6 md:pt-8' : 'pb-10 pt-10 md:pb-14 md:pt-14')}>
@@ -196,7 +204,7 @@ export function SearchPage() {
             {img.phase !== 'done' && <ImageSearchExamples onPick={(ex) => void img.useExample(ex)} disabled={!img.available || img.busy} />}
             {img.phase !== 'done' && <TrustStrip />}
           </div>
-        ) : !enabled ? (
+        ) : idle ? (
           <TrustStrip />
         ) : (
           <>
@@ -291,6 +299,8 @@ export function SearchPage() {
           </>
         )}
       </div>
+
+      {idle && landing}
     </div>
   )
 }

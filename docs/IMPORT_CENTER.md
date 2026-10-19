@@ -215,7 +215,7 @@ flagged, 1 inserted / 2 updated / 3 rejected; `trademark_records_1011 (1).xlsx` 
 69 unchanged, then 71 unchanged; `trademark_records_1046.csv` → 41 updated (provenance only,
 classes `"9, 11"` intact); 9 dropped files → 5 matched (exact / normalized / numeric tiers), 1 unmatched,
 1 duplicate, 2 invalid; `images_1045.zip` twice → 5 linked, then 5 already up to date; public
-`/trademark/1011-002` and `/search?q=1011-00` rendered the uploaded files from
+`/trademark/1011-002` and `/?q=1011-00` rendered the uploaded files from
 `…/object/public/trademark-images/1011/…`; `trademark_images.content_hash` equalled the SHA-256 of
 the object served by Storage. All test artefacts were removed afterwards (rows byte-identical to the
 pre-run snapshot).
@@ -235,7 +235,7 @@ select t.serial_number, t.mark_name, i.storage_path, i.status, i.content_hash
 select count(*) from trademarks t where not exists (select 1 from trademark_images i where i.trademark_id = t.id and i.status = 'matched');
 ```
 
-Public check: open `/trademark/<serial>` and `/search?q=<mark>` — the card/detail image URL is
+Public check: open `/trademark/<serial>` and `/?q=<mark>` — the card/detail image URL is
 `…/storage/v1/object/public/trademark-images/<gazette>/<serial>-<hash>.<ext>` (legacy uploads:
 `<gazette>/<serial>.<ext>`).
 

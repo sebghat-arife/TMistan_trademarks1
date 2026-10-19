@@ -8,7 +8,6 @@ import { HomePage } from '@/pages/HomePage'
 
 // Route-level code splitting: the home page ships in the main bundle, the
 // rest load on demand.
-const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
 const TrademarkPage = lazy(() => import('@/pages/TrademarkPage').then((m) => ({ default: m.TrademarkPage })))
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const HelpPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m.HelpPage })))
@@ -36,6 +35,12 @@ const queryClient = new QueryClient({
     queries: { retry: 1, refetchOnWindowFocus: false },
   },
 })
+
+/** `/search?…` → `/?…` — the search moved onto the landing page; every query parameter is kept. */
+function SearchRedirect() {
+  const { search } = useLocation()
+  return <Navigate to={{ pathname: '/', search }} replace />
+}
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -67,7 +72,8 @@ export default function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<HomePage />} />
-              <Route path="/search" element={<SearchPage />} />
+              {/* The search lives on the landing page; old links and bookmarks keep working. */}
+              <Route path="/search" element={<SearchRedirect />} />
               <Route path="/trademark/:serial" element={<TrademarkPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/help" element={<HelpPage />} />

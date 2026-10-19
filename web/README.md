@@ -17,14 +17,15 @@ src/
   lib/auth.ts            useAuth(): Supabase Auth session + server-side is_admin() check
   components/            Layout (header + enterprise footer: Platform / Information / Masnad Law Firm / Legal), Logo,
                          ResultCards (card grid + table + pagination), TrademarkImage, ImageViewer
-  components/search/     Search page building blocks: SearchModeSwitch (segmented control), AdvancedSearchPanel,
+  components/search/     SearchExperience (hero + results, the landing page's top; /search redirects here),
+                         SearchModeSwitch (segmented control), AdvancedSearchPanel,
                          ActiveFilters (chips), ImageSearchCard + useImageSearch (upload / preview / options / submit),
                          ImageSearchResults, ImageSearchExamples (real published images), SearchTips
-  pages/                 Home, Search (/search), Trademark (/trademark/:serial, with print-ready "Download Record"),
+  pages/                 Home (/ — search hero + results + landing sections), Trademark (/trademark/:serial, with print-ready "Download Record"),
                          About, Help, Legal (terms/privacy/disclaimer), admin/ (Login, Layout with dark sidebar, Dashboard, Import Center)
 public/
   brand/                 logo.png · logo-white.png · favicon.png (client-supplied TMistan wordmark)
-  img/                   hero-mosque.jpg (home hero, loaded from md up), afghanistan-citadel.jpg (dark band),
+  img/                   search-hero-darulaman.jpg (landing-page search hero), afghanistan-citadel.jpg (dark band),
                          search-hero-darulaman.jpg (Search page hero — real photograph, CC BY 4.0, see img/CREDITS.md)
 ```
 

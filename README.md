@@ -33,7 +33,8 @@ Unmatched Images, Orphaned Files, Audit Log. Archive (reversible) vs. permanent 
 enforced server-side), delete-by-import-batch with real provenance, Storage cleanup queue, append-only
 audit log. The admin area is reached only by typing `/admin/login` — the public site has no Login button.
 
-**Search page** (`/search`, `web/src/pages/SearchPage.tsx` + `web/src/components/search/`): one hero
+**Search — the landing page** (`/`, `web/src/components/search/SearchExperience.tsx` rendered by
+`web/src/pages/HomePage.tsx`; `/search?…` redirects to `/?…` so old links keep working): one hero
 with two modes behind a segmented control — *Search by Name or Details* (keyword box + collapsible
 advanced search: trademark name, serial, applicant, application/registration number, class, gazette,
 publication date range, application type, goods) and *Search by Image*. Every search is a URL
@@ -60,7 +61,7 @@ Postgres, private evidence bucket, `CR-` reference + e-mail status check, admin 
 history under Admin → Data Corrections). Until 0900 is applied the form announces itself as not
 available. Visitors never write to `public.trademarks`.
 
-**Search by Image** (`/search?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo (or picks
+**Search by Image** (`/?mode=image`, `docs/IMAGE_SEARCH.md`): a visitor drops a logo (or picks
 one of the *Example searches*, which are real images already published in the database), the
 browser computes a compact visual descriptor (the picture itself never leaves the tab) and Postgres
 (pgvector, migration 0500) returns the most similar published marks — *Exact match* (≥ 85 %),
@@ -273,7 +274,7 @@ unmatched/ambiguous files are parked for review and never shown publicly. Every 
 5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /index.html`).
    For a hand-made service: Redirects/Rewrites → Add rule → Source `/*`, Destination `/index.html`, Action **Rewrite**.
 6. **Verify** — open `https://tmistan.onrender.com` (or your name): the home page shows the real
-   counts from the database; reload `/search?q=<a mark you imported>` and
+   counts from the database; reload `/?q=<a mark you imported>` and
    `/trademark/<serial>` directly (no 404 thanks to the rewrite).
 7. Add the Render URL to Supabase → Authentication → URL configuration (for the admin login), then
    sign in at `/admin/login` and load the registry through the Import Center.

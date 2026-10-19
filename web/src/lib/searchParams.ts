@@ -2,7 +2,7 @@ import type { SearchTrademarksArgs } from './database.types'
 
 /**
  * The URL is the single source of truth for search state so results are
- * shareable / bookmarkable: /search?q=nike&class=25&gazette=1011&page=2
+ * shareable / bookmarkable: /?q=nike&class=25&gazette=1011&page=2
  */
 export interface SearchState {
   q: string

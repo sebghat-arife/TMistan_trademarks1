@@ -168,7 +168,7 @@ def main() -> int:
     status, body, _ = c.call("POST", "/rest/v1/rpc/image_search_status", {"p_version": 1})
     code = body.get("code") if isinstance(body, dict) else None
     if status == 404 and code == "PGRST202":
-        print("  ! migration 0500 not applied — /search?mode=image reports itself unavailable (keyword search unaffected)\n"
+        print("  ! migration 0500 not applied — /?mode=image (Search by Image) reports itself unavailable (keyword search unaffected)\n"
               "      → Run supabase/APPLY_0500.sql in the Supabase SQL editor, then Admin → Import Center → Visual search index.")
     elif status == 200 and isinstance(body, dict):
         n = body.get("indexed_images") or 0

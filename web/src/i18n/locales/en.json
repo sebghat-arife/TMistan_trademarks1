@@ -2,6 +2,7 @@
   "app": {
     "name": "TMistan — Search Trademarks in Afghanistan",
     "shortName": "TMistan",
+    "tagline": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
     "skipToContent": "Skip to content"
   },
   "nav": {
@@ -41,16 +42,6 @@
     "corrections": "Data Corrections"
   },
   "home": {
-    "hero": {
-      "eyebrow": "Afghanistan Trademark Research Platform",
-      "title": "Search Trademarks in Afghanistan",
-      "lead": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
-      "secondary": "Built to make trademark research in Afghanistan simpler, faster, and more accessible.",
-      "searchPlaceholder": "Search trademark name, applicant, serial number, class...",
-      "searchButton": "Search",
-      "examples": "Search by trademark name, applicant, serial number, class, Gazette number, or classification.",
-      "learn": "Learn About TMistan"
-    },
     "why": {
       "eyebrow": "Why TMistan?",
       "title": "A New Way to Research Trademarks in Afghanistan",
@@ -447,6 +438,7 @@
     "logo": "Logo",
     "serial": "Serial",
     "serialNumber": "Serial Number",
+    "tmistanSerialNumber": "TMistan Serial Number",
     "recordNumber": "Record number",
     "applicant": "Applicant",
     "address": "Address",
@@ -472,7 +464,6 @@
   },
   "trademark": {
     "home": "Home",
-    "searchResults": "Search Results",
     "download": "Download Record",
     "notFound": "No trademark with this serial number is on record.",
     "backToSearch": "Back to search",

@@ -2,10 +2,10 @@
 
 | File | Subject | Author / source | Licence |
 |---|---|---|---|
-| `search-hero-darulaman.jpg` | Darulaman Palace (Darul Aman Palace), Kabul — restored building, photographed 23 March 2023 | Qasimmirzaie, via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:Darulaman_palace.jpg | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — cropped and resized for the Search page hero; no other changes |
+| `search-hero-darulaman.jpg` | Darulaman Palace (Darul Aman Palace), Kabul — restored building, photographed 23 March 2023 | Qasimmirzaie, via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:Darulaman_palace.jpg | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — cropped and resized for the search hero on the landing page; no other changes |
 
-The Search page shows the required attribution as a small caption on the photograph.
-`hero-mosque.jpg` and `afghanistan-citadel.jpg` (home page) are generated illustrations from an earlier revision.
+The landing page shows the required attribution as a small caption on the photograph.
+`afghanistan-citadel.jpg` (home page, "Built for Afghanistan" band) is a generated illustration from an earlier revision.
 
 ## legal-documents-desk.jpg
 - Used on: Data Sources & Methodology, Services & Trademark Research and Contact & Feedback heroes (faded, decorative, `aria-hidden`).
