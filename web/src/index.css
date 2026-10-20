@@ -155,53 +155,6 @@
   }
 }
 
-/* ── Ornament helpers (see components/ornament.tsx) ──────────────────────
-   Soft masks so a decorative lattice dissolves instead of ending abruptly.
-   Logical directions flip for RTL. */
-.orn-fade-bottom { -webkit-mask-image: linear-gradient(to bottom, #000 25%, transparent 100%); mask-image: linear-gradient(to bottom, #000 25%, transparent 100%); }
-.orn-fade-top    { -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 100%); mask-image: linear-gradient(to top, #000 25%, transparent 100%); }
-.orn-fade-start  { -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 72%); mask-image: linear-gradient(to right, #000 0%, transparent 72%); }
-.orn-fade-end    { -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 72%); mask-image: linear-gradient(to left, #000 0%, transparent 72%); }
-[dir="rtl"] .orn-fade-start { -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 72%); mask-image: linear-gradient(to left, #000 0%, transparent 72%); }
-[dir="rtl"] .orn-fade-end   { -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 72%); mask-image: linear-gradient(to right, #000 0%, transparent 72%); }
-.orn-fade-radial { -webkit-mask-image: radial-gradient(ellipse at center, #000 0%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000 0%, transparent 72%); }
-.orn-fade-corner { -webkit-mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 70%); mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 70%); }
-[dir="rtl"] .orn-fade-corner { -webkit-mask-image: radial-gradient(circle at 0% 0%, #000 0%, transparent 70%); mask-image: radial-gradient(circle at 0% 0%, #000 0%, transparent 70%); }
-
-/* CSS-only lattice for dark bands (white strokes, very faint). Same geometry as
-   the React component, encoded once as a data URI so plain sections can use it. */
-.lattice-dark {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(185,220,210,0.11)' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: 64px 64px;
-}
-.lattice-light {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(16,43,67,0.07)' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: 64px 64px;
-}
-
-/* ── Page-wide background tilings ────────────────────────────────────────
-   Two further geometric families, distinct from the star-and-cross lattice
-   used inside heroes, bands and cards:
-   · .bg-octagon  — octagon-and-square brick lattice (4.8.8 tiling) behind every
-                    public page; .bg-octagon-faint is the quieter admin variant
-   · .bg-hexstar  — six-point star girih (hexagonal grid) behind the footer
-   Hairlines only, on the ivory base; white cards and panels sit on top. */
-.bg-octagon {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M11.72 0H28.28L40 11.72V28.28L28.28 40H11.72L0 28.28V11.72Z' fill='none' stroke='rgba(16,43,67,0.085)' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-size: 40px 40px;
-}
-.bg-octagon-faint {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M11.72 0H28.28L40 11.72V28.28L28.28 40H11.72L0 28.28V11.72Z' fill='none' stroke='rgba(16,43,67,0.055)' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-size: 40px 40px;
-}
-.bg-hexstar {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24.25' height='42' viewBox='0 0 24.25 42'%3E%3Cpath d='M0 -14L12.12 7L-12.12 7ZM0 14L-12.12 -7L12.12 -7ZM24.25 -14L36.37 7L12.12 7ZM24.25 14L12.12 -7L36.37 -7ZM0 28L12.12 49L-12.12 49ZM0 56L-12.12 35L12.12 35ZM24.25 28L36.37 49L12.12 49ZM24.25 56L12.12 35L36.37 35ZM12.12 7L24.25 28L0 28ZM12.12 35L0 14L24.25 14Z' fill='none' stroke='rgba(95,164,147,0.26)' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-size: 24.25px 42px;
-}
-@media print {
-  .bg-octagon, .bg-octagon-faint, .bg-hexstar { background-image: none; }
-}
-
 /* Keep mixed-direction data (Latin marks inside RTL UI, Arabic-script names
    inside LTR UI) legible without letting it flip the block's alignment. */
 .bidi-auto { unicode-bidi: plaintext; }
@@ -211,15 +164,9 @@
 /* ── Homepage (enterprise layout) ─────────────────────────────────────── */
 /* The hero is the search (see .search-hero below); the former banner photo is gone. */
 
-/* Dark "Built for Afghanistan" band: navy surface, lattice + line-art arch (see HomePage). */
+/* Dark "Built for Afghanistan" band: plain navy surface with a faint line-art arch (see HomePage). */
 .afg-band { position: relative; isolation: isolate; overflow: hidden; background-color: var(--color-navy-900); }
-.afg-band-arch { @apply pointer-events-none absolute -bottom-10 -end-[2%] hidden h-[130%] w-auto opacity-[0.2] lg:block; }
-
-/* Faint star lattice for dark editorial panels (legacy name kept) */
-.dark-grid {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(185,220,210,0.1)' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: 64px 64px;
-}
+.afg-band-arch { @apply pointer-events-none absolute -bottom-10 -end-[2%] hidden h-[130%] w-auto opacity-[0.28] lg:block; }
 
 /* Scroll reveal (subtle motion; disabled for reduced-motion users and print) */
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease-out, transform .6s ease-out; }
@@ -331,7 +278,7 @@ select.sfield-control { @apply appearance-none pe-9; }
   -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
   mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
 }
-.page-hero-arch { @apply pointer-events-none absolute inset-y-5 end-[7%] hidden opacity-[0.55] md:block lg:end-[10%]; }
+.page-hero-arch { @apply pointer-events-none absolute inset-y-5 end-[7%] hidden opacity-[0.6] md:block lg:end-[10%]; }
 .num-badge { @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[14px] font-bold text-white; }
 .prose-p { @apply text-[15px] leading-[1.75] text-ink-700; }
 .faq > summary { @apply flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold text-ink-900 marker:hidden; }
@@ -378,7 +325,6 @@ select.sfield-control { @apply appearance-none pe-9; }
 .ed-h2 { @apply font-serif text-[28px] font-semibold leading-tight tracking-[-0.01em] text-navy-900 md:text-[32px]; }
 .policy-nav-link { @apply flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-[14px] text-ink-700 transition-colors hover:bg-ink-50; }
 .policy-nav-link.active { @apply border-brand-200 bg-brand-50 font-semibold text-brand-800; }
-.mountains { @apply pointer-events-none absolute inset-x-0 bottom-0 h-28 w-full opacity-[0.12]; }
 .prose-ed p { @apply text-[15px] leading-[1.75] text-ink-700; }
 .prose-ed p + p { @apply mt-3; }
 

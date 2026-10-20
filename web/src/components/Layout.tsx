@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
-import { DecorativeBorder, StarMotif } from './ornament'
+import { GirihMotif, OrnamentalBand, StarMotif } from './ornament'
 
 // Primary navigation. Nine entries: the desktop bar is shown from the `lg`
 // breakpoint (1024px) with a compact type size and switches to the full size
@@ -34,9 +34,12 @@ const SOCIAL = [
 export function Layout() {
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const loc = useLocation()
+  // The page motif stays off the working surfaces: search results / image mode and record pages.
+  const plainPage = (loc.pathname === '/' && loc.search !== '') || loc.pathname.startsWith('/trademark/') || loc.pathname.startsWith('/admin')
 
   return (
-    <div className="bg-octagon flex min-h-screen flex-col bg-ivory-50">
+    <div className="flex min-h-screen flex-col bg-ivory-50">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm">
         {t('app.skipToContent')}
       </a>
@@ -92,15 +95,23 @@ export function Layout() {
         )}
       </header>
 
-      <main id="main" className="flex-1">
+      <main id="main" className="relative isolate flex-1">
+        {/* Overall page background: ivory with one oversized girih rosette in the bottom-end corner. */}
+        {!plainPage && (
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+            <GirihMotif corner="bottom-end" size={760} offset={0.4} opacity={0.075} className="hidden text-navy-900 sm:block" />
+          </div>
+        )}
         <Outlet />
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="bg-hexstar relative mt-12 border-t border-ink-200 bg-ivory-100 text-ink-700">
-        {/* decorative frieze: fine lozenge chain in turquoise over the top edge */}
-        <DecorativeBorder className="text-turquoise-400" thickness={12} />
-        <div className="container-x grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">
+      <footer className="relative mt-12 bg-ivory-50 text-ink-700">
+        {/* signature detail: one narrow ornamental band, generous whitespace around it */}
+        <div className="container-x pt-2">
+          <OrnamentalBand />
+        </div>
+        <div className="container-x grid gap-10 pb-12 pt-10 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <Logo className="h-14" />
             <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-ink-600">{t('footer.blurb')}</p>

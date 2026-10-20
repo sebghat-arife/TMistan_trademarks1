@@ -6,7 +6,7 @@
 
 The landing page shows the required attribution as a small caption on the photograph.
 
-All other decoration (lattices, stars, arches, borders) is original vector geometry drawn in
+All other decoration (rosettes, corner frames, the footer band, the arch) is original vector linework drawn in
 `web/src/components/ornament.tsx` — no stock, generated or historic imagery is used for it.
 
 ## legal-documents-desk.jpg

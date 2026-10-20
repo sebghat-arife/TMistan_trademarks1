@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/Layout'
-import { GeometricLattice } from '@/components/ornament'
 
 /** Admin Data Management Center navigation (order mandated by the client brief). */
 export const ADMIN_NAV = [
@@ -32,12 +31,10 @@ export function AdminLayout() {
   if (!auth.isAdmin) return <Navigate to="/admin/login" replace state={{ from: loc.pathname }} />
 
   return (
-    <div className="bg-octagon-faint flex min-h-screen bg-ivory-50">
+    <div className="flex min-h-screen bg-ivory-50">
       <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col bg-navy-950 text-white md:flex">
-        <div className="relative isolate overflow-hidden px-5 pb-4 pt-5">
-          {/* small header accent: faint lattice behind the logo only */}
-          <GeometricLattice className="text-turquoise-200" size={40} opacity={0.12} fade="bottom" />
-          <Logo variant="dark" className="relative h-10" />
+        <div className="px-5 pb-4 pt-5">
+          <Logo variant="dark" className="h-10" />
         </div>
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Admin">
           {ADMIN_NAV.map(({ to, key, Icon, ...rest }) => (

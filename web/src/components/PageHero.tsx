@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { ArchitecturalArch, GeometricLattice } from './ornament'
+import { ArchitecturalArch, CornerAccent } from './ornament'
 
 /**
  * Hero band shared by the informational pages. The decorative artwork is a
@@ -15,6 +15,7 @@ export function PageHero({
   imagePosition = '70% 50%',
   imageOpacity = 0.5,
   motif = 'photo',
+  accent = false,
   className,
 }: {
   eyebrow: string
@@ -24,13 +25,15 @@ export function PageHero({
   imagePosition?: string
   imageOpacity?: number
   /** End-side artwork: the archival photograph (default), the line-art arch, lattice only, or nothing. */
-  motif?: 'photo' | 'arch' | 'lattice' | 'none'
+  motif?: 'photo' | 'arch' | 'none'
+  /** Thin architectural corner frame at the top-start corner (selected pages only). */
+  accent?: boolean
   className?: string
 }) {
   const style = { '--hero-pos': imagePosition, '--hero-opacity': imageOpacity } as CSSProperties
   return (
     <section className={cn('page-hero', className)} style={style}>
-      {motif !== 'none' && <GeometricLattice className="text-navy-900" size={56} opacity={motif === 'lattice' ? 0.085 : 0.07} fade={motif === 'lattice' ? 'start' : 'bottom'} />}
+      {accent && <CornerAccent corner="top-start" size={200} className="hidden lg:block" />}
       {motif === 'photo' && <div className="page-hero-photo" aria-hidden />}
       {motif === 'arch' && (
         <div className="page-hero-arch" aria-hidden>

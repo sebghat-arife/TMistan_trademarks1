@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, BookOpen, ChevronRight, Clock, FileText, GraduationCap, HelpCircle, Lightbulb, Search, ShieldCheck, Tag, X, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, IconBadge, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
-import { GeometricLattice } from '@/components/ornament'
+import { CornerAccent } from '@/components/ornament'
 import { ARTICLES, KNOWLEDGE_CATEGORIES, KNOWLEDGE_TOPICS, readingMinutes, searchArticles, type Article, type KnowledgeCategory } from '@/content/knowledge'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { cn } from '@/lib/utils'
@@ -68,6 +68,7 @@ export function KnowledgeCenterPage() {
   return (
     <div data-testid="knowledge-page">
       <SplitHero
+        accent
         label={t('knowledge.label')}
         title={t('knowledge.title')}
         text={t('knowledge.intro')}
@@ -152,8 +153,8 @@ export function KnowledgeCenterPage() {
 
         {/* Popular guides + sidebar */}
         <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10">
-          <section aria-labelledby="popular-guides" className="relative isolate overflow-hidden rounded-xl border border-ink-200 bg-ivory-100 p-5 md:p-6">
-            <GeometricLattice className="text-navy-900" size={48} opacity={0.06} fade="corner" />
+          <section aria-labelledby="popular-guides" className="relative overflow-hidden rounded-xl border border-ink-200 bg-ivory-100 p-5 md:p-6">
+            <CornerAccent corner="top-end" size={140} opacity={0.7} className="hidden md:block" />
             <SectionHeading label={t('knowledge.featured.label')} title={t('knowledge.featured.title')} text={t('knowledge.featured.text')} id="popular-guides" />
             <ul className="mt-6 grid gap-4 md:grid-cols-2">
               {featured.map((a) => (

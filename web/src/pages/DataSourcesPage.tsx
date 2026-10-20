@@ -21,7 +21,7 @@ import {
   Tag,
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
-import { DecorativeBorder, GeometricLattice, StarDivider } from '@/components/ornament'
+import { GirihMotif, StarDivider } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { REPORT_DISCLAIMER } from '@/lib/pdf/disclaimer'
 
@@ -55,7 +55,7 @@ export function DataSourcesPage() {
 
   return (
     <div data-testid="data-sources-page">
-      <PageHero eyebrow={t('dataSources.eyebrow')} title={t('dataSources.title')} imagePosition="75% 40%" imageOpacity={0.45}>
+      <PageHero eyebrow={t('dataSources.eyebrow')} title={t('dataSources.title')} imagePosition="75% 40%" imageOpacity={0.45} accent>
         <p>{t('dataSources.intro1')}</p>
         <p>{t('dataSources.intro2')}</p>
       </PageHero>
@@ -75,9 +75,8 @@ export function DataSourcesPage() {
               <span>{t('dataSources.gazette.notOfficial')}</span>
             </p>
           </div>
-          <div className="card self-start overflow-hidden">
-            <DecorativeBorder className="text-turquoise-300" thickness={10} />
-            <div className="p-6 pt-5">
+          <div className="card self-start">
+            <div className="p-6">
             <h3 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-500">{t('dataSources.gazette.flowTitle')}</h3>
             <ol className="mt-5 space-y-1">
               {FLOW.map(({ key, Icon }, i) => (
@@ -210,7 +209,7 @@ export function DataSourcesPage() {
 
         {/* Closing links */}
         <section aria-label={t('dataSources.cta.title')} className="relative isolate mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-xl bg-navy-900 px-6 py-8 text-white md:mt-16 md:flex-row md:items-center md:px-10">
-          <GeometricLattice className="text-turquoise-200" size={48} opacity={0.12} fade="start" />
+          <GirihMotif corner="top-end" size={360} offset={0.45} opacity={0.12} detail="ring" className="hidden text-turquoise-200 md:block" />
           <h2 className="relative font-serif text-[24px] font-semibold">{t('dataSources.cta.title')}</h2>
           <div className="relative flex flex-wrap gap-3">
             <Link to="/" className="btn btn-primary">

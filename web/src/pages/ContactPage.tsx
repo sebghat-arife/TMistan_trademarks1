@@ -20,7 +20,6 @@ import {
   FileSearch,
 } from 'lucide-react'
 import { PageHero } from '@/components/PageHero'
-import { GeometricLattice } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 import { cn } from '@/lib/utils'
@@ -223,7 +222,7 @@ export function ContactPage() {
 
   return (
     <div data-testid="contact-page">
-      <PageHero eyebrow={t('contact.eyebrow')} title={t('contact.title')} motif="lattice">
+      <PageHero eyebrow={t('contact.eyebrow')} title={t('contact.title')} motif="none">
         <p>{t('contact.intro1')}</p>
         <p>{t('contact.intro2')}</p>
       </PageHero>
@@ -233,8 +232,7 @@ export function ContactPage() {
           {/* ───────────── Form column ───────────── */}
           <div className="min-w-0">
             {receipt ? (
-              <section className="card relative isolate overflow-hidden p-6 md:p-8" aria-live="polite" data-testid="contact-success">
-                <GeometricLattice className="text-brand-700" size={40} opacity={0.08} fade="corner" />
+              <section className="card p-6 md:p-8" aria-live="polite" data-testid="contact-success">
                 <span className="icon-circle h-12 w-12">
                   <CheckCircle2 className="h-6 w-6" aria-hidden />
                 </span>
@@ -254,9 +252,7 @@ export function ContactPage() {
                 </div>
               </section>
             ) : (
-              <form ref={formRef} className="card relative isolate overflow-hidden p-6 md:p-8" onSubmit={onSubmit} noValidate data-testid="contact-form">
-                {/* corner motif: a small lattice dissolving from the top end corner */}
-                <GeometricLattice className="text-brand-700" size={40} opacity={0.08} fade="corner" />
+              <form ref={formRef} className="card p-6 md:p-8" onSubmit={onSubmit} noValidate data-testid="contact-form">
                 {/* Category */}
                 <fieldset>
                   <legend className="text-[17px] font-semibold text-ink-900">{t('contact.categories.title')}</legend>

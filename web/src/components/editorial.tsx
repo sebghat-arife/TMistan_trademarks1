@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { GeometricLattice, StarMotif } from './ornament'
+import { CornerAccent, StarMotif } from './ornament'
 
 /* Shared building blocks for the editorial pages (Legal, Knowledge Center, Data Corrections).
  * They follow the client mock-ups: split hero with an angled photograph, labelled sections,
@@ -28,6 +28,7 @@ export function SplitHero({
   imagePosition = '60% 50%',
   credit,
   actions,
+  accent = false,
   testId,
 }: {
   label: string
@@ -39,13 +40,15 @@ export function SplitHero({
   /** Attribution for the hero photograph (shown as a small link over the image on md+ screens). */
   credit?: { text: string; href: string }
   actions?: ReactNode
+  /** Thin architectural corner frame at the top-start corner (selected pages only). */
+  accent?: boolean
   testId?: string
 }) {
   const style = { '--hero-img': `url('${image}')`, '--hero-pos': imagePosition } as CSSProperties
   const paragraphs = Array.isArray(text) ? text : [text]
   return (
     <section className="split-hero" style={style} data-testid={testId}>
-      <GeometricLattice className="text-navy-900" size={56} opacity={0.075} fade="end" />
+      {accent && <CornerAccent corner="top-start" size={200} className="hidden lg:block" />}
       <div className="split-hero-media" aria-hidden />
       <div className="split-hero-band" aria-hidden />
       {credit && (
@@ -147,11 +150,10 @@ export function SidePanel({ title, Icon, children, tone = 'light', className, te
     light: 'ed-panel',
     green: 'ed-panel',
     white: 'rounded-xl border border-ink-200 bg-white p-5',
-    dark: 'relative isolate overflow-hidden rounded-xl bg-navy-900 p-5 text-white',
+    dark: 'rounded-xl bg-navy-900 p-5 text-white',
   }
   return (
     <section className={cn(tones[tone], className)} data-testid={testId}>
-      {tone === 'dark' && <GeometricLattice className="text-turquoise-200" size={44} opacity={0.12} fade="top" />}
       {title && (
         <h2 className={cn('flex items-center gap-2 font-serif text-[18px] font-semibold', tone === 'dark' ? 'text-white' : 'text-navy-900')}>
           {Icon && <Icon className={cn('h-5 w-5', tone === 'dark' ? 'text-brand-200' : 'text-brand-600')} aria-hidden />}
@@ -181,19 +183,9 @@ export function NumberedSteps({ steps, className }: { steps: { title: string; te
 }
 
 /** Very light mountain silhouette used at the bottom of closing banners (decorative). */
-export function Mountains({ className }: { className?: string }) {
-  return (
-    <svg className={cn('mountains', className)} viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden>
-      <path d="M0 160 L0 120 C80 100 140 60 220 70 C290 78 330 110 400 96 C470 82 520 30 600 40 C680 50 720 110 800 100 C880 90 930 40 1010 56 C1080 70 1120 110 1200 96 L1200 160 Z" style={{ fill: 'var(--color-brand-700)' }} />
-      <path d="M0 160 L0 140 C120 128 200 100 300 112 C400 124 460 150 560 136 C660 122 720 86 820 98 C920 110 980 146 1080 134 C1130 128 1170 120 1200 118 L1200 160 Z" style={{ fill: 'var(--color-navy-900)' }} />
-    </svg>
-  )
-}
-
 export function ClosingBanner({ label, title, text, action, Icon, className, testId }: { label?: string; title: string; text: string; action?: ReactNode; Icon?: LucideIcon; className?: string; testId?: string }) {
   return (
     <section className={cn('relative overflow-hidden rounded-xl border border-brand-100 bg-brand-50/70 px-6 py-8 md:px-10 md:py-10', className)} data-testid={testId}>
-      <GeometricLattice className="text-brand-700" size={48} opacity={0.09} fade="start" />
       <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-5">
           {Icon && <IconBadge Icon={Icon} size="lg" className="hidden sm:flex" />}

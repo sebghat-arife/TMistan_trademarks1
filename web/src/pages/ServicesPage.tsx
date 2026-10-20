@@ -18,7 +18,6 @@ import {
   Users,
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
-import { GeometricLattice } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 /** Service cards; `research` maps to the research-type option preselected on the contact form. */
@@ -49,6 +48,7 @@ export function ServicesPage() {
         eyebrow={t('services.eyebrow')}
         title={t('services.title')}
         motif="arch"
+        accent
         actions={
           <>
             <Link to={REQUEST_URL} className="btn btn-primary" data-testid="services-request">
@@ -107,8 +107,7 @@ export function ServicesPage() {
         </section>
 
         {/* Process */}
-        <section aria-labelledby="sv-process" className="relative isolate mt-16 overflow-hidden rounded-xl border border-mist-100 bg-mist-50 p-6 md:mt-20 md:p-10">
-          <GeometricLattice className="text-navy-900" size={48} opacity={0.06} fade="end" />
+        <section aria-labelledby="sv-process" className="mt-16 rounded-xl border border-mist-100 bg-mist-50 p-6 md:mt-20 md:p-10">
           <SectionTitle id="sv-process" title={t('services.process.title')} />
           <ol className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {steps.map((step, i) => (

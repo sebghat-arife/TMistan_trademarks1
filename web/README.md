@@ -18,13 +18,13 @@ src/
   components/            Layout (header + ivory footer with the decorative frieze: Platform / Information / Masnad Law Firm / Legal), Logo,
                          ResultCards (card grid + table + pagination), TrademarkImage, ImageViewer,
                          PageHero (informational pages; `motif` = photo | arch | lattice | none), editorial (SplitHero, SectionLabel, …)
-  components/ornament    Design-system pattern library — original SVG geometry, `currentColor`, aria-hidden, pointer-events none:
-                         GeometricLattice (star-and-cross `<pattern>` fill with fade masks), StarMotif (8-point star; outline/solid/dot),
-                         StarDivider, ArchitecturalArch (line-art pointed arch with lattice infill), DecorativeBorder (frieze strip;
-                         chain/zigzag/dots, horizontal or vertical), PatternedBand (navy title band). The `.eyebrow` label draws the
-                         same star through a CSS mask; `.dark-grid` / `.lattice-dark` / `.lattice-light` are CSS-only lattice backgrounds.
-                         Page-wide tilings (index.css): `.bg-octagon` octagon-and-square brick lattice behind every public page
-                         (`.bg-octagon-faint` for admin), `.bg-hexstar` six-point star girih behind the footer.
+  components/ornament    Restrained ornament library — original SVG linework, configurable colours/opacity, aria-hidden,
+                         pointer-events none, 1 px non-scaling strokes: GirihMotif (one oversized eight-fold rosette cropped
+                         into a corner: page background, dark promo sections), CornerAccent (thin stepped corner frame with a
+                         small rosette: selected headers/panels), OrnamentalBand (narrow footer frieze: rosettes + cartouches
+                         between two hairlines), StarMotif / StarDivider (small star accents), ArchitecturalArch (line-art arch:
+                         Services header, Home feature band). The `.eyebrow` label draws the star through a CSS mask.
+                         No repeating wallpaper tiles anywhere; backgrounds stay plain ivory.
   components/search/     SearchExperience (hero + results, the landing page's top; /search redirects here),
                          SearchModeSwitch (segmented control), AdvancedSearchPanel,
                          ActiveFilters (chips), ImageSearchCard + useImageSearch (upload / preview / options / submit),
@@ -67,8 +67,10 @@ emerald `brand-600 #087747` (primary actions, links, selected states; scale 50�
 slate gray-blue neutrals `ink-50…900` (borders, secondary text), `mist-50/100` tinted sections,
 radii 6/8/12/16 px, `shadow-card` / `shadow-float`. Type: Source Serif 4 (editorial headings) +
 Inter (body, controls, tables), both self-hosted. Components use these utilities only — no scattered
-hex values. Decoration budget: marketing pages moderate, search/data pages minimal (navy title band
-only), forms/admin very restrained, About the strongest; tables and record pages stay plain.
+hex values. Decoration budget: ivory backgrounds with one faint girih rosette in the bottom-end corner
+(off on search results and record pages), one ornamental band in the footer, corner accents only on the
+Home, About, Services, Data Sources and Knowledge Center headers/panels; Search, Data Corrections, Legal,
+Help, Contact and admin stay plain.
 
 ## Admin (Phase 2 scaffold)
 

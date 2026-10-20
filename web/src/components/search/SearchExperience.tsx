@@ -6,7 +6,7 @@ import { AlertTriangle, BookOpenText, ChevronDown, Clock3, LayoutGrid, Lock, Sca
 import { filterOptionsQuery, registryStatsQuery, searchByNumbersSupportedQuery, searchTrademarksQuery } from '@/services'
 import { CLEARED_FILTERS, countActiveFilters, hasAnyCriteria, parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatNumber } from '@/lib/utils'
-import { GeometricLattice } from '@/components/ornament'
+import { CornerAccent, GirihMotif } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
 import { EmptyState, ErrorState } from '@/components/AsyncState'
@@ -115,7 +115,11 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
       {/* Idle: ivory hero with the Darulaman photograph. Results / image mode: a compact
           navy title band with a faint lattice — the controls and results below stay on plain surfaces. */}
       <section id="search" className={cn('search-hero scroll-mt-[68px]', compact && 'search-hero-compact')} data-testid="search-hero">
-        <GeometricLattice className={compact ? 'text-turquoise-200' : 'text-navy-900'} size={56} opacity={compact ? 0.13 : 0.07} fade="end" />
+        {compact ? (
+          <GirihMotif corner="top-end" size={520} offset={0.45} opacity={0.09} detail="ring" className="hidden text-turquoise-200 md:block" />
+        ) : (
+          <CornerAccent corner="top-start" size={200} className="hidden lg:block" />
+        )}
         {!compact && <div className="search-hero-photo" aria-hidden />}
         {!compact && <a className="search-hero-credit" href={HERO_PHOTO_SOURCE} target="_blank" rel="noreferrer">{t('search.photoCredit')}</a>}
         <div className={cn('container-x relative', compact ? 'pb-7 pt-6 md:pt-8' : 'pb-10 pt-10 md:pb-14 md:pt-14')}>

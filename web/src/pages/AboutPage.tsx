@@ -27,7 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClosingBanner, FeatureCard, IconBadge, InfoBanner, SectionHeading, SectionLabel, SidePanel, SplitHero } from '@/components/editorial'
-import { ArchitecturalArch, GeometricLattice, StarDivider } from '@/components/ornament'
+import { CornerAccent, StarDivider } from '@/components/ornament'
 import { registryStatsQuery, trademarksByClassQuery } from '@/services'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { formatNumber } from '@/lib/utils'
@@ -101,6 +101,7 @@ export function AboutPage() {
         image={HERO_PHOTO}
         imagePosition="50% 62%"
         credit={{ text: t('about.photoCredit'), href: HERO_PHOTO_SOURCE }}
+        accent
         testId="about-hero"
       />
 
@@ -114,9 +115,8 @@ export function AboutPage() {
                 <h2 id="about-mission" className="ed-h2 mt-2">{t('about.mission.title')}</h2>
                 <p className="mt-3 text-[15px] leading-relaxed text-ink-600">{t('about.mission.text')}</p>
               </div>
-              <blockquote className="ed-panel relative isolate flex gap-4 overflow-hidden md:mt-2">
-                {/* line-art arch as the cultural signature of the About page */}
-                <ArchitecturalArch className="pointer-events-none absolute -bottom-8 -end-5 h-[150%] w-auto text-brand-700 opacity-[0.14]" />
+              <blockquote className="ed-panel relative flex gap-4 overflow-hidden md:mt-2">
+                <CornerAccent corner="bottom-end" size={120} opacity={0.6} className="hidden md:block" />
                 <Quote className="relative h-6 w-6 shrink-0 text-brand-600 rtl:-scale-x-100" aria-hidden strokeWidth={1.75} />
                 <p className="relative font-serif text-[16px] italic leading-relaxed text-ink-800">“{t('about.mission.quote')}”</p>
               </blockquote>
@@ -193,8 +193,7 @@ export function AboutPage() {
               ))}
             </ul>
           </section>
-          <SidePanel tone="green" className="relative isolate overflow-hidden lg:mt-[76px]">
-            <GeometricLattice className="text-brand-700" size={44} opacity={0.1} fade="top" />
+          <SidePanel tone="green" className="relative overflow-hidden lg:mt-[76px]">
             <div className="relative flex gap-4">
               <IconBadge Icon={Lightbulb} size="lg" className="bg-white" />
               <h2 className="font-serif text-[20px] font-semibold leading-snug text-navy-900">{t('about.tomorrow.title')}</h2>
@@ -217,7 +216,6 @@ export function AboutPage() {
       {/* Live figures */}
       {showNumbers && (
         <section className="split-hero border-t" style={{ '--hero-img': `url('${MINARET_IMAGE}')`, '--hero-pos': '50% 50%' } as CSSProperties} aria-labelledby="about-numbers" data-testid="about-stats">
-          <GeometricLattice className="text-navy-900" size={56} opacity={0.06} fade="end" />
           <div className="split-hero-media" aria-hidden />
           <div className="split-hero-band" aria-hidden />
           <p className="pointer-events-none absolute end-[7%] top-10 hidden max-w-[300px] -rotate-3 text-end font-serif text-[26px] font-semibold italic leading-snug text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] md:block lg:text-[30px]" aria-hidden>
