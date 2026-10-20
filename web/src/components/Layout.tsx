@@ -6,6 +6,7 @@ import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
+import { DecorativeBorder, StarMotif } from './ornament'
 
 // Primary navigation. Nine entries: the desktop bar is shown from the `lg`
 // breakpoint (1024px) with a compact type size and switches to the full size
@@ -35,7 +36,7 @@ export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen flex-col bg-ink-50">
+    <div className="flex min-h-screen flex-col bg-ivory-50">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm">
         {t('app.skipToContent')}
       </a>
@@ -55,8 +56,8 @@ export function Layout() {
                 end={n.end}
                 className={({ isActive }) =>
                   cn(
-                    'relative whitespace-nowrap py-5 text-[13px] font-medium text-ink-800 transition-colors hover:text-brand-600 xl:text-[14.5px]',
-                    isActive && 'text-ink-900 after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:rounded-full after:bg-brand-600',
+                    'relative whitespace-nowrap py-5 text-[13px] font-medium text-ink-700 transition-colors hover:text-brand-700 xl:text-[14.5px]',
+                    isActive && 'font-semibold text-navy-900 after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:rounded-full after:bg-brand-600',
                   )
                 }
               >
@@ -79,7 +80,7 @@ export function Layout() {
           <div className="border-t border-ink-200 bg-white lg:hidden">
             <div className="container-x flex flex-col gap-1 py-3">
               {NAV.map((n) => (
-                <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMenuOpen(false)} className={({ isActive }) => cn('rounded-md px-3 py-2 text-[15px] font-medium', isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800')}>
+                <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMenuOpen(false)} className={({ isActive }) => cn('rounded-md px-3 py-2 text-[15px] font-medium', isActive ? 'bg-brand-50 font-semibold text-brand-800' : 'text-ink-800')}>
                   {t(n.key)}
                 </NavLink>
               ))}
@@ -96,28 +97,30 @@ export function Layout() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="mt-12 bg-dark-950 text-white">
-        <div className="container-x grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">
+      <footer className="relative mt-12 border-t border-ink-200 bg-ivory-100 text-ink-700">
+        {/* decorative frieze: fine lozenge chain in turquoise over the top edge */}
+        <DecorativeBorder className="text-turquoise-400" thickness={12} />
+        <div className="container-x grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
-            <Logo variant="dark" className="h-14" />
-            <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-white/80">{t('footer.blurb')}</p>
+            <Logo className="h-14" />
+            <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-ink-600">{t('footer.blurb')}</p>
             {(SITE_CONTACT.email || SITE_CONTACT.phone) && (
-              <ul className="mt-4 space-y-1.5 text-[13px] text-white/70">
+              <ul className="mt-4 space-y-1.5 text-[13px] text-ink-600">
                 {SITE_CONTACT.email && (
                   <li>
-                    <a href={`mailto:${SITE_CONTACT.email}`} className="hover:text-white hover:underline">{SITE_CONTACT.email}</a>
+                    <a href={`mailto:${SITE_CONTACT.email}`} className="hover:text-brand-700 hover:underline">{SITE_CONTACT.email}</a>
                   </li>
                 )}
                 {SITE_CONTACT.phone && (
                   <li>
-                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:text-white hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
+                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:text-brand-700 hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
                   </li>
                 )}
               </ul>
             )}
             <div className={cn('mt-5 flex items-center gap-3', SOCIAL.length === 0 && 'hidden')}>
               {SOCIAL.map(({ label, href, d }) => (
-                <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
+                <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 bg-white text-navy-900 transition-colors hover:border-brand-300 hover:text-brand-700">
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden><path d={d} /></svg>
                 </a>
               ))}
@@ -129,10 +132,10 @@ export function Layout() {
             links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/knowledge-center', t('footer.knowledge')], ['/data-corrections', t('footer.corrections')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
           />
           <div>
-            <h3 className="text-[15px] font-semibold">{t('footer.masnad')}</h3>
-            <p className="mt-4 text-[14px] leading-relaxed text-white/80">{t('footer.product')}</p>
+            <h3 className="font-serif text-[16px] font-semibold text-navy-900">{t('footer.masnad')}</h3>
+            <p className="mt-4 text-[14px] leading-relaxed text-ink-600">{t('footer.product')}</p>
             {MASNAD_URL && (
-              <a href={MASNAD_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[14px] font-medium text-brand-300 hover:text-brand-200 hover:underline">
+              <a href={MASNAD_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-brand-700 hover:text-brand-800 hover:underline">
                 {t('footer.visitMasnad')}
                 <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
               </a>
@@ -140,9 +143,14 @@ export function Layout() {
           </div>
           <FooterCol title={t('footer.legal')} links={[['/legal', t('footer.legalHub')], ['/legal/terms', t('footer.terms')], ['/legal/privacy', t('footer.privacy')], ['/legal/disclaimer', t('footer.disclaimer')], ['/legal/intellectual-property', t('footer.ip')]]} />
         </div>
-        <div className="container-x flex flex-col items-center justify-between gap-4 border-t border-white/10 py-5 text-[13px] text-white/70 sm:flex-row">
-          <span>© {new Date().getFullYear()} TMistan — {t('footer.rights')}</span>
-          <LanguageSwitcher tone="dark" />
+        <div className="border-t border-ink-200/80">
+          <div className="container-x flex flex-col items-center justify-between gap-4 py-5 text-[13px] text-ink-600 sm:flex-row">
+            <span className="inline-flex items-center gap-2.5">
+              <StarMotif size={14} variant="dot" className="text-brand-600" />
+              <span>© {new Date().getFullYear()} TMistan — {t('footer.rights')}</span>
+            </span>
+            <LanguageSwitcher />
+          </div>
         </div>
       </footer>
     </div>
@@ -152,11 +160,11 @@ export function Layout() {
 function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
   return (
     <div>
-      <h3 className="text-[15px] font-semibold">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-[14px] text-white/80">
+      <h3 className="font-serif text-[16px] font-semibold text-navy-900">{title}</h3>
+      <ul className="mt-4 space-y-2.5 text-[14px] text-ink-600">
         {links.map(([to, label]) => (
           <li key={to}>
-            <Link to={to} className="transition-colors hover:text-white hover:underline">
+            <Link to={to} className="transition-colors hover:text-brand-700 hover:underline">
               {label}
             </Link>
           </li>

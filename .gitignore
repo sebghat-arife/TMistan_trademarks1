@@ -30,3 +30,6 @@ scripts/local-stack/keys.env
 
 # Local source-data archives
 afg-trademark-registry.zip
+
+# local visual-check artefacts (Playwright screenshots)
+web/.shots/

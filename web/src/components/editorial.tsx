@@ -2,13 +2,19 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { GeometricLattice, StarMotif } from './ornament'
 
 /* Shared building blocks for the editorial pages (Legal, Knowledge Center, Data Corrections).
  * They follow the client mock-ups: split hero with an angled photograph, labelled sections,
  * pale-green icon badges, sidebar panels and a closing banner. */
 
 export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn('section-label', className)}>{children}</p>
+  return (
+    <p className={cn('section-label', className)}>
+      <StarMotif size={12} variant="dot" className="text-brand-600" />
+      {children}
+    </p>
+  )
 }
 
 export type Benefit = { Icon: LucideIcon; title: string; text: string }
@@ -39,6 +45,7 @@ export function SplitHero({
   const paragraphs = Array.isArray(text) ? text : [text]
   return (
     <section className="split-hero" style={style} data-testid={testId}>
+      <GeometricLattice className="text-navy-900" size={56} opacity={0.075} fade="end" />
       <div className="split-hero-media" aria-hidden />
       <div className="split-hero-band" aria-hidden />
       {credit && (
@@ -140,10 +147,11 @@ export function SidePanel({ title, Icon, children, tone = 'light', className, te
     light: 'ed-panel',
     green: 'ed-panel',
     white: 'rounded-xl border border-ink-200 bg-white p-5',
-    dark: 'rounded-xl bg-teal-900 p-5 text-white',
+    dark: 'relative isolate overflow-hidden rounded-xl bg-navy-900 p-5 text-white',
   }
   return (
     <section className={cn(tones[tone], className)} data-testid={testId}>
+      {tone === 'dark' && <GeometricLattice className="text-turquoise-200" size={44} opacity={0.12} fade="top" />}
       {title && (
         <h2 className={cn('flex items-center gap-2 font-serif text-[18px] font-semibold', tone === 'dark' ? 'text-white' : 'text-navy-900')}>
           {Icon && <Icon className={cn('h-5 w-5', tone === 'dark' ? 'text-brand-200' : 'text-brand-600')} aria-hidden />}
@@ -176,8 +184,8 @@ export function NumberedSteps({ steps, className }: { steps: { title: string; te
 export function Mountains({ className }: { className?: string }) {
   return (
     <svg className={cn('mountains', className)} viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden>
-      <path d="M0 160 L0 120 C80 100 140 60 220 70 C290 78 330 110 400 96 C470 82 520 30 600 40 C680 50 720 110 800 100 C880 90 930 40 1010 56 C1080 70 1120 110 1200 96 L1200 160 Z" fill="#0f6b3f" />
-      <path d="M0 160 L0 140 C120 128 200 100 300 112 C400 124 460 150 560 136 C660 122 720 86 820 98 C920 110 980 146 1080 134 C1130 128 1170 120 1200 118 L1200 160 Z" fill="#10233a" />
+      <path d="M0 160 L0 120 C80 100 140 60 220 70 C290 78 330 110 400 96 C470 82 520 30 600 40 C680 50 720 110 800 100 C880 90 930 40 1010 56 C1080 70 1120 110 1200 96 L1200 160 Z" style={{ fill: 'var(--color-brand-700)' }} />
+      <path d="M0 160 L0 140 C120 128 200 100 300 112 C400 124 460 150 560 136 C660 122 720 86 820 98 C920 110 980 146 1080 134 C1130 128 1170 120 1200 118 L1200 160 Z" style={{ fill: 'var(--color-navy-900)' }} />
     </svg>
   )
 }
@@ -185,7 +193,7 @@ export function Mountains({ className }: { className?: string }) {
 export function ClosingBanner({ label, title, text, action, Icon, className, testId }: { label?: string; title: string; text: string; action?: ReactNode; Icon?: LucideIcon; className?: string; testId?: string }) {
   return (
     <section className={cn('relative overflow-hidden rounded-xl border border-brand-100 bg-brand-50/70 px-6 py-8 md:px-10 md:py-10', className)} data-testid={testId}>
-      <Mountains />
+      <GeometricLattice className="text-brand-700" size={48} opacity={0.09} fade="start" />
       <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-5">
           {Icon && <IconBadge Icon={Icon} size="lg" className="hidden sm:flex" />}

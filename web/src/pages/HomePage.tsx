@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { deriveRecordTypeStats, filterOptionsQuery, registryStatsQuery, type RecordTypeStats } from '@/services'
 import { cn, formatNumber } from '@/lib/utils'
+import { ArchitecturalArch, GeometricLattice } from '@/components/ornament'
 import { MASNAD_URL } from '@/lib/site'
 import { ErrorState } from '@/components/AsyncState'
 import { SearchExperience } from '@/components/search/SearchExperience'
@@ -183,7 +184,7 @@ function Landing() {
             )}
           </div>
         </Reveal>
-        <Reveal className="dark-grid relative flex items-center bg-teal-950 text-white" delay={120}>
+        <Reveal className="dark-grid relative flex items-center bg-navy-900 text-white" delay={120}>
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-800/25" aria-hidden />
           <div className="relative w-full px-6 py-16 sm:px-8 lg:me-auto lg:max-w-[590px] lg:py-24 lg:pe-6 lg:ps-14">
             <span className="block h-px w-12 bg-brand-400" aria-hidden />
@@ -327,7 +328,9 @@ function Landing() {
 
       {/* ── Built for Afghanistan · Pioneering digital trademark research ── */}
       <section className="afg-band text-white">
-        <div className="container-x grid gap-12 py-20 lg:grid-cols-[1.25fr_1fr] lg:gap-16 lg:py-24">
+        <GeometricLattice className="text-turquoise-200" size={64} opacity={0.1} fade="start" />
+        <ArchitecturalArch className="afg-band-arch text-turquoise-200" lattice={false} strokeWidth={1} />
+        <div className="container-x relative grid gap-12 py-20 lg:grid-cols-[1.25fr_1fr] lg:gap-16 lg:py-24">
           <Reveal>
             <p className="eyebrow text-brand-300">{t('home.afghanistan.eyebrow')}</p>
             <p className="mt-4 font-serif text-[30px] font-semibold leading-[1.15] md:text-[38px]">{t('home.afghanistan.statement')}</p>
@@ -343,7 +346,7 @@ function Landing() {
       </section>
 
       {/* ── Masnad + TMistan vision ───────────────────────────────────── */}
-      <section className="dark-grid bg-teal-950 text-white">
+      <section className="dark-grid bg-navy-950 text-white">
         <div className="container-x grid gap-12 py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
           <Reveal>
             <p className="eyebrow text-brand-300">{t('home.vision.eyebrow')}</p>
@@ -371,8 +374,9 @@ function Landing() {
       </section>
 
       {/* ── Final call to action ──────────────────────────────────────── */}
-      <section className="border-t border-ink-200 bg-linear-to-r from-mist-100 via-mist-50 to-white">
-        <div className="container-x flex flex-col gap-8 py-16 lg:flex-row lg:items-center lg:justify-between lg:py-20">
+      <section className="relative isolate overflow-hidden border-t border-ink-200 bg-linear-to-r from-mist-100 via-mist-50 to-white">
+        <GeometricLattice className="text-navy-900" size={56} opacity={0.06} fade="start" />
+        <div className="container-x relative flex flex-col gap-8 py-16 lg:flex-row lg:items-center lg:justify-between lg:py-20">
           <Reveal>
             <p className="eyebrow">{t('home.cta.eyebrow')}</p>
             <h2 className="section-title mt-3">{t('home.cta.title')}</h2>

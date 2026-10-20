@@ -15,8 +15,14 @@ src/
   lib/searchParams.ts    URL ⇄ search state (the URL is the source of truth)
   i18n/                  en / fa (Dari) / ps (Pashto); RTL handled on <html dir>
   lib/auth.ts            useAuth(): Supabase Auth session + server-side is_admin() check
-  components/            Layout (header + enterprise footer: Platform / Information / Masnad Law Firm / Legal), Logo,
-                         ResultCards (card grid + table + pagination), TrademarkImage, ImageViewer
+  components/            Layout (header + ivory footer with the decorative frieze: Platform / Information / Masnad Law Firm / Legal), Logo,
+                         ResultCards (card grid + table + pagination), TrademarkImage, ImageViewer,
+                         PageHero (informational pages; `motif` = photo | arch | lattice | none), editorial (SplitHero, SectionLabel, …)
+  components/ornament    Design-system pattern library — original SVG geometry, `currentColor`, aria-hidden, pointer-events none:
+                         GeometricLattice (star-and-cross `<pattern>` fill with fade masks), StarMotif (8-point star; outline/solid/dot),
+                         StarDivider, ArchitecturalArch (line-art pointed arch with lattice infill), DecorativeBorder (frieze strip;
+                         chain/zigzag/dots, horizontal or vertical), PatternedBand (navy title band). The `.eyebrow` label draws the
+                         same star through a CSS mask; `.dark-grid` / `.lattice-dark` / `.lattice-light` are CSS-only lattice backgrounds.
   components/search/     SearchExperience (hero + results, the landing page's top; /search redirects here),
                          SearchModeSwitch (segmented control), AdvancedSearchPanel,
                          ActiveFilters (chips), ImageSearchCard + useImageSearch (upload / preview / options / submit),
@@ -25,8 +31,8 @@ src/
                          About, Help, Legal (terms/privacy/disclaimer), admin/ (Login, Layout with dark sidebar, Dashboard, Import Center)
 public/
   brand/                 logo.png · logo-white.png · favicon.png (client-supplied TMistan wordmark)
-  img/                   search-hero-darulaman.jpg (landing-page search hero), afghanistan-citadel.jpg (dark band),
-                         search-hero-darulaman.jpg (Search page hero — real photograph, CC BY 4.0, see img/CREDITS.md)
+  img/                   search-hero-darulaman.jpg (landing-page search hero — real photograph, CC BY 4.0) and the page-hero
+                         photographs (hero-*.jpg, about-kabul.jpg, legal-documents-desk.jpg); attributions in img/CREDITS.md
 ```
 
 Env (`.env.local`, git-ignored): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (+ `VITE_LOCAL_STORAGE_BASE` for the local stack; optional public `SITE_*` metadata incl. `SITE_MASNAD_URL`, see `.env.example`). Values are inlined by `vite.config.ts` at build time; the build refuses a secret key. Missing values render a configuration screen instead of a blank page.
@@ -52,9 +58,15 @@ disabled under `prefers-reduced-motion`). Fonts are self-hosted (`@fontsource-va
 There is no public "all trademarks" listing and no gazette browsing page: records are reached
 through search only, and each record shows its source as "OG <number> — Page <n>". Missing
 structured values are shown as N/A.
-Design tokens live in `src/index.css` (`@theme`): brand green `#067133`, light tint `#eef8ee`,
-headline navy `#10233a`, dark bands `#0c2a33` / `#07202a`, footer `#0e1519`, hairline borders
-`#e6e8ea`, 12 px card radius.
+Design tokens live in `src/index.css` (`@theme`) — the Afghan-inspired design system palette:
+emerald `brand-600 #087747` (primary actions, links, selected states; scale 50–900), navy
+`navy-900 #102b43` (headings, dark bands, admin sidebar; 700–950), ivory `ivory-50 #f7f7f1`
+(page background; 50–200), turquoise `turquoise-200 #b9dcd2` (restrained ornament accents; 50–400),
+slate gray-blue neutrals `ink-50…900` (borders, secondary text), `mist-50/100` tinted sections,
+radii 6/8/12/16 px, `shadow-card` / `shadow-float`. Type: Source Serif 4 (editorial headings) +
+Inter (body, controls, tables), both self-hosted. Components use these utilities only — no scattered
+hex values. Decoration budget: marketing pages moderate, search/data pages minimal (navy title band
+only), forms/admin very restrained, About the strongest; tables and record pages stay plain.
 
 ## Admin (Phase 2 scaffold)
 

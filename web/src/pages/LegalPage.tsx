@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, ArrowLeft, ArrowRight, Check, Copyright, FileText, Info, Scale, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, InfoBanner, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
+import { StarDivider } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -90,14 +91,15 @@ export function LegalPage() {
                 {t('legal.draft', { date: formatDate(DRAFT_DATE, i18n.resolvedLanguage) })}
               </p>
             )}
-            <div className="prose-ed mt-6 border-b border-ink-200 pb-6">
+            <div className="prose-ed mt-6 pb-6">
               {policy.intro.map((p, i) => (
                 <p key={i} dangerouslySetInnerHTML={{ __html: strong(p) }} />
               ))}
             </div>
-            <ol className="mt-6 space-y-8">
+            <StarDivider />
+            <ol className="mt-6 divide-y divide-ink-200/80">
               {policy.sections.map((s, i) => (
-                <li key={s.title} className="flex gap-4" id={`${current}-${i + 1}`}>
+                <li key={s.title} className="flex gap-4 py-7 first:pt-0" id={`${current}-${i + 1}`}>
                   <span className="num-badge mt-0.5" aria-hidden>{i + 1}</span>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-serif text-[20px] font-semibold text-navy-900">{s.title}</h3>

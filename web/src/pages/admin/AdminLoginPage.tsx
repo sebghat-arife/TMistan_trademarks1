@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth'
 import { isLocalStack } from '@/lib/supabase'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { Logo } from '@/components/Logo'
+import { DecorativeBorder } from '@/components/ornament'
 
 export function AdminLoginPage() {
   const { t } = useTranslation()
@@ -34,9 +35,10 @@ export function AdminLoginPage() {
 
   return (
     <div className="container-x flex justify-center py-16">
-      <form onSubmit={submit} className="card w-full max-w-md p-8">
-        <Logo className="mx-auto h-12" />
-        <h1 className="mt-6 text-center text-[22px] font-bold text-ink-900">{t('admin.loginTitle')}</h1>
+      <form onSubmit={submit} className="card relative isolate w-full max-w-md overflow-hidden p-8">
+        <DecorativeBorder className="absolute inset-x-0 top-0 text-turquoise-300" thickness={10} />
+        <Logo className="mx-auto mt-2 h-12" />
+        <h1 className="mt-6 text-center font-serif text-[24px] font-semibold text-navy-900">{t('admin.loginTitle')}</h1>
         <p className="muted mt-1 text-center">{t('admin.loginHint')}</p>
 
         {isLocalStack ? (

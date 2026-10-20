@@ -5,7 +5,9 @@
 | `search-hero-darulaman.jpg` | Darulaman Palace (Darul Aman Palace), Kabul — restored building, photographed 23 March 2023 | Qasimmirzaie, via Wikimedia Commons — https://commons.wikimedia.org/wiki/File:Darulaman_palace.jpg | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — cropped and resized for the search hero on the landing page; no other changes |
 
 The landing page shows the required attribution as a small caption on the photograph.
-`afghanistan-citadel.jpg` (home page, "Built for Afghanistan" band) is a generated illustration from an earlier revision.
+
+All other decoration (lattices, stars, arches, borders) is original vector geometry drawn in
+`web/src/components/ornament.tsx` — no stock, generated or historic imagery is used for it.
 
 ## legal-documents-desk.jpg
 - Used on: Data Sources & Methodology, Services & Trademark Research and Contact & Feedback heroes (faded, decorative, `aria-hidden`).

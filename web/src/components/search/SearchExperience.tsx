@@ -6,6 +6,7 @@ import { AlertTriangle, BookOpenText, ChevronDown, Clock3, LayoutGrid, Lock, Sca
 import { filterOptionsQuery, registryStatsQuery, searchByNumbersSupportedQuery, searchTrademarksQuery } from '@/services'
 import { CLEARED_FILTERS, countActiveFilters, hasAnyCriteria, parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatNumber } from '@/lib/utils'
+import { GeometricLattice } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
 import { EmptyState, ErrorState } from '@/components/AsyncState'
@@ -111,13 +112,16 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
   return (
     <div>
       {/* ── Hero: heading, mode switch, search card (+ aside) ─────────────── */}
-      <section id="search" className="search-hero scroll-mt-[68px]" data-testid="search-hero">
-        <div className="search-hero-photo" aria-hidden />
-        <a className="search-hero-credit" href={HERO_PHOTO_SOURCE} target="_blank" rel="noreferrer">{t('search.photoCredit')}</a>
+      {/* Idle: ivory hero with the Darulaman photograph. Results / image mode: a compact
+          navy title band with a faint lattice — the controls and results below stay on plain surfaces. */}
+      <section id="search" className={cn('search-hero scroll-mt-[68px]', compact && 'search-hero-compact')} data-testid="search-hero">
+        <GeometricLattice className={compact ? 'text-turquoise-200' : 'text-navy-900'} size={56} opacity={compact ? 0.13 : 0.07} fade="end" />
+        {!compact && <div className="search-hero-photo" aria-hidden />}
+        {!compact && <a className="search-hero-credit" href={HERO_PHOTO_SOURCE} target="_blank" rel="noreferrer">{t('search.photoCredit')}</a>}
         <div className={cn('container-x relative', compact ? 'pb-7 pt-6 md:pt-8' : 'pb-10 pt-10 md:pb-14 md:pt-14')}>
           {!compact && <p className="eyebrow">{t('search.eyebrow')}</p>}
-          <h1 className={cn('max-w-3xl font-serif font-semibold leading-[1.1] tracking-[-0.015em] text-navy-900', compact ? 'text-[26px] md:text-[30px]' : 'mt-3 text-[34px] sm:text-[42px] lg:text-[50px]')}>
-            <Trans i18nKey="search.titleRich" components={{ 1: <span className="text-brand-700" /> }} />
+          <h1 className={cn('max-w-3xl font-serif font-semibold leading-[1.1] tracking-[-0.015em]', compact ? 'text-[26px] text-white md:text-[30px]' : 'mt-3 text-[34px] text-navy-900 sm:text-[42px] lg:text-[50px]')}>
+            <Trans i18nKey="search.titleRich" components={{ 1: <span className={compact ? 'text-turquoise-200' : 'text-brand-700'} /> }} />
           </h1>
           {!compact && <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-ink-700 md:text-[17px]">{t('search.lead')}</p>}
 

@@ -21,6 +21,7 @@ import {
   Tag,
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
+import { DecorativeBorder, GeometricLattice, StarDivider } from '@/components/ornament'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { REPORT_DISCLAIMER } from '@/lib/pdf/disclaimer'
 
@@ -74,7 +75,9 @@ export function DataSourcesPage() {
               <span>{t('dataSources.gazette.notOfficial')}</span>
             </p>
           </div>
-          <div className="card self-start p-6">
+          <div className="card self-start overflow-hidden">
+            <DecorativeBorder className="text-turquoise-300" thickness={10} />
+            <div className="p-6 pt-5">
             <h3 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-500">{t('dataSources.gazette.flowTitle')}</h3>
             <ol className="mt-5 space-y-1">
               {FLOW.map(({ key, Icon }, i) => (
@@ -90,11 +93,13 @@ export function DataSourcesPage() {
                 </li>
               ))}
             </ol>
+            </div>
           </div>
         </section>
 
         {/* 2 — Fields */}
-        <section aria-labelledby="ds-fields" className="mt-16 md:mt-20">
+        <StarDivider className="mt-14 md:mt-16" />
+        <section aria-labelledby="ds-fields" className="mt-10 md:mt-12">
           <SectionTitle number={2} id="ds-fields" title={t('dataSources.fields.title')} lead={t('dataSources.fields.lead')} />
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {fieldKeys.map((key) => {
@@ -116,7 +121,8 @@ export function DataSourcesPage() {
         </section>
 
         {/* 3 — Processing & quality */}
-        <section aria-labelledby="ds-quality" className="mt-16 grid gap-10 md:mt-20 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
+        <StarDivider className="mt-14 md:mt-16" />
+        <section aria-labelledby="ds-quality" className="mt-10 grid gap-10 md:mt-12 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
           <div>
             <SectionTitle number={3} id="ds-quality" title={t('dataSources.quality.title')} />
             <div className="mt-5 space-y-4 prose-p">
@@ -142,7 +148,8 @@ export function DataSourcesPage() {
         </section>
 
         {/* 4 — Images */}
-        <section aria-labelledby="ds-images" className="mt-16 md:mt-20">
+        <StarDivider className="mt-14 md:mt-16" />
+        <section aria-labelledby="ds-images" className="mt-10 md:mt-12">
           <SectionTitle number={4} id="ds-images" title={t('dataSources.images.title')} />
           <div className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
             <div className="space-y-4 prose-p">
@@ -165,7 +172,8 @@ export function DataSourcesPage() {
         </section>
 
         {/* Coverage */}
-        <section aria-labelledby="ds-coverage" className="mt-16 md:mt-20">
+        <StarDivider className="mt-14 md:mt-16" />
+        <section aria-labelledby="ds-coverage" className="mt-10 md:mt-12">
           <SectionTitle id="ds-coverage" title={t('dataSources.coverage.title')} />
           <div className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
             <div className="space-y-4 prose-p">
@@ -201,9 +209,10 @@ export function DataSourcesPage() {
         </section>
 
         {/* Closing links */}
-        <section aria-label={t('dataSources.cta.title')} className="mt-12 flex flex-col items-start justify-between gap-5 rounded-xl bg-navy-900 px-6 py-8 text-white md:mt-16 md:flex-row md:items-center md:px-10">
-          <h2 className="font-serif text-[24px] font-semibold">{t('dataSources.cta.title')}</h2>
-          <div className="flex flex-wrap gap-3">
+        <section aria-label={t('dataSources.cta.title')} className="relative isolate mt-12 flex flex-col items-start justify-between gap-5 overflow-hidden rounded-xl bg-navy-900 px-6 py-8 text-white md:mt-16 md:flex-row md:items-center md:px-10">
+          <GeometricLattice className="text-turquoise-200" size={48} opacity={0.12} fade="start" />
+          <h2 className="relative font-serif text-[24px] font-semibold">{t('dataSources.cta.title')}</h2>
+          <div className="relative flex flex-wrap gap-3">
             <Link to="/" className="btn btn-primary">
               <Search className="h-4 w-4" aria-hidden />
               {t('dataSources.cta.search')}

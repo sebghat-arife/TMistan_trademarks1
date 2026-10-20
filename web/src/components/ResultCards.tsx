@@ -36,7 +36,7 @@ export function TrademarkCard({ r, query, className, detailed }: { r: TrademarkS
   return (
     <Link
       to={trademarkPath(r.serial_number, r.official_gazette_number)}
-      className={cn('card group flex flex-col p-4 no-underline transition-shadow hover:border-brand-300 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]', className)}
+      className={cn('card group flex min-w-0 flex-col p-4 no-underline transition-shadow hover:border-brand-300 hover:shadow-[0_2px_12px_rgba(16,43,67,0.08)]', className)}
     >
       <TrademarkImage
         bucket={r.primary_image_bucket}
@@ -74,9 +74,9 @@ export function TrademarkCard({ r, query, className, detailed }: { r: TrademarkS
 
 function Row({ label, children, mono }: { label: string; children: React.ReactNode; mono?: boolean }) {
   return (
-    <div className="flex gap-1.5">
+    <div className="flex min-w-0 flex-wrap gap-x-1.5">
       <dt className="shrink-0 text-ink-500">{label}:</dt>
-      <dd className={cn('min-w-0 text-ink-800', mono && 'tabular-nums')}>{children}</dd>
+      <dd className={cn('min-w-0 break-words text-ink-800 [overflow-wrap:anywhere]', mono && 'tabular-nums')}>{children}</dd>
     </div>
   )
 }
@@ -85,7 +85,7 @@ export function ResultGrid({ results, query, columns = 4, detailed }: { results:
   return (
     <ul className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-5')}>
       {results.map((r) => (
-        <li key={r.id} className="flex">
+        <li key={r.id} className="flex min-w-0">
           <TrademarkCard r={r} query={query} className="w-full" detailed={detailed} />
         </li>
       ))}

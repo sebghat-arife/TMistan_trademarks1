@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Database, Inbox, RefreshCw } from 'lucide-react'
 import { DataError } from '@/services'
 import { cn } from '@/lib/utils'
+import { GeometricLattice, StarMotif } from './ornament'
 
 /* Shared loading / empty / error presentation for every data-driven block.
  * Never renders placeholder data — if the database has nothing, it says so. */
@@ -20,8 +21,12 @@ export function LoadingState({ className, lines = 3 }: { className?: string; lin
 
 export function EmptyState({ title, hint, className }: { title: string; hint?: string; className?: string }) {
   return (
-    <div className={cn('card flex flex-col items-center p-10 text-center', className)}>
-      <span className="icon-circle h-12 w-12"><Inbox className="h-5 w-5" /></span>
+    <div className={cn('card relative isolate flex flex-col items-center overflow-hidden p-10 text-center', className)}>
+      <GeometricLattice className="text-navy-900" size={44} opacity={0.05} fade="radial" />
+      <span className="icon-circle relative h-12 w-12">
+        <Inbox className="h-5 w-5" aria-hidden />
+        <StarMotif size={14} variant="dot" className="absolute -end-1 -top-1 text-turquoise-400" />
+      </span>
       <p className="mt-3 text-[15px] font-medium text-ink-900">{title}</p>
       {hint && <p className="muted mt-1 max-w-md">{hint}</p>}
     </div>

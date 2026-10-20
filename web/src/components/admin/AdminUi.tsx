@@ -5,6 +5,7 @@ import { AlertTriangle, ChevronLeft, ChevronRight, Loader2, ShieldAlert, X } fro
 import { cn, formatNumber } from '@/lib/utils'
 import { DELETE_TOKEN, dataManagementReady } from '@/services/admin_data_service'
 import { ErrorState } from '@/components/AsyncState'
+import { StarMotif } from '@/components/ornament'
 
 /* ---------------------------------------------------------------------------
  * Shared building blocks of the Admin Data Management Center.
@@ -14,7 +15,10 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="text-[24px] font-bold text-ink-900">{title}</h1>
+        <h1 className="flex items-center gap-2.5 text-[24px] font-bold text-navy-900">
+          <StarMotif size={14} variant="dot" className="text-brand-600" />
+          {title}
+        </h1>
         {subtitle && <p className="muted mt-1 max-w-3xl">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

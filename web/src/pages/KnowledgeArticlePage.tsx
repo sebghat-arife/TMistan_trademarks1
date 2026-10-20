@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { ArrowLeft, ArrowRight, BookOpen, Check, Clock, Info, Languages, Lightbulb } from 'lucide-react'
 import { InfoBanner, SectionLabel, SidePanel } from '@/components/editorial'
+import { DecorativeBorder, GeometricLattice } from '@/components/ornament'
 import { ArticleCard } from '@/pages/KnowledgeCenterPage'
 import { ARTICLE_BY_SLUG, articleToc, articleWordCount, readingMinutes, type ArticleBlock } from '@/content/knowledge'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
@@ -26,8 +27,9 @@ export function KnowledgeArticlePage() {
 
   return (
     <div data-testid="article-page">
-      <div className="border-b border-ink-200/70 bg-[linear-gradient(135deg,#e6f1eb_0%,#f3f8f5_45%,#fbfcfb_100%)]">
-        <div className="container-x py-10 md:py-12">
+      <div className="split-hero">
+        <GeometricLattice className="text-navy-900" size={56} opacity={0.075} fade="end" />
+        <div className="container-x relative py-10 md:py-12">
           <Link to="/knowledge-center" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-700 hover:underline">
             <ArrowLeft className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
             {t('knowledge.article.back')}
@@ -70,6 +72,7 @@ export function KnowledgeArticlePage() {
                 </ol>
               </nav>
             )}
+            <DecorativeBorder className="mb-8 text-turquoise-300" thickness={10} />
             <div className="article-body">
               {article.body.map((b, i) => <Block key={i} block={b} />)}
             </div>

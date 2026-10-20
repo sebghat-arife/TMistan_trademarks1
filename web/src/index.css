@@ -8,59 +8,82 @@
    ────────────────────────────────────────────────────────────────────────── */
 @theme {
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, sans-serif;
-  /* editorial display face for the public homepage headings */
+  /* editorial display face for headings on the public pages */
   --font-serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Noto Naskh Arabic", "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* brand green (buttons, links, accents) */
-  --color-brand-50:  #eef8ee;   /* icon circles */
-  --color-brand-100: #d6eeda;   /* active toggle bg */
-  --color-brand-200: #b5dfbd;
-  --color-brand-300: #8fcf9d;   /* links on dark backgrounds */
-  --color-brand-400: #4fb06a;
-  --color-brand-500: #1c8c45;
-  --color-brand-600: #067133;   /* buttons */
-  --color-brand-700: #056d30;   /* sidebar active, hover */
-  --color-brand-800: #045a27;
+  /* ── TMistan palette ───────────────────────────────────────────────────
+     emerald  #087747  primary actions, links, selected states
+     navy     #102B43  headings, dark bands, admin sidebar
+     ivory    #F7F7F1  page background
+     turquoise #B9DCD2 restrained decorative accents (ornament, borders)
+     slate    gray-blue neutrals for body and secondary text            */
+
+  /* emerald scale (brand) */
+  --color-brand-50:  #edf7f2;   /* icon circles, soft panels */
+  --color-brand-100: #d4ecdf;   /* active toggle bg, focus ring */
+  --color-brand-200: #afdcc5;
+  --color-brand-300: #7fc6a4;   /* links on dark backgrounds */
+  --color-brand-400: #46a97d;
+  --color-brand-500: #1d8f5c;
+  --color-brand-600: #087747;   /* buttons */
+  --color-brand-700: #06623b;   /* hover, sidebar active */
+  --color-brand-800: #054e30;
+  --color-brand-900: #043b25;
 
   /* logo inks */
   --color-logo-black: #0c0e0d;
   --color-logo-red:   #d51417;
   --color-logo-green: #028537;
 
-  /* neutrals */
-  --color-ink-50:  #f8f9fa;     /* page background */
-  --color-ink-100: #f1f3f4;
-  --color-ink-200: #e6e8ea;     /* card borders */
-  --color-ink-300: #d3d7db;
-  --color-ink-400: #9aa3ab;
-  --color-ink-500: #6b7680;     /* muted labels */
-  --color-ink-600: #4b5561;
-  --color-ink-700: #333b44;
-  --color-ink-800: #1f262c;
-  --color-ink-900: #111417;     /* headings */
+  /* slate neutrals (gray-blue) */
+  --color-ink-50:  #f6f7f6;     /* hover surfaces, table heads */
+  --color-ink-100: #eef0ef;
+  --color-ink-200: #e1e5e4;     /* card borders */
+  --color-ink-300: #cdd3d3;
+  --color-ink-400: #97a2a8;
+  --color-ink-500: #65727d;     /* muted labels (AA on white) */
+  --color-ink-600: #4a5763;     /* secondary text */
+  --color-ink-700: #324050;
+  --color-ink-800: #1f2b38;
+  --color-ink-900: #102b43;     /* body headings = navy */
 
-  --color-dark-900: #141b1e;    /* footer */
-  --color-dark-950: #0e1519;    /* admin sidebar */
+  /* warm ivory page background */
+  --color-ivory-50:  #f7f7f1;
+  --color-ivory-100: #f0f0e7;
+  --color-ivory-200: #e5e5d8;
 
-  /* deep navy/teal for the enterprise homepage: headings + dark bands */
-  --color-navy-900: #10233a;    /* headline ink */
-  --color-navy-950: #0a1a2a;
-  --color-teal-900: #0c2a33;    /* dark band */
-  --color-teal-950: #07202a;    /* darker band */
-  --color-mist-50:  #f3f7f5;    /* tinted section background */
-  --color-mist-100: #e9f1ed;
+  /* soft turquoise accents */
+  --color-turquoise-50:  #eef6f3;
+  --color-turquoise-100: #dcece7;
+  --color-turquoise-200: #b9dcd2;
+  --color-turquoise-300: #8fc4b6;
+  --color-turquoise-400: #5fa493;
+
+  /* deep navy: headings, dark bands, admin sidebar */
+  --color-navy-700: #1d4165;
+  --color-navy-800: #163552;
+  --color-navy-900: #102b43;
+  --color-navy-950: #0b1e30;
+
+  /* tinted section backgrounds */
+  --color-mist-50:  #f2f6f3;
+  --color-mist-100: #e8f0eb;
 
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+
+  /* elevation */
+  --shadow-card: 0 1px 2px rgba(16, 43, 67, .05);
+  --shadow-float: 0 18px 50px -24px rgba(16, 43, 67, .35);
 }
 
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body {
-    @apply bg-ink-50 text-ink-900 antialiased;
+    @apply bg-ivory-50 text-ink-900 antialiased;
     font-feature-settings: "cv11", "ss01", "tnum";
   }
   [dir="rtl"] body { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Vazirmatn", Tahoma, var(--font-sans); }
@@ -94,6 +117,17 @@
 
   /* Homepage editorial typography */
   .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600; }
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    margin-inline-end: 8px;
+    vertical-align: -1px;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 0L15.51 3.51H20.49V8.49L24 12L20.49 15.51V20.49H15.51L12 24L8.49 20.49H3.51V15.51L0 12L3.51 8.49V3.51H8.49ZM15.4 12L14.4 14.4L12 15.4L9.6 14.4L8.6 12L9.6 9.6L12 8.6L14.4 9.6Z'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 0L15.51 3.51H20.49V8.49L24 12L20.49 15.51V20.49H15.51L12 24L8.49 20.49H3.51V15.51L0 12L3.51 8.49V3.51H8.49ZM15.4 12L14.4 14.4L12 15.4L9.6 14.4L8.6 12L9.6 9.6L12 8.6L14.4 9.6Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
   .section-title { @apply font-serif text-[30px] font-semibold leading-[1.15] tracking-[-0.01em] text-navy-900 md:text-[36px]; }
   .section-title-sm { @apply font-serif text-[24px] font-semibold leading-[1.2] tracking-[-0.01em] text-navy-900; }
 
@@ -112,13 +146,37 @@
   .checker {
     background-color: #fff;
     background-image:
-      linear-gradient(45deg, #f3f4f5 25%, transparent 25%),
-      linear-gradient(-45deg, #f3f4f5 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #f3f4f5 75%),
-      linear-gradient(-45deg, transparent 75%, #f3f4f5 75%);
+      linear-gradient(45deg, var(--color-ink-100) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--color-ink-100) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--color-ink-100) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--color-ink-100) 75%);
     background-size: 16px 16px;
     background-position: 0 0, 0 8px, 8px -8px, -8px 0;
   }
+}
+
+/* ── Ornament helpers (see components/ornament.tsx) ──────────────────────
+   Soft masks so a decorative lattice dissolves instead of ending abruptly.
+   Logical directions flip for RTL. */
+.orn-fade-bottom { -webkit-mask-image: linear-gradient(to bottom, #000 25%, transparent 100%); mask-image: linear-gradient(to bottom, #000 25%, transparent 100%); }
+.orn-fade-top    { -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 100%); mask-image: linear-gradient(to top, #000 25%, transparent 100%); }
+.orn-fade-start  { -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 72%); mask-image: linear-gradient(to right, #000 0%, transparent 72%); }
+.orn-fade-end    { -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 72%); mask-image: linear-gradient(to left, #000 0%, transparent 72%); }
+[dir="rtl"] .orn-fade-start { -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 72%); mask-image: linear-gradient(to left, #000 0%, transparent 72%); }
+[dir="rtl"] .orn-fade-end   { -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 72%); mask-image: linear-gradient(to right, #000 0%, transparent 72%); }
+.orn-fade-radial { -webkit-mask-image: radial-gradient(ellipse at center, #000 0%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000 0%, transparent 72%); }
+.orn-fade-corner { -webkit-mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 70%); mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 70%); }
+[dir="rtl"] .orn-fade-corner { -webkit-mask-image: radial-gradient(circle at 0% 0%, #000 0%, transparent 70%); mask-image: radial-gradient(circle at 0% 0%, #000 0%, transparent 70%); }
+
+/* CSS-only lattice for dark bands (white strokes, very faint). Same geometry as
+   the React component, encoded once as a data URI so plain sections can use it. */
+.lattice-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(185,220,210,0.11)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
+}
+.lattice-light {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(16,43,67,0.07)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
 }
 
 /* Keep mixed-direction data (Latin marks inside RTL UI, Arabic-script names
@@ -130,33 +188,14 @@
 /* ── Homepage (enterprise layout) ─────────────────────────────────────── */
 /* The hero is the search (see .search-hero below); the former banner photo is gone. */
 
-/* Dark "Built for Afghanistan" band: citadel photograph on the end side under a navy wash. */
-.afg-band {
-  background-color: var(--color-teal-900);
-  background-image: linear-gradient(rgba(12,42,51,.86), rgba(12,42,51,.86)), url('/img/afghanistan-citadel.jpg');
-  background-size: cover;
-  background-position: right center;
-}
-@media (min-width: 1024px) {
-  .afg-band {
-    background-image:
-      linear-gradient(to right, var(--color-teal-900) 0%, var(--color-teal-900) 36%, rgba(12,42,51,.82) 58%, rgba(12,42,51,.45) 78%, rgba(12,42,51,.18) 100%),
-      url('/img/afghanistan-citadel.jpg');
-  }
-  [dir="rtl"] .afg-band {
-    background-image:
-      linear-gradient(to left, var(--color-teal-900) 0%, var(--color-teal-900) 36%, rgba(12,42,51,.82) 58%, rgba(12,42,51,.45) 78%, rgba(12,42,51,.18) 100%),
-      url('/img/afghanistan-citadel.jpg');
-    background-position: left center;
-  }
-}
+/* Dark "Built for Afghanistan" band: navy surface, lattice + line-art arch (see HomePage). */
+.afg-band { position: relative; isolation: isolate; overflow: hidden; background-color: var(--color-navy-900); }
+.afg-band-arch { @apply pointer-events-none absolute -bottom-10 -end-[2%] hidden h-[130%] w-auto opacity-[0.2] lg:block; }
 
-/* Fine architectural grid for dark editorial panels */
+/* Faint star lattice for dark editorial panels (legacy name kept) */
 .dark-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 0L41.37 9.37H54.63V22.63L64 32L54.63 41.37V54.63H41.37L32 64L22.63 54.63H9.37V41.37L0 32L9.37 22.63V9.37H22.63Z' fill='none' stroke='rgba(185,220,210,0.1)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
 }
 
 /* Scroll reveal (subtle motion; disabled for reduced-motion users and print) */
@@ -186,8 +225,9 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--color-mist-50) 0%, #fbfcfb 55%, var(--color-ink-50) 100%);
+  background: linear-gradient(180deg, var(--color-mist-50) 0%, var(--color-ivory-50) 60%, var(--color-ivory-50) 100%);
 }
+.search-hero-compact { background: var(--color-navy-900); color: #fff; }
 .search-hero-photo {
   position: absolute;
   inset-block: 0;
@@ -211,7 +251,7 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, rgba(248,249,250,0) 0%, rgba(248,249,250,0) 58%, rgba(248,249,250,.75) 86%, var(--color-ink-50) 100%),
+    linear-gradient(to bottom, rgba(247,247,241,0) 0%, rgba(247,247,241,0) 58%, rgba(247,247,241,.75) 86%, var(--color-ivory-50) 100%),
     linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18));
 }
 @media (min-width: 768px) {
@@ -255,7 +295,7 @@ select.sfield-control { @apply appearance-none pe-9; }
 .opt input:disabled ~ * { @apply opacity-50; }
 
 /* ── Informational pages (Data Sources, Services, Contact) ─────────────────── */
-.page-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(180deg,#f3f7f4_0%,#fbfcfb_100%)]; }
+.page-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(180deg,var(--color-mist-50)_0%,var(--color-ivory-50)_100%)]; }
 .page-hero-photo {
   @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[52%] bg-cover bg-no-repeat md:block;
   background-image: url('/img/legal-documents-desk.jpg');
@@ -268,6 +308,7 @@ select.sfield-control { @apply appearance-none pe-9; }
   -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
   mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
 }
+.page-hero-arch { @apply pointer-events-none absolute inset-y-5 end-[7%] hidden opacity-[0.55] md:block lg:end-[10%]; }
 .num-badge { @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[14px] font-bold text-white; }
 .prose-p { @apply text-[15px] leading-[1.75] text-ink-700; }
 .faq > summary { @apply flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold text-ink-900 marker:hidden; }
@@ -277,7 +318,7 @@ select.sfield-control { @apply appearance-none pe-9; }
 .hp-field { position: absolute; inset-inline-start: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 
 /* ── Editorial pages (Legal, Knowledge Center, Data Corrections) ─────────── */
-.split-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(135deg,#e6f1eb_0%,#f3f8f5_45%,#fbfcfb_100%)]; }
+.split-hero { @apply relative isolate overflow-hidden border-b border-ink-200/70 bg-[linear-gradient(135deg,var(--color-mist-100)_0%,var(--color-mist-50)_45%,var(--color-ivory-50)_100%)]; }
 .split-hero-media {
   @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[56%] bg-cover bg-no-repeat md:block;
   background-image: var(--hero-img);
@@ -287,7 +328,7 @@ select.sfield-control { @apply appearance-none pe-9; }
 [dir='rtl'] .split-hero-media { clip-path: polygon(0 0, 100% 0, 87% 100%, 0 100%); }
 .split-hero-band {
   @apply pointer-events-none absolute inset-y-0 end-0 hidden w-[56%] md:block;
-  background: linear-gradient(135deg, rgba(222, 239, 230, 0.85), rgba(222, 239, 230, 0.25));
+  background: linear-gradient(135deg, rgba(185, 220, 210, 0.8), rgba(185, 220, 210, 0.22));
   clip-path: polygon(0 0, 9% 0, 22% 100%, 13% 100%);
 }
 [dir='rtl'] .split-hero-band { clip-path: polygon(91% 0, 100% 0, 87% 100%, 78% 100%); }
@@ -308,7 +349,6 @@ select.sfield-control { @apply appearance-none pe-9; }
 .split-hero-credit:hover { color: rgba(51, 59, 68, 1); background: rgba(255, 255, 255, 0.95); }
 @media (min-width: 768px) { .split-hero-credit { display: block; } }
 .section-label { @apply inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700; }
-.section-label::before { content: ''; @apply inline-block h-px w-6 bg-brand-600; }
 .ed-card { @apply rounded-lg border border-ink-200 bg-white p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgba(16,35,58,0.25)]; }
 .ed-title { @apply font-serif text-[17px] font-semibold leading-snug text-navy-900; }
 .ed-panel { @apply rounded-xl border border-brand-100 bg-brand-50/70 p-5; }
