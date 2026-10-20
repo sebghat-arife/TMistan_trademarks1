@@ -38,8 +38,11 @@ import { formatNumber } from '@/lib/utils'
  * database (registry_stats / trademarks_by_class) and are never estimated.
  * ------------------------------------------------------------------------- */
 
-const KABUL_PHOTO = '/img/about-kabul.jpg'
-const KABUL_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Gul-e-Surkh-Square_Panorama.jpg'
+/* About-page imagery (see public/img/CREDITS.md): a Kabul morning panorama (Pexels, Qasim Mirzaie)
+ * for the hero and a client-supplied illustration of a historic minaret for the figures band. */
+const HERO_PHOTO = '/img/about-hero-kabul.jpg'
+const HERO_PHOTO_SOURCE = 'https://www.pexels.com/photo/morning-panorama-of-kabul-afghanistan-18776351/'
+const MINARET_IMAGE = '/img/about-minaret.jpg'
 
 const VALUES: { key: string; Icon: LucideIcon }[] = [
   { key: 'accuracy', Icon: ShieldCheck },
@@ -95,9 +98,9 @@ export function AboutPage() {
         title={t('about.title')}
         text={t('about.intro')}
         benefits={benefits}
-        image="/img/hero-about.jpg"
-        imagePosition="55% 50%"
-        credit={{ text: t('about.photoCredit'), href: 'https://commons.wikimedia.org/wiki/File:Stolica_Afganistanu_Kabul_w_2009_roku_02.jpg' }}
+        image={HERO_PHOTO}
+        imagePosition="50% 62%"
+        credit={{ text: t('about.photoCredit'), href: HERO_PHOTO_SOURCE }}
         testId="about-hero"
       />
 
@@ -213,16 +216,14 @@ export function AboutPage() {
 
       {/* Live figures */}
       {showNumbers && (
-        <section className="split-hero border-t" style={{ '--hero-img': `url('${KABUL_PHOTO}')`, '--hero-pos': '50% 40%' } as CSSProperties} aria-labelledby="about-numbers" data-testid="about-stats">
+        <section className="split-hero border-t" style={{ '--hero-img': `url('${MINARET_IMAGE}')`, '--hero-pos': '50% 50%' } as CSSProperties} aria-labelledby="about-numbers" data-testid="about-stats">
           <GeometricLattice className="text-navy-900" size={56} opacity={0.06} fade="end" />
           <div className="split-hero-media" aria-hidden />
           <div className="split-hero-band" aria-hidden />
           <p className="pointer-events-none absolute end-[7%] top-10 hidden max-w-[300px] -rotate-3 text-end font-serif text-[26px] font-semibold italic leading-snug text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.55)] md:block lg:text-[30px]" aria-hidden>
             {t('about.numbers.tagline')}
           </p>
-          <a className="split-hero-credit" href={KABUL_PHOTO_SOURCE} target="_blank" rel="noreferrer">
-            {t('about.numbers.photoCredit')}
-          </a>
+          <span className="split-hero-credit">{t('about.numbers.photoCredit')}</span>
           <div className="container-x relative py-12 md:py-14">
             <div className="max-w-[520px]">
               <SectionLabel>{t('about.numbers.label')}</SectionLabel>
@@ -247,12 +248,10 @@ export function AboutPage() {
               )}
             </div>
             <figure className="relative mt-8 overflow-hidden rounded-xl md:hidden">
-              <img src={KABUL_PHOTO} alt="" loading="lazy" width={1400} height={900} className="h-56 w-full object-cover object-[50%_72%]" />
+              <img src={MINARET_IMAGE} alt="" loading="lazy" width={1600} height={900} className="h-64 w-full object-cover object-[50%_50%]" />
               <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 font-serif text-[20px] font-semibold italic text-white">{t('about.numbers.tagline')}</figcaption>
             </figure>
-            <p className="mt-2 text-[11px] text-ink-500 md:hidden">
-              <a href={KABUL_PHOTO_SOURCE} target="_blank" rel="noreferrer" className="hover:underline">{t('about.numbers.photoCredit')}</a>
-            </p>
+            <p className="mt-2 text-[11px] text-ink-500 md:hidden">{t('about.numbers.photoCredit')}</p>
           </div>
         </section>
       )}

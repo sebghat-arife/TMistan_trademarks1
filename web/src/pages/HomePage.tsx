@@ -142,9 +142,9 @@ function Landing() {
 
   return (
     // -mb-12 cancels the footer's top margin so the final CTA band sits flush against it.
-    <div className="-mb-12 border-t border-ink-200 bg-white">
+    <div className="-mb-12 border-t border-ink-200">
       {/* ── Why TMistan ───────────────────────────────────────────────── */}
-      <section id="why" className="scroll-mt-20 bg-white">
+      <section id="why" className="scroll-mt-20 bg-white/55">
         <div className="container-x grid gap-12 py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-20 lg:py-24">
           <Reveal>
             <p className="eyebrow">{t('home.why.eyebrow')}</p>
@@ -168,7 +168,7 @@ function Landing() {
       </section>
 
       {/* ── Built by Masnad Law Firm ──────────────────────────────────── */}
-      <section id="masnad" className="scroll-mt-20 grid border-t border-ink-200 bg-mist-50 lg:grid-cols-2">
+      <section id="masnad" className="scroll-mt-20 grid border-t border-ink-200 bg-mist-50/70 lg:grid-cols-2">
         <Reveal className="flex items-center">
           <div className="w-full px-6 py-16 sm:px-8 lg:ms-auto lg:max-w-[590px] lg:py-24 lg:pe-14 lg:ps-6">
             <p className="eyebrow">{t('home.masnad.eyebrow')}</p>
@@ -195,7 +195,7 @@ function Landing() {
       </section>
 
       {/* ── Why it matters ────────────────────────────────────────────── */}
-      <section className="border-t border-ink-200 bg-white">
+      <section className="border-t border-ink-200 bg-white/55">
         <div className="container-x grid gap-10 py-20 lg:grid-cols-[1fr_2.2fr] lg:gap-14 lg:py-24">
           <Reveal>
             <p className="eyebrow">{t('home.matters.eyebrow')}</p>
@@ -214,7 +214,7 @@ function Landing() {
       </section>
 
       {/* ── Platform capabilities ─────────────────────────────────────── */}
-      <section id="capabilities" className="scroll-mt-20 border-t border-ink-200 bg-mist-50">
+      <section id="capabilities" className="scroll-mt-20 border-t border-ink-200 bg-mist-50/70">
         <div className="container-x py-20 lg:py-24">
           <Reveal className="max-w-xl">
             <p className="eyebrow">{t('home.capabilities.eyebrow')}</p>
@@ -250,7 +250,7 @@ function Landing() {
 
       {/* ── TMistan at a glance (live database aggregates) ────────────── */}
       {showStats && (
-        <section className="border-t border-ink-200 bg-white" aria-label={t('home.stats.ariaLabel')} aria-busy={loadingTotals || loadingTypes}>
+        <section className="border-t border-ink-200 bg-white/55" aria-label={t('home.stats.ariaLabel')} aria-busy={loadingTotals || loadingTypes}>
           <div className="container-x grid items-center gap-10 py-16 lg:grid-cols-[1fr_2.7fr] lg:gap-14 lg:py-20">
             <Reveal>
               <h2 className="font-serif text-[28px] font-semibold leading-tight text-navy-900">{t('home.stats.title')}</h2>
@@ -276,7 +276,7 @@ function Landing() {
       )}
 
       {/* ── How it works · Sources · Who it is for ────────────────────── */}
-      <section className="border-t border-ink-200 bg-mist-50">
+      <section className="border-t border-ink-200 bg-mist-50/70">
         <div className="container-x grid gap-14 py-20 lg:grid-cols-3 lg:gap-0 lg:divide-x lg:divide-ink-200 lg:py-24 lg:[&>*+*]:ps-10 lg:[&>*:not(:last-child)]:pe-10">
           <Reveal id="how-it-works" className="scroll-mt-20">
             <p className="eyebrow">{t('home.how.eyebrow')}</p>

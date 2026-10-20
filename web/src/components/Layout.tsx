@@ -36,7 +36,7 @@ export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen flex-col bg-ivory-50">
+    <div className="bg-octagon flex min-h-screen flex-col bg-ivory-50">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm">
         {t('app.skipToContent')}
       </a>
@@ -97,7 +97,7 @@ export function Layout() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="relative mt-12 border-t border-ink-200 bg-ivory-100 text-ink-700">
+      <footer className="bg-hexstar relative mt-12 border-t border-ink-200 bg-ivory-100 text-ink-700">
         {/* decorative frieze: fine lozenge chain in turquoise over the top edge */}
         <DecorativeBorder className="text-turquoise-400" thickness={12} />
         <div className="container-x grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.15fr_1fr] lg:gap-8">

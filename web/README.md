@@ -23,6 +23,8 @@ src/
                          StarDivider, ArchitecturalArch (line-art pointed arch with lattice infill), DecorativeBorder (frieze strip;
                          chain/zigzag/dots, horizontal or vertical), PatternedBand (navy title band). The `.eyebrow` label draws the
                          same star through a CSS mask; `.dark-grid` / `.lattice-dark` / `.lattice-light` are CSS-only lattice backgrounds.
+                         Page-wide tilings (index.css): `.bg-octagon` octagon-and-square brick lattice behind every public page
+                         (`.bg-octagon-faint` for admin), `.bg-hexstar` six-point star girih behind the footer.
   components/search/     SearchExperience (hero + results, the landing page's top; /search redirects here),
                          SearchModeSwitch (segmented control), AdvancedSearchPanel,
                          ActiveFilters (chips), ImageSearchCard + useImageSearch (upload / preview / options / submit),
@@ -32,7 +34,7 @@ src/
 public/
   brand/                 logo.png · logo-white.png · favicon.png (client-supplied TMistan wordmark)
   img/                   search-hero-darulaman.jpg (landing-page search hero — real photograph, CC BY 4.0) and the page-hero
-                         photographs (hero-*.jpg, about-kabul.jpg, legal-documents-desk.jpg); attributions in img/CREDITS.md
+                         photographs/illustrations (hero-*.jpg, about-hero-kabul.jpg, about-minaret.jpg, legal-documents-desk.jpg); attributions in img/CREDITS.md
 ```
 
 Env (`.env.local`, git-ignored): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (+ `VITE_LOCAL_STORAGE_BASE` for the local stack; optional public `SITE_*` metadata incl. `SITE_MASNAD_URL`, see `.env.example`). Values are inlined by `vite.config.ts` at build time; the build refuses a secret key. Missing values render a configuration screen instead of a blank page.
