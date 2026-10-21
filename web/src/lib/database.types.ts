@@ -45,6 +45,10 @@ export type TrademarkRow = {
   import_job_id: string | null
   created_by_job_id: string | null
   class_numbers: number[] | null
+  /** Migration 1100 (direct record editing) — absent until it is applied. */
+  manual_edit_fields?: string[] | null
+  manual_edited_at?: string | null
+  manual_edited_by?: string | null
 }
 
 /**

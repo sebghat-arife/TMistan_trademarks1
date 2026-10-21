@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Archive, ArchiveRestore, ExternalLink, Loader2, RefreshCw, Search, Trash2, X } from 'lucide-react'
+import { Archive, ArchiveRestore, ExternalLink, Loader2, Pencil, RefreshCw, Search, Trash2, X } from 'lucide-react'
 import { cn, formatDate, formatDateTime, formatNumber, trademarkPath } from '@/lib/utils'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { ErrorState } from '@/components/AsyncState'
@@ -11,8 +11,9 @@ import {
   ConfirmDialog, DataManagementGate, KeyValue, Mono, Notice, PageHeader, Pager, Pill, Toolbar, formatBytes, shortId, useSelection,
 } from '@/components/admin/AdminUi'
 import {
-  type AdminTrademarkListItem, type TrademarkSearchParams, cleanupAfterAction, deleteImages, deleteTrademarks, getAdminTrademark, searchAdminTrademarks, setTrademarksPublished, storageRemovalNote,
+  type AdminTrademarkDetail, type AdminTrademarkListItem, type TrademarkSearchParams, type UpdateTrademarkResult, cleanupAfterAction, deleteImages, deleteTrademarks, getAdminTrademark, recordEditingReady, searchAdminTrademarks, setTrademarksPublished, storageRemovalNote,
 } from '@/services/admin_data_service'
+import { TrademarkEditForm } from './TrademarkEditForm'
 
 const LIMIT = 50
 
@@ -20,6 +21,7 @@ type Dialog =
   | { kind: 'delete'; ids: string[]; serials: string[]; images: number }
   | { kind: 'archive' | 'restore'; ids: string[]; serials: string[] }
   | { kind: 'deleteImage'; id: string; path: string; serial: string }
+  | { kind: 'discard'; next: string | null }
   | null
 
 /** Trademark Records — search, inspect (admin-only fields included), archive/restore, delete. */
@@ -63,6 +65,8 @@ function TrademarkRecords() {
   const total = list.data?.total ?? 0
   const sel = useSelection<string>()
   const [openId, setOpenId] = useState<string | null>(sp.get('id'))
+  const [editing, setEditing] = useState(false)
+  const [editDirty, setEditDirty] = useState(false)
   const [dialog, setDialog] = useState<Dialog>(null)
   const [busy, setBusy] = useState(false)
   const [dialogError, setDialogError] = useState<unknown>(null)
@@ -77,6 +81,13 @@ function TrademarkRecords() {
   }
   const selectedItems = items.filter((i) => sel.has(i.id))
 
+  /** Open / close a record; unsaved edits ask for confirmation first. */
+  const requestOpen = useCallback((next: string | null) => {
+    if (editing && editDirty) { setDialog({ kind: 'discard', next }); return }
+    setEditing(false); setEditDirty(false); setOpenId(next)
+  }, [editing, editDirty])
+  const onEditDirty = useCallback((d: boolean) => setEditDirty(d), [])
+
   const run = async (fn: () => Promise<string>) => {
     setBusy(true); setDialogError(null)
     try {
@@ -90,6 +101,10 @@ function TrademarkRecords() {
   }
   const onConfirm = (token: string | null) => {
     if (!dialog) return
+    if (dialog.kind === 'discard') {
+      setDialog(null); setEditing(false); setEditDirty(false); setOpenId(dialog.next)
+      return
+    }
     if (dialog.kind === 'delete') {
       void run(async () => {
         const r = await deleteTrademarks(dialog.ids, token ?? '')
@@ -162,7 +177,7 @@ function TrademarkRecords() {
         </div>
       )}
 
-      <div className={cn('mt-3 grid gap-4', openId && 'xl:grid-cols-[minmax(0,1fr)_420px]')}>
+      <div className={cn('mt-3 grid gap-4', openId && (editing ? 'xl:grid-cols-[minmax(0,1fr)_560px]' : 'xl:grid-cols-[minmax(0,1fr)_420px]'))}>
         <section className="card overflow-hidden">
           {list.isError && <ErrorState className="m-4" error={list.error} onRetry={() => void list.refetch()} />}
           <div className="overflow-x-auto">
@@ -183,7 +198,7 @@ function TrademarkRecords() {
               </thead>
               <tbody className="divide-y divide-ink-100">
                 {items.map((r) => (
-                  <tr key={r.id} className={cn('cursor-pointer hover:bg-ink-50', openId === r.id && 'bg-brand-50/60')} onClick={() => setOpenId(openId === r.id ? null : r.id)}>
+                  <tr key={r.id} className={cn('cursor-pointer hover:bg-ink-50', openId === r.id && 'bg-brand-50/60')} onClick={() => requestOpen(openId === r.id ? null : r.id)}>
                     <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}><input type="checkbox" aria-label={r.serial_number} checked={sel.has(r.id)} onChange={() => sel.toggle(r.id)} /></td>
                     <td className="px-3 py-2"><Mono className="font-semibold text-ink-900">{r.serial_number}</Mono></td>
                     <td className="max-w-[220px] truncate px-3 py-2 font-medium text-ink-900">{r.mark_name ?? t('common.notAvailable')}</td>
@@ -207,7 +222,16 @@ function TrademarkRecords() {
         {openId && (
           <TrademarkDetailPanel
             id={openId}
-            onClose={() => setOpenId(null)}
+            editing={editing}
+            onEditingChange={(e, force) => {
+              // Cancel / Esc with unsaved input → same confirmation as closing the panel (stays on this record).
+              if (!e && !force && editing && editDirty) { setDialog({ kind: 'discard', next: openId }); return }
+              setEditing(e); if (!e) setEditDirty(false)
+            }}
+            onDirtyChange={onEditDirty}
+            onOpenOther={(id) => requestOpen(id)}
+            onSaved={(msg) => { setFlash(msg); invalidate() }}
+            onClose={() => requestOpen(null)}
             onArchive={(row) => setDialog({ kind: row.is_published ? 'archive' : 'restore', ids: [row.id], serials: [row.serial_number] })}
             onDelete={(row, images) => setDialog({ kind: 'delete', ids: [row.id], serials: [row.serial_number], images })}
             onDeleteImage={(img) => setDialog({ kind: 'deleteImage', id: img.id, path: img.storage_path, serial: img.serial })}
@@ -234,7 +258,7 @@ function TrademarkRecords() {
         open={dialog?.kind === 'archive' || dialog?.kind === 'restore'}
         title={dialog?.kind === 'restore' ? t('admin.data.trademarks.restoreTitle', { count: dialog.ids.length }) : t('admin.data.trademarks.archiveTitle', { count: dialog?.kind === 'archive' ? dialog.ids.length : 0 })}
         description={<p>{dialog?.kind === 'restore' ? t('admin.data.trademarks.restoreText') : t('admin.data.trademarks.archiveText')}</p>}
-        items={dialog && dialog.kind !== 'delete' && dialog.kind !== 'deleteImage' ? dialog.serials : []}
+        items={dialog && (dialog.kind === 'archive' || dialog.kind === 'restore') ? dialog.serials : []}
         itemsLabel={t('admin.data.audit.serials')}
         reversibility="reversible"
         confirmLabel={dialog?.kind === 'restore' ? t('admin.data.actions.restore') : t('admin.data.actions.archive')}
@@ -243,6 +267,16 @@ function TrademarkRecords() {
         error={dialogError}
         onConfirm={onConfirm}
         onClose={() => { if (!busy) { setDialog(null); setDialogError(null) } }}
+      />
+      <ConfirmDialog
+        open={dialog?.kind === 'discard'}
+        title={t('admin.data.edit.discardTitle')}
+        description={<p>{t('admin.data.edit.discardText')}</p>}
+        reversibility="irreversible"
+        confirmLabel={t('admin.data.edit.discard')}
+        busy={false}
+        onConfirm={onConfirm}
+        onClose={() => setDialog(null)}
       />
       <ConfirmDialog
         open={dialog?.kind === 'deleteImage'}
@@ -263,8 +297,14 @@ function TrademarkRecords() {
   )
 }
 
-function TrademarkDetailPanel({ id, onClose, onArchive, onDelete, onDeleteImage }: {
+function TrademarkDetailPanel({ id, editing, onEditingChange, onDirtyChange, onOpenOther, onSaved, onClose, onArchive, onDelete, onDeleteImage }: {
   id: string
+  editing: boolean
+  /** `force` skips the unsaved-changes confirmation (used right after a confirmed save). */
+  onEditingChange: (editing: boolean, force?: boolean) => void
+  onDirtyChange: (dirty: boolean) => void
+  onOpenOther: (id: string) => void
+  onSaved: (message: string) => void
   onClose: () => void
   onArchive: (row: AdminTrademarkListItem | { id: string; serial_number: string; is_published: boolean }) => void
   onDelete: (row: { id: string; serial_number: string }, images: number) => void
@@ -272,25 +312,74 @@ function TrademarkDetailPanel({ id, onClose, onArchive, onDelete, onDeleteImage 
 }) {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
+  const qc = useQueryClient()
   const q = useQuery({ queryKey: ['admin', 'trademark', id], queryFn: () => getAdminTrademark(id), staleTime: 10_000 })
+  const editReady = useQuery({ queryKey: ['admin', 'edit_ready'], queryFn: recordEditingReady, staleTime: 5 * 60_000, retry: false })
   const d = q.data
   const na = t('common.notAvailable')
   const v = (x: string | number | null | undefined) => (x === null || x === undefined || x === '' ? na : String(x))
+  const canEdit = editReady.data?.ready === true
+  const protectedFields = d?.trademark.manual_edit_fields ?? []
+
+  const onSavedResult = (r: UpdateTrademarkResult) => {
+    // show the database's version of the row immediately, then refresh history/images
+    qc.setQueryData<AdminTrademarkDetail | null>(['admin', 'trademark', id], (old) => (old ? { ...old, trademark: r.trademark } : old))
+    void qc.invalidateQueries({ queryKey: ['admin', 'trademark', id] })
+    onEditingChange(false, true)
+    onSaved(r.updated ? t('admin.data.edit.saved', { count: r.changed.length, serial: r.trademark.serial_number }) : t('admin.data.edit.savedNoChange'))
+  }
+  const reloadLatest = async () => {
+    const fresh = await getAdminTrademark(id)
+    qc.setQueryData(['admin', 'trademark', id], fresh)
+    return fresh?.trademark ?? null
+  }
+
   return (
-    <aside className="card h-fit overflow-hidden xl:sticky xl:top-20">
-      <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
-        <h2 className="text-[15px] font-semibold text-ink-900">{t('admin.data.trademarks.detail')}</h2>
-        <button type="button" className="btn-ghost h-8 w-8 p-0" onClick={onClose} aria-label={t('common.close')}><X className="h-4 w-4" /></button>
+    <aside className="card h-fit overflow-hidden xl:sticky xl:top-20" data-testid="trademark-detail-panel">
+      <div className="flex items-center justify-between gap-2 border-b border-ink-200 px-4 py-3">
+        <h2 className="text-[15px] font-semibold text-ink-900">{editing ? t('admin.data.edit.title') : t('admin.data.trademarks.detail')}</h2>
+        <div className="flex items-center gap-1">
+          {d && !editing && (
+            <button
+              type="button"
+              className="btn-secondary h-8 px-3 text-[12px]"
+              onClick={() => onEditingChange(true)}
+              disabled={!canEdit}
+              title={!canEdit && editReady.data && !editReady.data.ready ? editReady.data.message : undefined}
+              data-testid="edit-record"
+            >
+              <Pencil className="h-3.5 w-3.5" /> {t('admin.data.edit.action')}
+            </button>
+          )}
+          <button type="button" className="btn-ghost h-8 w-8 p-0" onClick={onClose} aria-label={t('common.close')}><X className="h-4 w-4" /></button>
+        </div>
       </div>
       {q.isLoading && <div className="p-4 text-ink-500"><Loader2 className="h-5 w-5 animate-spin" /></div>}
       {q.isError && <ErrorState className="m-4" error={q.error} onRetry={() => void q.refetch()} />}
       {q.isSuccess && !d && <p className="p-4 text-[13px] text-ink-500">{t('admin.data.trademarks.gone')}</p>}
-      {d && (
+      {d && !editing && editReady.data && !editReady.data.ready && (
+        <Notice tone="warn" className="m-4 mb-0">{t('admin.data.edit.notReady', { message: editReady.data.message })}</Notice>
+      )}
+      {d && editing && (
+        <div className="max-h-[calc(100vh-10rem)] overflow-y-auto p-4">
+          <TrademarkEditForm
+            key={d.trademark.id}
+            record={d.trademark}
+            onSaved={onSavedResult}
+            onCancel={() => onEditingChange(false)}
+            onDirtyChange={onDirtyChange}
+            onReload={reloadLatest}
+            onOpenOther={onOpenOther}
+          />
+        </div>
+      )}
+      {d && !editing && (
         <div className="max-h-[calc(100vh-10rem)] space-y-4 overflow-y-auto p-4 text-[13px]">
           <div className="flex flex-wrap items-center gap-2">
             <Mono className="text-[14px] font-bold text-ink-900">{d.trademark.serial_number}</Mono>
             {d.trademark.is_published ? <Pill tone="ok">{t('admin.data.status.published')}</Pill> : <Pill tone="warn">{t('admin.data.status.archived')}</Pill>}
-            <Pill tone="muted">{d.trademark.review_status}</Pill>
+            <Pill tone="muted">{t(`admin.data.edit.statusLabels.${d.trademark.review_status}`, { defaultValue: d.trademark.review_status })}</Pill>
+            {protectedFields.length > 0 && <Pill tone="info">{t('admin.data.edit.protectedTitle')}</Pill>}
             <Link to={trademarkPath(d.trademark.serial_number, d.trademark.official_gazette_number)} target="_blank" className="link-green ms-auto inline-flex items-center gap-1">{t('admin.data.trademarks.openPublic')} <ExternalLink className="h-3 w-3" /></Link>
           </div>
           <p className="text-[16px] font-semibold text-ink-900">{d.trademark.mark_name ?? na}</p>
@@ -326,8 +415,12 @@ function TrademarkDetailPanel({ id, onClose, onArchive, onDelete, onDeleteImage 
               [t('admin.data.provenance.lastImport'), d.last_job ? <JobRef key="lj" job={d.last_job} lng={lng} /> : d.trademark.import_job_id ? <Mono key="lj2">{shortId(d.trademark.import_job_id)}</Mono> : '—'],
               [t('admin.data.created'), formatDateTime(d.trademark.created_at, lng)],
               [t('admin.data.updated'), formatDateTime(d.trademark.updated_at, lng)],
+              ...(d.trademark.manual_edited_at ? [[t('admin.data.edit.manuallyEditedAt'), formatDateTime(d.trademark.manual_edited_at, lng)] as [string, React.ReactNode]] : []),
               ['ID', <Mono key="id">{d.trademark.id}</Mono>],
             ]} />
+            {protectedFields.length > 0 && (
+              <p className="mt-2 text-[12px] text-amber-900">{t('admin.data.edit.protectedFields', { fields: protectedFields.map((f) => t(`admin.import.columns.${f}`, { defaultValue: f })).join(', ') })}</p>
+            )}
           </div>
 
           <div>
@@ -352,16 +445,18 @@ function TrademarkDetailPanel({ id, onClose, onArchive, onDelete, onDeleteImage 
             <p className="mb-2 font-semibold text-ink-900">{t('admin.data.trademarks.history')}</p>
             {d.audit.length === 0 && d.admin_actions.length === 0 && <p className="text-ink-500">{t('admin.data.trademarks.noHistory')}</p>}
             <ul className="space-y-1 text-[12px]">
-              {d.admin_actions.map((a) => (
-                <li key={`a${a.id}`} className="flex gap-2"><span className="whitespace-nowrap text-ink-500">{formatDateTime(a.created_at, lng)}</span><span className="font-semibold text-ink-800">{a.action}</span><span className="text-ink-500">{a.actor_email ?? shortId(a.actor_id)}</span></li>
-              ))}
-              {d.audit.map((a) => (
-                <li key={`l${a.id}`} className="flex gap-2"><span className="whitespace-nowrap text-ink-500">{formatDateTime(a.created_at, lng)}</span><span className="text-ink-800">{a.action}</span><span className="truncate text-ink-500" dir="ltr">{Array.isArray(a.changed_fields) ? a.changed_fields.join(', ') : ''}</span></li>
-              ))}
+              {d.admin_actions.map((a) => <ActionEntry key={`a${a.id}`} a={a} lng={lng} />)}
+              {d.audit.map((a) => {
+                const fields = Array.isArray(a.changed_fields) ? a.changed_fields : a.changed_fields ? Object.keys(a.changed_fields) : []
+                return (
+                  <li key={`l${a.id}`} className="flex gap-2"><span className="whitespace-nowrap text-ink-500">{formatDateTime(a.created_at, lng)}</span><span className="text-ink-800">{a.action}</span><span className="truncate text-ink-500" dir="ltr" title={fields.join(', ')}>{fields.join(', ')}</span></li>
+                )
+              })}
             </ul>
           </div>
 
           <div className="flex flex-wrap gap-2 border-t border-ink-200 pt-3">
+            <button type="button" className="btn-primary h-9 px-3 text-[12px]" onClick={() => onEditingChange(true)} disabled={!canEdit} data-testid="edit-record-footer"><Pencil className="h-3.5 w-3.5" /> {t('admin.data.edit.action')}</button>
             <button type="button" className="btn-secondary h-9 px-3 text-[12px]" onClick={() => onArchive({ id: d.trademark.id, serial_number: d.trademark.serial_number, is_published: d.trademark.is_published })}>
               {d.trademark.is_published ? <><Archive className="h-3.5 w-3.5" /> {t('admin.data.actions.archive')}</> : <><ArchiveRestore className="h-3.5 w-3.5" /> {t('admin.data.actions.restore')}</>}
             </button>
@@ -370,6 +465,37 @@ function TrademarkDetailPanel({ id, onClose, onArchive, onDelete, onDeleteImage 
         </div>
       )}
     </aside>
+  )
+}
+
+/** One administrative action in the record history; manual edits show the fields and the reason. */
+function ActionEntry({ a, lng }: { a: AdminTrademarkDetail['admin_actions'][number]; lng: string | undefined }) {
+  const { t } = useTranslation()
+  const details = (a.details ?? {}) as { changed?: string[]; reason?: string | null; before?: Record<string, unknown>; after?: Record<string, unknown>; protection_released?: boolean }
+  const changed = Array.isArray(details.changed) ? details.changed : []
+  const isEdit = a.action === 'trademarks.edit'
+  const fmt = (x: unknown) => (x === null || x === undefined || x === '' ? '—' : typeof x === 'object' ? JSON.stringify(x) : String(x))
+  return (
+    <li>
+      <div className="flex gap-2">
+        <span className="whitespace-nowrap text-ink-500">{formatDateTime(a.created_at, lng)}</span>
+        <span className="font-semibold text-ink-800">{t(`admin.data.actionNames.${a.action}`, { defaultValue: a.action })}</span>
+        <span className="truncate text-ink-500">{a.actor_email ?? shortId(a.actor_id)}</span>
+      </div>
+      {isEdit && (
+        <details className="ms-2 mt-0.5 text-ink-600">
+          <summary className="cursor-pointer select-none" dir="ltr">
+            {changed.length > 0 ? changed.map((f) => t(`admin.import.columns.${f}`, { defaultValue: f })).join(', ') : t('admin.data.edit.protectionReleased')}
+            {details.reason ? <span className="text-ink-500"> — {details.reason}</span> : null}
+          </summary>
+          <ul className="mt-1 space-y-0.5 border-s border-ink-200 ps-2">
+            {changed.map((f) => (
+              <li key={f} className="break-words"><span className="text-ink-500">{t(`admin.import.columns.${f}`, { defaultValue: f })}:</span> <s className="text-ink-400">{fmt(details.before?.[f])}</s> → <span className="text-ink-800">{fmt(details.after?.[f])}</span></li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </li>
   )
 }
 

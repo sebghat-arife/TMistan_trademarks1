@@ -131,6 +131,82 @@ export interface AdminTrademarkDetail {
 
 export const getAdminTrademark = (id: string) => callRpc<AdminTrademarkDetail | null>('admin_get_trademark', { p_id: id })
 
+/* --------------------------- direct record editing ----------------------- */
+
+/** Columns an administrator may change through the record editor (mirrors admin_update_trademark). */
+export const EDITABLE_TRADEMARK_FIELDS = [
+  'serial_number', 'official_gazette_number', 'record_number', 'registration_number', 'application_number',
+  'mark_name', 'mark_print', 'trademark_class', 'application_type', 'publication_date', 'objection_deadline',
+  'applicant_name', 'applicant_address', 'new_owner', 'old_owner', 'new_address', 'old_address',
+  'goods_and_services', 'source_page',
+  'attorney_or_representative', 'review_note', 'review_comment', 'review_status', 'is_published',
+] as const
+export type EditableTrademarkField = (typeof EDITABLE_TRADEMARK_FIELDS)[number]
+export type TrademarkPatch = Partial<Record<Exclude<EditableTrademarkField, 'is_published'>, string | null> & { is_published: boolean }>
+
+export interface UpdateTrademarkResult {
+  updated: boolean
+  changed: string[]
+  action_id: number | null
+  trademark: TrademarkRow
+}
+
+/**
+ * Error raised by `updateTrademark` for the two conflict cases the database
+ * reports with SQLSTATE PT409: `stale` (someone else saved first) and
+ * `duplicate` (another record already uses the serial/gazette pair).
+ */
+export class TrademarkEditConflict extends DataError {
+  readonly kind: 'stale' | 'duplicate'
+  readonly other: { id?: string; serial_number?: string; official_gazette_number?: string; mark_name?: string | null } | null
+  constructor(message: string, kind: 'stale' | 'duplicate', detail: string | null | undefined) {
+    super(message, 'conflict')
+    this.name = 'TrademarkEditConflict'
+    this.kind = kind
+    let parsed: TrademarkEditConflict['other'] = null
+    if (detail) {
+      try { parsed = JSON.parse(detail) as TrademarkEditConflict['other'] } catch { parsed = null }
+    }
+    this.other = parsed
+  }
+}
+
+/**
+ * Save a correction. Only the supplied fields change; `expectedUpdatedAt` is
+ * the `updated_at` the administrator was looking at (optimistic concurrency).
+ */
+export async function updateTrademark(id: string, patch: TrademarkPatch, expectedUpdatedAt: string | null, opts: { reason?: string | null; releaseProtection?: boolean } = {}): Promise<UpdateTrademarkResult> {
+  const res = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string; code?: string; hint?: string | null; details?: string | null } | null }>)(
+    'admin_update_trademark',
+    { p_id: id, p_patch: patch, p_expected_updated_at: expectedUpdatedAt, p_reason: opts.reason ?? null, p_release_protection: opts.releaseProtection ?? false },
+  )
+  if (res.error) {
+    if (res.error.code === 'PT409' || /^(stale|duplicate)$/.test(res.error.hint ?? '')) {
+      throw new TrademarkEditConflict(res.error.message, res.error.hint === 'stale' ? 'stale' : 'duplicate', res.error.details)
+    }
+    if (res.error.code === 'P0002') throw new DataError(res.error.message, 'not_found')
+    if (res.error.code === '42501' || /Administrator role required/i.test(res.error.message)) {
+      throw new DataError('Administrator role required for this operation.', 'forbidden')
+    }
+    throw toDataError(res.error)
+  }
+  return res.data as UpdateTrademarkResult
+}
+
+/**
+ * Probe: does this project have migration 1100? Calls the function with no
+ * record id — an applied migration answers with a validation error (22023),
+ * a missing one with PGRST202 (not in the schema cache).
+ */
+export async function recordEditingReady(): Promise<{ ready: true } | { ready: false; reason: 'schema_missing' | 'forbidden' | 'error'; message: string }> {
+  const res = await rpc('admin_update_trademark', { p_id: null, p_patch: {} })
+  if (!res.error || res.error.code === '22023') return { ready: true }
+  const err = toDataError(res.error)
+  if (err.code === 'schema_missing') return { ready: false, reason: 'schema_missing', message: 'Migration 1100 (direct record editing) has not been applied to this Supabase project — paste supabase/APPLY_1100.sql into the SQL editor.' }
+  if (res.error.code === '42501' || /Administrator role required/i.test(res.error.message)) return { ready: false, reason: 'forbidden', message: 'Administrator role required.' }
+  return { ready: false, reason: 'error', message: err.message }
+}
+
 export interface PublishResult { affected: number; serials: string[]; action_id: number }
 export const setTrademarksPublished = (ids: string[], published: boolean, reason?: string | null) =>
   callRpc<PublishResult>('admin_set_trademarks_published', { p_ids: ids, p_published: published, p_reason: reason ?? null })

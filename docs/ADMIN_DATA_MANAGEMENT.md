@@ -158,3 +158,84 @@ batch-deleted (the dialog says so — nothing is guessed).
 Known limits: the orphan scan lists at most 20 000 objects per run (reported as *truncated*); the
 local Storage stand-in (`scripts/local-stack/static_storage.py`) emulates list/remove only for
 development; production uses Supabase Storage.
+
+## 8. Direct record editing (migration 1100)
+
+**Where.** Admin → Trademark Records → open a record → **Edit record** (header of the details panel
+and its action row). The form replaces the read-only details *inside the same panel*; the search
+toolbar, table, images and change history are untouched. Sections: Identification · Mark ·
+Applicant & ownership · Goods, services & source page · *Administrator-only fields* (attorney /
+representative, note, review comment, review status, published flag — amber box, never public) ·
+System information (read-only: source file / sheet / row, import batch, created, updated, id).
+Only columns that already exist on `public.trademarks` are exposed; nothing was invented.
+
+**Persistence path.** `TrademarkEditForm` → `updateTrademark()` (`admin_data_service.ts`) →
+RPC **`admin_update_trademark(p_id, p_patch, p_expected_updated_at, p_reason, p_release_protection)`**
+(migration `20261021001100_record_editing.sql`). The patch contains *only the fields that differ*
+from the loaded row; the row is located by its immutable `id` (never by serial, name or row
+number) and locked `FOR UPDATE`. The function returns the updated row, which the panel shows
+immediately; the TanStack queries for the table, the record, the admin stats and the public search
+are invalidated (no page reload). Success is shown only after the database has confirmed.
+
+**Enforced in the database, not the UI**
+
+* `admin_assert()` → non-administrators get `42501` (anonymous callers cannot even execute the
+  function — no grant to `anon`).
+* Whitelist of editable columns; `id`, `source_file/sheet/row`, import job ids, `created_at`,
+  `updated_at`, `reviewed_*`, `search_vector` are never writable.
+* Values are trimmed, `''` → `NULL` (legitimate empty values stay empty), dates and
+  `review_status` validated (`22023`), serial / gazette number required (`23502`), text length capped.
+* **Optimistic concurrency** — the client sends the `updated_at` it loaded; if the row changed in
+  between the save is refused with SQLSTATE `PT409` (HTTP 409, hint `stale`) and *nothing is
+  overwritten*. The form offers *Reload latest version (keeps your edits)*, re-applies the
+  administrator's changes on top of the fresh row and lets them save again.
+* **Duplicate identifier** — a new `(official_gazette_number, serial_number)` pair that already
+  exists is refused (`PT409`, hint `duplicate`, the other record in `DETAIL`); the form names that
+  record and offers to open it. A second record can never be created by editing.
+* Deleted record → `P0002`; the form says so and keeps the input.
+
+**Images.** `trademark_images` rows, Storage paths, counts and previews are untouched by an edit —
+the relation is by `trademark_id`. If the serial or gazette number of a record is changed, only the
+denormalised labels (`serial_number` / `gazette_number`) on its *existing* image rows are
+refreshed; no file is moved, renamed or deleted. Image management stays a separate action.
+
+**Audit trail.** Every save writes one `admin_actions` row (`trademarks.edit`: changed fields,
+before/after values, optional reason, `protection_released`) *and* the existing row-level
+`audit_logs` trigger entry. Both tables are append-only and admin-only. The panel's *Change
+history* lists manual edits with the fields, the reason and `old → new` values; the Audit Log page
+shows them under action `trademarks.edit`.
+
+**Manual corrections vs. later Excel imports.** Fields edited by hand are recorded in
+`trademarks.manual_edit_fields` (+ `manual_edited_at`, `manual_edited_by`). When the same serial is
+imported again, `admin_import_trademark_rows` **keeps those fields** and applies the Excel values
+to all other columns; its result carries `preserved` / `preserved_rows` and the Import Center
+prints *"N field(s) on M record(s) kept their manual TMistan corrections…"* — never a silent
+overwrite. A record with protected fields shows the *Manually corrected* pill and the list of
+protected fields; the editor's *Let future Excel imports overwrite…* checkbox releases the
+protection (logged). Import matching logic itself is unchanged (gazette + serial, then serial).
+
+**Until 1100 is applied in production** the frontend probes the function once per session
+(`recordEditingReady`): the Edit button stays disabled and the panel shows *"Record editing is not
+available yet: Migration 1100 … paste supabase/APPLY_1100.sql"*; everything else keeps working.
+
+**Applying:** SQL Editor → paste **`supabase/APPLY_1100.sql`** → Run (prerequisite 0600; the result
+panel prints `provenance columns = 3`, `admin_update_trademark present = 1`, `callable by anon = 0`,
+unchanged record / image counts). Idempotent.
+
+**Tested (2026-10-21, local PostgreSQL 17 + PostgREST + the real web app — never production):**
+
+* SQL harness `supabase/dev/test_1100_record_editing.sql` — 60 checks: whitelist, trim/empty
+  handling, date/status validation, required identifiers, non-admin `42501`, stale `PT409`,
+  duplicate `PT409`, images and provenance unchanged, `admin_actions` + `audit_logs` rows,
+  re-import preserving manual fields (`preserved` counts), protection release, idempotent migration.
+* Browser (Playwright, 1440 px and 390 px, 23 checks each): basic edit → DB row, table and panel
+  updated; persistence after reload; public search finds the new mark name and applicant; four
+  fields in one save; cancel with unsaved input → confirmation, DB unchanged; two linked images
+  (rows, paths, previews, table count) intact; admin-only `review_note` saved but not readable
+  through the public API; anonymous RPC call refused; empty serial flagged inline, duplicate serial
+  refused by the database with the other record named (still 4 records); concurrent change by a
+  second administrator → stale save refused, reload keeps the edit and shows the other change, save
+  succeeds; Dari + Latin mark name round-trips byte-exact; change history shows fields, reason and
+  before → after; Import Center re-import of the edited serial → *5 field(s) on 1 record(s) kept
+  their manual corrections*, non-protected column updated, no duplicate record; function hidden →
+  Edit button disabled with the migration notice, no page errors.

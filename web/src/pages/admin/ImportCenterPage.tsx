@@ -24,6 +24,7 @@ import {
 import { type ImageCandidate, type IntakeResult, intakeImages, isImageFile, isZipFile } from '@/lib/import/images'
 import { ImageIndexPanel } from './ImageIndexPanel'
 import { dataManagementReady } from '@/services/admin_data_service'
+import { Notice } from '@/components/admin/AdminUi'
 import {
   type ImageImportProgress,
   type ImageUploadPlanItem,
@@ -264,7 +265,7 @@ function SpreadsheetImporter() {
       setState({ phase: 'error', message: (e as Error).message, file })
       return
     }
-    const initial: RowImportProgress = { processed: 0, total: validation.rows.length, inserted: 0, updated: 0, skipped: 0, failed: 0, failures: [] }
+    const initial: RowImportProgress = { processed: 0, total: validation.rows.length, inserted: 0, updated: 0, skipped: 0, failed: 0, preserved: 0, preservedRows: 0, failures: [] }
     setState({ phase: 'importing', file, sheet, validation, job, progress: initial })
     try {
       // rows rejected by validation are recorded on the job so the report is complete
@@ -466,6 +467,9 @@ function SpreadsheetImporter() {
                 className="flex-1"
               />
             </div>
+          )}
+          {state.phase === 'done' && state.progress.preserved > 0 && (
+            <Notice tone="info">{t('admin.import.preservedNote', { fields: state.progress.preserved, records: state.progress.preservedRows })}</Notice>
           )}
           {state.phase === 'done' && state.progress.failures.length > 0 && (
             <IssueTable

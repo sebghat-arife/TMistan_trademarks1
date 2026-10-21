@@ -1198,7 +1198,8 @@
       "planNew": "New image",
       "planUnchanged": "Already on file",
       "planReplaces": "Replaces current image",
-      "planSummary": "{{added}} new · {{replaced}} replace the current image · {{unchanged}} already on file"
+      "planSummary": "{{added}} new · {{replaced}} replace the current image · {{unchanged}} already on file",
+      "preservedNote": "{{fields}} field(s) on {{records}} record(s) kept their manual TMistan corrections — the Excel values for those fields were not applied. Release the protection from the record editor if the Excel values should win."
     },
     "index": {
       "title": "Visual search index",
@@ -1277,7 +1278,8 @@
         "trademarks": {
           "delete": "Delete trademark records",
           "archive": "Archive trademark records",
-          "restore": "Restore trademark records"
+          "restore": "Restore trademark records",
+          "edit": "Edit trademark record"
         },
         "images": {
           "delete": "Delete images"
@@ -1501,6 +1503,58 @@
         "changedFields": "Changed fields",
         "actor": "Actor",
         "noRows": "No row changes recorded."
+      },
+      "edit": {
+        "action": "Edit record",
+        "title": "Edit record",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "changedCount": "{{count}} field(s) changed",
+        "noChanges": "No changes yet",
+        "saved": "Record {{serial}} saved — {{count}} field(s) updated in the database.",
+        "savedNoChange": "Nothing to save — the record already has these values.",
+        "notReady": "Record editing is not available yet: {{message}}",
+        "required": "Required",
+        "invalidDate": "Enter a valid date (YYYY-MM-DD).",
+        "tooLong": "Too long (maximum {{max}} characters).",
+        "fixErrors": "Please correct the {{count}} highlighted field(s) before saving.",
+        "sections": {
+          "identification": "Identification",
+          "mark": "Mark",
+          "applicant": "Applicant & ownership",
+          "goods": "Goods, services & source page",
+          "reason": "Reason for this correction (optional — stored in the change history)",
+          "system": "System information (read-only)"
+        },
+        "reasonPlaceholder": "e.g. spelling corrected against OG 1022, page 4",
+        "identifierWarning": "You are changing an identifier. Linked images stay attached (the record keeps its internal ID), but Excel imports match rows by serial number — re-importing the original file would create a new record with the old serial.",
+        "conflictStale": "This record was changed by someone else while you were editing. Nothing has been overwritten.",
+        "reload": "Reload latest version (keeps your edits)",
+        "reloaded": "Reloaded. Your edits were applied on top of the latest version — review them and save again.",
+        "conflictDuplicate": "Another record already uses this serial number in this gazette — the change was not saved:",
+        "openOther": "Open that record",
+        "gone": "This record no longer exists — it may have been deleted by another administrator.",
+        "forbidden": "Your account is not allowed to edit records (administrator role required).",
+        "sessionExpired": "Your session has expired. Sign in again — your unsaved edits stay in this form.",
+        "network": "The database could not be reached. Check the connection and try again — your edits are still here.",
+        "discardTitle": "Discard unsaved changes?",
+        "discardText": "The changes you made to this record have not been saved. The database stays exactly as it was.",
+        "discard": "Discard changes",
+        "protectedTitle": "Manually corrected",
+        "protectedTag": "corrected",
+        "protectedFields": "Corrected in TMistan and kept when the Excel file is imported again: {{fields}}",
+        "releaseProtection": "Let future Excel imports overwrite the manually corrected fields of this record again",
+        "protectionReleased": "Import protection released",
+        "manuallyEditedAt": "Last manual correction",
+        "published": "Published (visible on the public website)",
+        "reviewStatus": "Review status",
+        "statusLabels": {
+          "unreviewed": "Unreviewed",
+          "reviewed": "Reviewed",
+          "needs_correction": "Needs correction",
+          "verified": "Verified"
+        }
       }
     },
     "inquiries": {

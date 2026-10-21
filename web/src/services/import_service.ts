@@ -101,6 +101,9 @@ export interface RowBatchResult {
   updated: number
   skipped: number
   failed: number
+  /** Migration 1100: fields kept because they were corrected manually in TMistan (absent on older projects). */
+  preserved?: number
+  preserved_rows?: number
   results: { serial: string | null; source_row: number | null; status: 'failed'; message: string; code: string }[]
 }
 
@@ -111,12 +114,15 @@ export interface RowImportProgress {
   updated: number
   skipped: number
   failed: number
+  /** Fields / records whose manual corrections were kept (migration 1100). */
+  preserved: number
+  preservedRows: number
   failures: RowBatchResult['results']
 }
 
 /** Send validated rows in batches; `onProgress` fires after every batch. */
 export async function importTrademarkRows(jobId: string, rows: ImportRow[], onProgress?: (p: RowImportProgress) => void, signal?: AbortSignal): Promise<RowImportProgress> {
-  const p: RowImportProgress = { processed: 0, total: rows.length, inserted: 0, updated: 0, skipped: 0, failed: 0, failures: [] }
+  const p: RowImportProgress = { processed: 0, total: rows.length, inserted: 0, updated: 0, skipped: 0, failed: 0, preserved: 0, preservedRows: 0, failures: [] }
   for (let i = 0; i < rows.length; i += ROW_BATCH) {
     if (signal?.aborted) throw new DataError('Import cancelled', 'cancelled')
     const batch = rows.slice(i, i + ROW_BATCH)
@@ -126,6 +132,8 @@ export async function importTrademarkRows(jobId: string, rows: ImportRow[], onPr
     p.updated += r.updated
     p.skipped += r.skipped
     p.failed += r.failed
+    p.preserved += r.preserved ?? 0
+    p.preservedRows += r.preserved_rows ?? 0
     p.failures.push(...(r.results ?? []))
     onProgress?.({ ...p, failures: [...p.failures] })
   }

@@ -31,7 +31,11 @@ imported files contain — nothing is assumed or seeded.
 Overview, Trademark Records, Trademark Images, Excel/CSV Imports, ZIP Image Imports, Import History,
 Unmatched Images, Orphaned Files, Audit Log. Archive (reversible) vs. permanent delete (typed `DELETE`,
 enforced server-side), delete-by-import-batch with real provenance, Storage cleanup queue, append-only
-audit log. The admin area is reached only by typing `/admin/login` — the public site has no Login button.
+audit log. **Edit record** (migration 1100, `docs/ADMIN_DATA_MANAGEMENT.md` § 8) corrects a record in
+place through `admin_update_trademark` — administrator check in the database, immutable-id update,
+optimistic concurrency, duplicate gazette + serial refused, every change audited, and hand-corrected
+fields are kept when the Excel file is imported again (the Import Center says how many).
+The admin area is reached only by typing `/admin/login` — the public site has no Login button.
 
 **Search — the landing page** (`/`, `web/src/components/search/SearchExperience.tsx` rendered by
 `web/src/pages/HomePage.tsx`; `/search?…` redirects to `/?…` so old links keep working): one hero
@@ -86,7 +90,8 @@ service-role key exists only on the machine that runs importers / the storage se
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–1000) — paste once into the Supabase SQL editor of a new project | no |
+| `web/src/pages/admin/TrademarkEditForm.tsx` | in-panel record editor (diff-only patch, validation, stale/duplicate conflict handling, unsaved-changes guard) — calls `admin_update_trademark` (migration 1100) | yes |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–1100) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
 | `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
@@ -94,7 +99,8 @@ service-role key exists only on the machine that runs importers / the storage se
 | `supabase/APPLY_0800.sql` | migration 0800 alone (Contact & Feedback: private `contact_requests` table + submit/admin functions) for projects already on 0100–0600 (0700 not required) | no |
 | `supabase/APPLY_0900.sql` | migration 0900 alone (Data Correction requests: two private tables, submit/status/admin functions, private evidence bucket + policies) for projects already on 0100–0600 (0700/0800 not required) | no |
 | `supabase/APPLY_1000.sql` | migration 1000 alone (image re-upload fix: Storage cleanup queue never removes a file a current image row references, `admin_trademark_images_lookup`) for projects already on 0100–0600 (0700–0900 not required) | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests · 1000 image re-upload fix (cleanup-queue guard) | no |
+| `supabase/APPLY_1100.sql` | migration 1100 alone (direct record editing: `admin_update_trademark` with optimistic concurrency + duplicate protection, `manual_edit_fields` provenance kept by later Excel imports) for projects already on 0100–0600 (0700–1000 not required) | no |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests · 1000 image re-upload fix (cleanup-queue guard) · 1100 direct record editing (admin_update_trademark, manual-edit protection) | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |

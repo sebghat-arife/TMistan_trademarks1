@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 1000) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql, APPLY_0900.sql and APPLY_1000.sql."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 1100) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql, APPLY_0900.sql, APPLY_1000.sql and APPLY_1100.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -310,3 +310,65 @@ union all select 'trademarks (unchanged)', count(*)::text from public.trademarks
 """
 p1000.write_text(h1000 + f"\n-- {'#'*76}\n-- {m1000.name}\n-- {'#'*76}\n" + m1000.read_text() + f1000)
 print("wrote supabase/APPLY_1000.sql")
+
+# APPLY_1100.sql — direct record editing (admin_update_trademark + manual-edit protection), for projects already on 0100–0600.
+m1100 = root / "supabase" / "migrations" / "20261021001100_record_editing.sql"
+p1100 = root / "supabase" / "APPLY_1100.sql"
+h1100 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 1100 (direct trademark record editing)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261021001100_record_editing.sql by
+-- scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisite: migration 0600 (APPLY_0600.sql) is in place — it created
+-- admin_actions / admin_record_action and admin_get_trademark, which this
+-- migration builds on. 0700–1000 are NOT required (but recommended).
+--
+-- What it adds: the "Edit record" button of Admin → Trademark Records.
+--   • admin_update_trademark(id, patch, expected_updated_at, reason, release)
+--     – the only write path for single-record corrections: administrator
+--     role checked in the database, row located by its immutable uuid,
+--     whitelist of editable columns, optimistic concurrency (HTTP 409 when
+--     somebody else saved first — nothing is overwritten), duplicate
+--     gazette + serial rejected with the other record named, every save
+--     written to admin_actions (fields, before/after, reason) and audit_logs
+--   • three provenance columns on public.trademarks
+--     (manual_edit_fields, manual_edited_at, manual_edited_by) — fields
+--     corrected by hand are KEPT when the Excel file is imported again; the
+--     Import Center reports how many values were preserved
+--   • admin_get_trademark returns the new columns
+--
+-- Safe by construction — ADDITIVE ONLY:
+--   • adds three nullable columns (no rewrite of existing rows, no defaults
+--     that touch data), one admin-only function, re-creates two existing
+--     functions with the same names, signatures and callers
+--   • touches no trademark, gazette, applicant or image row, no Storage object
+--   • idempotent — running it twice is harmless
+--
+-- Until this file is applied the web app keeps working: the Edit button is
+-- disabled and the record panel explains that migration 1100 is missing.
+-- ============================================================================
+begin;
+"""
+f1100 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'provenance columns (expect 3)' as object,
+       (select count(*)::text from information_schema.columns
+         where table_schema = 'public' and table_name = 'trademarks'
+           and column_name in ('manual_edit_fields','manual_edited_at','manual_edited_by')) as value
+union all select 'admin_update_trademark present (expect 1)',
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'admin_update_trademark')
+union all select 'admin_update_trademark callable by anon (must be 0)',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'admin_update_trademark' and grantee in ('anon', 'PUBLIC'))
+union all select 'manually corrected records so far (0 right after applying)',
+       (select count(*)::text from public.trademarks where manual_edit_fields is not null and cardinality(manual_edit_fields) > 0)
+union all select 'image rows (unchanged)', count(*)::text from public.trademark_images
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks;
+"""
+p1100.write_text(h1100 + f"\n-- {'#'*76}\n-- {m1100.name}\n-- {'#'*76}\n" + m1100.read_text() + f1100)
+print("wrote supabase/APPLY_1100.sql")
