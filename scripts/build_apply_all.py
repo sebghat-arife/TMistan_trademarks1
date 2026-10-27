@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 1100) and the single-migration files APPLY_0400.sql, APPLY_0500.sql, APPLY_0600.sql, APPLY_0700.sql, APPLY_0800.sql, APPLY_0900.sql, APPLY_1000.sql and APPLY_1100.sql."""
+"""Rebuild supabase/APPLY_ALL.sql (0100 → … → 1200) and the single-migration files APPLY_0400.sql … APPLY_1200.sql."""
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[1]
 files = sorted(p for p in (root / "supabase" / "migrations").glob("202*_*.sql") if not p.name.startswith("20260905000000"))
@@ -372,3 +372,66 @@ union all select 'trademarks (unchanged)', count(*)::text from public.trademarks
 """
 p1100.write_text(h1100 + f"\n-- {'#'*76}\n-- {m1100.name}\n-- {'#'*76}\n" + m1100.read_text() + f1100)
 print("wrote supabase/APPLY_1100.sql")
+
+# APPLY_1200.sql — intelligent image search (OCR text + CLIP embeddings + hybrid ranking), for projects already on 0100–0600.
+m1200 = root / "supabase" / "migrations" / "20261027001200_intelligent_image_search.sql"
+p1200 = root / "supabase" / "APPLY_1200.sql"
+h1200 = """-- ============================================================================
+-- TMistan — APPLY MIGRATION 1200 (intelligent image search)
+--
+-- Paste this whole file into the Supabase SQL Editor and click RUN once.
+-- Generated from supabase/migrations/20261027001200_intelligent_image_search.sql
+-- by scripts/build_apply_all.py — do not edit by hand, edit the migration.
+--
+-- Prerequisite: migrations 0100–0600 are in place (0500 created the pgvector
+-- extension and trademark_image_features; 0600 the admin audit helpers).
+-- 0700–1100 are NOT required.
+--
+-- Safe by construction — ADDITIVE ONLY:
+--   • creates the table trademark_image_analysis (OCR words + normalised text
+--     + 512-d CLIP embedding per image, with status / model version / error),
+--     RLS enabled and no public policy — only the functions below read it
+--   • creates text_match / phonetic_key helpers and the public, read-only
+--     search_trademarks_hybrid() + hybrid_image_search_status()
+--   • creates the admin / service indexing RPCs (admin_image_analysis_status,
+--     admin_image_analysis_pending, admin_upsert_image_analysis); every one
+--     calls admin_assert() unless invoked with the service role
+--   • tries to enable the optional fuzzystrmatch extension (phonetic keys);
+--     continues without it if the project does not offer it
+--   • never drops a table, never deletes or rewrites a trademark / image row,
+--     never touches Storage objects; the 0500 image search keeps working
+--   • idempotent — running it twice is harmless
+--
+-- Afterwards: deploy the vision service (services/vision, see
+-- docs/IMAGE_SEARCH.md), set VISION_API_URL on the static site, then
+-- /admin → Import Center → "Intelligent image index" → Run batch.
+-- ============================================================================
+begin;
+"""
+f1200 = """
+commit;
+
+-- post-checks -------------------------------------------------------------
+select 'analysis table (expect 1)' as object,
+       (select count(*)::text from pg_tables where schemaname = 'public' and tablename = 'trademark_image_analysis') as value
+union all select 'analysis table RLS enabled (expect t)',
+       (select relrowsecurity::text from pg_class c join pg_namespace n on n.oid = c.relnamespace
+         where n.nspname = 'public' and c.relname = 'trademark_image_analysis')
+union all select 'new functions (expect 7)',
+       (select count(*)::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname in ('search_trademarks_hybrid','hybrid_image_search_status','text_match','phonetic_key',
+               'admin_image_analysis_status','admin_image_analysis_pending','admin_upsert_image_analysis'))
+union all select 'anon may run the hybrid search (expect 1)',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'search_trademarks_hybrid' and grantee = 'anon' and privilege_type = 'EXECUTE')
+union all select 'anon may run admin_upsert_image_analysis (must be 0)',
+       (select count(*)::text from information_schema.routine_privileges
+         where specific_schema = 'public' and routine_name = 'admin_upsert_image_analysis' and grantee in ('anon', 'PUBLIC'))
+union all select 'fuzzystrmatch (1 = phonetic matching on)', (select count(*)::text from pg_extension where extname = 'fuzzystrmatch')
+union all select 'hnsw index on embeddings (expect 1)', (select count(*)::text from pg_indexes where schemaname = 'public' and indexname = 'trademark_image_analysis_embedding_hnsw')
+union all select 'matched images to index', (select count(*)::text from public.trademark_images where status = 'matched' and trademark_id is not null)
+union all select 'image rows (unchanged)', count(*)::text from public.trademark_images
+union all select 'trademarks (unchanged)', count(*)::text from public.trademarks;
+"""
+p1200.write_text(h1200 + f"\n-- {'#'*76}\n-- {m1200.name}\n-- {'#'*76}\n" + m1200.read_text() + f1200)
+print("wrote supabase/APPLY_1200.sql")

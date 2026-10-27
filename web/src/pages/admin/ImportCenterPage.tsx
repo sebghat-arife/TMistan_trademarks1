@@ -23,6 +23,7 @@ import {
 } from '@/lib/import/spreadsheet'
 import { type ImageCandidate, type IntakeResult, intakeImages, isImageFile, isZipFile } from '@/lib/import/images'
 import { ImageIndexPanel } from './ImageIndexPanel'
+import { AnalysisIndexPanel } from './AnalysisIndexPanel'
 import { dataManagementReady } from '@/services/admin_data_service'
 import { Notice } from '@/components/admin/AdminUi'
 import {
@@ -96,7 +97,8 @@ export function ImportCenterPage({ mode = 'all' }: { mode?: 'all' | 'excel' | 'i
         {mode !== 'excel' && <ImageImporter />}
       </div>
       {mode !== 'excel' && (
-        <div className={cn('mt-5', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
+        <div className={cn('mt-5 space-y-5', blocked && 'pointer-events-none opacity-50')} aria-disabled={blocked}>
+          <AnalysisIndexPanel />
           <ImageIndexPanel />
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, ChevronDown, ImageIcon, ImageOff, ImageUp, Loader2, RefreshCw, Search, Trash2, UploadCloud } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ImageIcon, ImageOff, ImageUp, Info, Loader2, RefreshCw, ScanText, Search, Sparkles, Trash2, UploadCloud } from 'lucide-react'
 import { filterOptionsQuery } from '@/services'
 import { MAX_QUERY_IMAGE_BYTES } from '@/lib/imageSearch/descriptor'
 import { IMAGE_SEARCH_EXACT_MIN_SIMILARITY, IMAGE_SEARCH_MAX_LIMIT } from '@/services'
@@ -21,7 +21,7 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const lng = i18n.resolvedLanguage
-  const { status, available, file, previewUrl, source, busy, phase, errorKind, errorDetail } = c
+  const { status, available, file, previewUrl, source, busy, phase, errorKind, errorDetail, mode, basicReason, hybridStatus } = c
 
   const pick = () => inputRef.current?.click()
   const onFiles = (files: FileList | null | undefined) => {
@@ -29,7 +29,7 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
     if (inputRef.current) inputRef.current.value = ''
   }
   const canSubmit = !!file && available && !busy
-  const submitLabel = phase === 'loading-example' ? t('search.image.examples.loading') : phase === 'analysing' ? t('search.image.analysing') : phase === 'searching' ? t('search.image.searching') : t('search.image.submit')
+  const submitLabel = phase === 'loading-example' ? t('search.image.examples.loading') : phase === 'analysing' ? t('search.image.recognising') : phase === 'searching' ? t('search.image.searching') : t('search.image.submit')
 
   return (
     <section id="search-panel-image" role="tabpanel" aria-labelledby="search-tab-image" className={cn('card overflow-hidden shadow-[0_18px_50px_-24px_rgba(16,35,58,0.35)]', className)}>
@@ -103,7 +103,9 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
             </div>
           )}
 
-          <p className="mt-3 text-[12px] leading-relaxed text-ink-500">{t('search.image.privacy')}</p>
+          {file && <RecognitionBlock c={c} />}
+
+          <p className="mt-3 text-[12px] leading-relaxed text-ink-500">{mode === 'intelligent' ? t('search.image.privacyService') : t('search.image.privacy')}</p>
 
           {errorKind && (
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-800" role="alert" data-testid="image-error">
@@ -136,9 +138,17 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
               {submitLabel}
             </button>
             <p id={`${uid}-hint`} className="mt-2 min-h-[1.25rem] text-center text-[12px] text-ink-500" aria-live="polite">
-              {!file && available ? t('search.image.needImage') : status.data?.available ? t('search.image.indexedNote', { images: formatNumber(status.data.indexed_images, lng), trademarks: formatNumber(status.data.indexed_trademarks, lng) }) : ''}
+              {!file && available
+                ? t('search.image.needImage')
+                : mode === 'intelligent' && hybridStatus.data
+                  ? t('search.image.indexedNoteHybrid', { images: formatNumber(hybridStatus.data.indexed_images, lng), text: formatNumber(hybridStatus.data.images_with_text, lng), trademarks: formatNumber(hybridStatus.data.indexed_trademarks, lng) })
+                  : status.data?.available
+                    ? t('search.image.indexedNote', { images: formatNumber(status.data.indexed_images, lng), trademarks: formatNumber(status.data.indexed_trademarks, lng) })
+                    : ''}
             </p>
           </div>
+
+          <ModeNotice mode={mode} reason={basicReason} available={available} />
 
           {status.isSuccess && !available && (
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[13px] text-amber-900" role="status" data-testid="image-unavailable">
@@ -162,6 +172,110 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
         </div>
       </div>
     </section>
+  )
+}
+
+/** Which engine a search would use right now, and — in basic mode — why. */
+function ModeNotice({ mode, reason, available }: { mode: ImageSearchController['mode']; reason: ImageSearchController['basicReason']; available: boolean }) {
+  const { t } = useTranslation()
+  if (!available) return null
+  if (mode === 'intelligent') {
+    return (
+      <p className="mt-3 flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50/60 p-3 text-[12px] leading-relaxed text-brand-900" data-testid="image-mode-intelligent">
+        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span>{t('search.image.mode.intelligent')}</span>
+      </p>
+    )
+  }
+  const key = reason === 'not_configured' ? 'notConfigured' : reason === 'service_unreachable' ? 'unreachable' : reason === 'migration_missing' ? 'migrationMissing' : 'indexEmpty'
+  return (
+    <p className="mt-3 flex items-start gap-2 rounded-lg border border-ink-200 bg-white p-3 text-[12px] leading-relaxed text-ink-700" role="status" data-testid="image-mode-basic">
+      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-500" aria-hidden />
+      <span>
+        <span className="font-semibold">{t('search.image.mode.basicTitle')}</span> {t(`search.image.mode.${key}`)}
+      </span>
+    </p>
+  )
+}
+
+/** Recognised wording of the selected image — shown while analysing, then editable before the search. */
+function RecognitionBlock({ c }: { c: ImageSearchController }) {
+  const { t, i18n } = useTranslation()
+  const uid = useId()
+  const lng = i18n.resolvedLanguage
+  const { phase, recognition, analysisNotice, mode, textSearchAvailable, busy } = c
+  if (phase === 'analysing') {
+    return (
+      <div className="mt-3 flex items-center gap-2 rounded-lg border border-ink-200 bg-white p-3 text-[13px] text-ink-700" role="status" aria-live="polite" data-testid="recognition-loading">
+        <Loader2 className="h-4 w-4 animate-spin text-brand-600" aria-hidden />
+        {t('search.image.recognising')}
+      </div>
+    )
+  }
+  if (!textSearchAvailable) return null
+  const words = recognition?.words ?? []
+  const hasText = !!recognition && recognition.text.trim().length > 0
+  const confidence = recognition ? Math.round(recognition.confidence) : 0
+  const level = !recognition || !words.length ? 'none' : recognition.uncertain ? 'uncertain' : 'confident'
+  return (
+    <div className="mt-3 rounded-lg border border-ink-200 bg-white p-3" data-testid="recognition">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label htmlFor={`${uid}-text`} className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-600">
+          <ScanText className="h-3.5 w-3.5" aria-hidden /> {t('search.image.recognised.title')}
+        </label>
+        {recognition && words.length > 0 && (
+          <span
+            className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', level === 'confident' ? 'bg-brand-50 text-brand-800' : 'bg-amber-50 text-amber-900')}
+            data-testid="recognition-confidence"
+          >
+            {t(level === 'confident' ? 'search.image.recognised.confident' : 'search.image.recognised.uncertain', { percent: formatNumber(confidence, lng) })}
+          </span>
+        )}
+      </div>
+      {analysisNotice === 'service_failed' && mode !== 'intelligent' && (
+        <p className="mt-2 flex items-start gap-2 text-[12px] text-amber-900" role="status">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>
+            {t('search.image.recognised.serviceFailed')}{' '}
+            <button type="button" onClick={c.reanalyse} disabled={busy} className="font-semibold underline underline-offset-2">{t('common.retry')}</button>
+          </span>
+        </p>
+      )}
+      {analysisNotice === 'ocr_failed' && <p className="mt-2 text-[12px] text-amber-900" role="status">{t('search.image.recognised.ocrFailed')}</p>}
+      {recognition && !words.length && !analysisNotice && !recognition.blank && <p className="mt-2 text-[12px] text-ink-600" data-testid="recognition-none">{t('search.image.recognised.none')}</p>}
+      <input
+        id={`${uid}-text`}
+        type="text"
+        value={recognition?.text ?? ''}
+        onChange={(e) => c.setRecognisedText(e.target.value)}
+        placeholder={t('search.image.recognised.placeholder')}
+        className="sfield-control mt-2 h-10 w-full text-[14px]"
+        dir="auto"
+        autoComplete="off"
+        maxLength={200}
+        disabled={busy}
+        data-testid="recognition-input"
+      />
+      <p className="mt-1 text-[11px] leading-snug text-ink-500">
+        {hasText && recognition?.original && recognition.original !== recognition.text ? t('search.image.recognised.edited', { original: recognition.original }) : t('search.image.recognised.help')}
+      </p>
+      {recognition && recognition.variants.length > 0 && (
+        <div className="mt-2">
+          <label className="flex cursor-pointer items-start gap-2 text-[12px] text-ink-700">
+            <input type="checkbox" checked={recognition.useVariants} onChange={(e) => c.setUseVariants(e.target.checked)} className="mt-0.5 h-4 w-4 accent-brand-600" disabled={busy} data-testid="recognition-variants-toggle" />
+            <span>
+              {t('search.image.recognised.variants', { count: recognition.variants.length })}
+              <span className="mt-1 flex flex-wrap gap-1" dir="auto">
+                {recognition.variants.slice(0, 10).map((v) => (
+                  <span key={`${v.from}-${v.text}`} className="rounded border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-mono text-[11px] text-ink-700" title={t('search.image.recognised.variantFrom', { from: v.from })}>{v.text}</span>
+                ))}
+                {recognition.variants.length > 10 && <span className="px-1 text-[11px] text-ink-500">+{formatNumber(recognition.variants.length - 10, lng)}</span>}
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+    </div>
   )
 }
 

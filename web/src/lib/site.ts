@@ -10,6 +10,7 @@ declare const __SITE_CONTACT__: {
 }
 declare const __APP_VERSION__: string
 declare const __SITE_CANONICAL_URL__: string
+declare const __VISION_API_URL__: string
 
 export const SITE_CONTACT = __SITE_CONTACT__
 export const APP_VERSION = __APP_VERSION__
@@ -19,3 +20,8 @@ export const MASNAD_URL = /^https?:\/\//i.test(SITE_CONTACT.masnad ?? '') ? SITE
 
 /** Canonical public origin of the site (e.g. https://www.tmistan.com), without a trailing slash. */
 export const CANONICAL_URL = /^https?:\/\//i.test(__SITE_CANONICAL_URL__ ?? '') ? __SITE_CANONICAL_URL__.replace(/\/+$/, '') : window.location.origin
+
+/** Base URL of the TMistan vision service (text recognition + visual embeddings), or '' when the
+ * intelligent image search is not configured for this deployment. Absolute (https://…) in
+ * production; may be a path such as /vision behind the local dev proxy. */
+export const VISION_API_URL = (typeof __VISION_API_URL__ === 'string' ? __VISION_API_URL__ : '').replace(/\/+$/, '')

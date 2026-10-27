@@ -12,6 +12,14 @@
 #                        homepage/footer; defaults to https://www.masnadip.af/ — empty string = no link)
 #                        optional: SITE_CANONICAL_URL (public origin used in generated PDF reports;
 #                        defaults to https://www.tmistan.com)
+#                        optional: VISION_API_URL (public URL of the tmistan-vision service below;
+#                        empty/unset = "Search by Image" runs in basic near-duplicate mode only)
+#
+#   Second service (optional, enables intelligent Search by Image — see docs/IMAGE_SEARCH.md):
+#   Service type ....... Web Service, runtime Docker, Dockerfile services/vision/Dockerfile
+#   Health check ....... /health          Instance: Starter (512 MB) is enough; model ~230 MB RSS
+#   Environment ........ SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ALLOWED_ORIGINS=<static-site origin(s)>
+#   Then set VISION_API_URL=https://tmistan-vision.onrender.com on the static site and redeploy it.
 #
 # The two Supabase values are read at BUILD time by web/vite.config.ts and
 # inlined into the JS bundle (Vite apps have no runtime environment).
@@ -37,6 +45,9 @@ services:
         value: https://www.masnadip.af/   # public Masnad Law Firm website (not a secret); "" disables the link
       - key: SITE_CANONICAL_URL
         value: https://www.tmistan.com    # canonical public origin used for links inside generated PDF reports
+      - key: VISION_API_URL
+        sync: false                       # prompt in dashboard: https://tmistan-vision.onrender.com (public URL of the
+                                          # service below) — leave EMPTY to keep "Search by Image" in basic mode
     routes:
       - type: rewrite                     # client-side routing: every path serves the SPA
         source: /*
@@ -54,3 +65,32 @@ services:
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
+
+  # ── Intelligent "Search by Image" — OCR (Tesseract eng/fas/pus) + CLIP visual embeddings ────────────
+  # Optional. Open models only, runs on CPU; no image is stored or logged. The administrator's own
+  # Supabase session token is forwarded for the indexing endpoints, so no privileged key is needed
+  # here. Database side: supabase/APPLY_1200.sql must be applied first (docs/IMAGE_SEARCH.md).
+  - type: web
+    name: tmistan-vision
+    runtime: docker
+    rootDir: services/vision
+    dockerfilePath: ./Dockerfile
+    plan: starter                         # 512 MB RAM / 0.5 CPU: ~0.5–1.5 s per query, ~1 s per indexed image
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - services/vision/**
+    envVars:
+      - key: SUPABASE_URL
+        sync: false                       # https://<ref>.supabase.co (same project as the static site)
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false                       # sb_publishable_... (public) — used as apikey for the RPC calls
+      - key: ALLOWED_ORIGINS
+        value: https://www.tmistan.com,https://tmistan.onrender.com   # browser origins allowed by CORS (comma-separated)
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "20"                       # /analyze calls per visitor IP per minute
+      - key: MAX_UPLOAD_MB
+        value: "8"
+      - key: ORT_THREADS
+        value: "2"

@@ -71,7 +71,14 @@ browser computes a compact visual descriptor (the picture itself never leaves th
 (pgvector, migration 0500) returns the most similar published marks — *Exact match* (≥ 85 %),
 *Similar images* (≥ 55 %) or *Advanced search* (similar + refine by class / gazette / application type). The index is built by the
 administrator from Import Center → *Visual search index*; images uploaded later are indexed
-automatically. **Download Record** on a trademark page produces a real A4 PDF ("Trademark Publication
+automatically. With migration **1200** and the optional `services/vision` API deployed
+(`VISION_API_URL`), the same page switches to **intelligent mode**: the words in the uploaded image
+are recognised (Tesseract, Latin + Persian/Pashto script) and shown for correction, spelling and
+transliteration variants are generated, a CLIP visual embedding is computed, and Postgres ranks the
+published marks by text, visual and combined similarity — results grouped as *Text match*,
+*Possible spelling or transliteration variant*, *Visually similar* and *Similar symbol or
+composition*, each with its reasons. The stored images are indexed in resumable batches from Import
+Center → *Intelligent image index*. **Download Record** on a trademark page produces a real A4 PDF ("Trademark Publication
 Report", fonts embedded, Dari/Pashto right-to-left) generated in the browser — no server, no
 third-party service (`docs/PDF_REPORT.md`).
 
@@ -91,7 +98,7 @@ service-role key exists only on the machine that runs importers / the storage se
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
 | `web/src/pages/admin/TrademarkEditForm.tsx` | in-panel record editor (diff-only patch, validation, stale/duplicate conflict handling, unsaved-changes guard) — calls `admin_update_trademark` (migration 1100) | yes |
-| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–1100) — paste once into the Supabase SQL editor of a new project | no |
+| `supabase/APPLY_ALL.sql` | all migrations concatenated (0100–1200) — paste once into the Supabase SQL editor of a new project | no |
 | `supabase/APPLY_0400.sql` | migration 0400 alone (Import Center RPCs, serial index, storage policies) for projects already on 0100–0300 | no |
 | `supabase/APPLY_0500.sql` | migration 0500 alone (Search by Image: pgvector table + functions) for projects already on 0100–0400 | no |
 | `supabase/APPLY_0600.sql` | migration 0600 alone (Data Management: provenance columns, admin RPCs, audit tables, cleanup queue, public-API column grants) for projects already on 0100–0500 | no |
@@ -100,7 +107,9 @@ service-role key exists only on the machine that runs importers / the storage se
 | `supabase/APPLY_0900.sql` | migration 0900 alone (Data Correction requests: two private tables, submit/status/admin functions, private evidence bucket + policies) for projects already on 0100–0600 (0700/0800 not required) | no |
 | `supabase/APPLY_1000.sql` | migration 1000 alone (image re-upload fix: Storage cleanup queue never removes a file a current image row references, `admin_trademark_images_lookup`) for projects already on 0100–0600 (0700–0900 not required) | no |
 | `supabase/APPLY_1100.sql` | migration 1100 alone (direct record editing: `admin_update_trademark` with optimistic concurrency + duplicate protection, `manual_edit_fields` provenance kept by later Excel imports) for projects already on 0100–0600 (0700–1000 not required) | no |
-| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests · 1000 image re-upload fix (cleanup-queue guard) · 1100 direct record editing (admin_update_trademark, manual-edit protection) | no |
+| `supabase/APPLY_1200.sql` | migration 1200 alone (intelligent Search by Image: `trademark_image_analysis` — OCR text + CLIP embedding per image, `text_match`/`phonetic_key`, `search_trademarks_hybrid`, `hybrid_image_search_status`, admin indexing RPCs) for projects already on 0100–0600 (0700–1100 not required) | no |
+| `services/vision/` | Python inference API (FastAPI): Tesseract OCR eng/fas/pus + CLIP ViT-B/32 ONNX embeddings, resumable indexing of stored images, evaluation harness — Render Docker web service `tmistan-vision` (optional; without it the image search runs in basic mode) | **yes** (second service in `render.yaml`) |
+| `supabase/migrations/` | source of truth for the schema: 0100 schema · 0200 search RPCs · 0300 RLS/grants · 0400 admin import · 0500 image search · 0600 data management · 0700 search by application/registration number · 0800 contact inquiries · 0900 data correction requests · 1000 image re-upload fix (cleanup-queue guard) · 1100 direct record editing (admin_update_trademark, manual-edit protection) · 1200 intelligent image search (OCR + embedding table, hybrid search, admin indexing) | no |
 | `importers/` | *optional* Python bulk tools (gazette image folders) — service-role key, operator machine | no |
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
@@ -146,6 +155,8 @@ platform's variables. `.env.example` files contain placeholders only.
 | `SUPABASE_SERVICE_ROLE_KEY` | **importers only** (`importers/.env`) | bypasses RLS — never in the web app, never in the image |
 | `SUPABASE_BUCKET` | importers | defaults to `trademark-images` |
 | `VITE_LOCAL_STORAGE_BASE` | local dev stack only | `/local-storage` (static image server) |
+| `VISION_API_URL` | web build, optional | public URL of the `tmistan-vision` service (intelligent Search by Image: OCR + visual embeddings). Empty/unset = basic near-duplicate mode. Local dev: `/vision` (proxied to `VISION_PROXY_TARGET`, default `http://127.0.0.1:8000`). See `docs/IMAGE_SEARCH.md` |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `ALLOWED_ORIGINS`, `RATE_LIMIT_PER_MINUTE`, `MAX_UPLOAD_MB`, … | **vision service only** (`services/vision`, Render Docker web service) | public values; the service forwards the administrator's own token for indexing — no secret key. See `services/vision/README.md` |
 
 Legacy names `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_ANON_KEY` are still accepted as aliases.
 
@@ -227,6 +238,11 @@ Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
    `correction-evidence` bucket and its policies, nothing existing touched). If the result panel reports
    `bucket correction-evidence = 0`, run `python3 scripts/setup_storage.py` once and re-run the file.
    See `docs/CORRECTIONS.md`.
+13. **Intelligent Search by Image** — paste `supabase/APPLY_1200.sql` (one new table + functions,
+   nothing existing touched), deploy the `tmistan-vision` service from `render.yaml`, set
+   `VISION_API_URL` on the static site and run the first small batch from Import Center →
+   *Intelligent image index*. Until then the page keeps working in basic (near-duplicate) mode.
+   See `docs/IMAGE_SEARCH.md`.
 
 Status of the production project `tzzslhpqbfjklazihssc` (checked 2026-10-12, read-only):
 0100–0600 applied by the project owner (`registration_number`/`application_number` columns and the

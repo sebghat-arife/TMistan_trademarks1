@@ -269,7 +269,10 @@
         "invalidType": "This file type is not supported. Please choose a PNG, JPEG, WebP, GIF or BMP image.",
         "tooLarge": "The image is larger than {{mb}} MB. Please choose a smaller file.",
         "decode": "The image could not be read. Please try a different file.",
-        "failed": "Image search could not be completed. Please try again."
+        "failed": "Image search could not be completed. Please try again.",
+        "blank": "The image appears to be blank. Please choose a picture that shows the mark.",
+        "rateLimited": "Too many image analyses in a short time. Please wait a minute and try again.",
+        "timeout": "Image analysis took too long. Please try a smaller or clearer image."
       },
       "statusFailed": "Image search status could not be loaded.",
       "unavailableTitle": "Image search is temporarily unavailable",
@@ -330,7 +333,70 @@
       "resultsRefined_other": "{{count}} of {{total}} similar records match the filters",
       "noRefined": "None of the similar records match the selected filters.",
       "noRefinedHint": "Remove a filter or choose “Similar images” to see all visually similar records.",
-      "modeExactNote": "Exact match shows records with at least {{percent}}% visual similarity."
+      "modeExactNote": "Exact match shows records with at least {{percent}}% visual similarity.",
+      "privacyService": "The image is sent to TMistan's analysis service only to recognise its text and compute a visual signature; it is processed in memory and is not stored or shared. Nothing about your search is saved.",
+      "recognising": "Recognising text and computing the visual signature…",
+      "indexedNoteHybrid": "Compared against {{images}} analysed images ({{text}} with recognised text) from {{trademarks}} trademark records.",
+      "mode": {
+        "intelligent": "Text + visual search: recognised words, spelling and transliteration variants, and visual similarity of symbols and layout are combined.",
+        "basicTitle": "Basic visual search only.",
+        "notConfigured": "Text recognition is not configured for this site, so results depend on the overall look of the image.",
+        "unreachable": "The text-recognition service is currently unavailable, so results depend on the overall look of the image.",
+        "migrationMissing": "The intelligent index has not been installed in the database yet, so results depend on the overall look of the image.",
+        "indexEmpty": "The intelligent index has no analysed images yet, so results depend on the overall look of the image."
+      },
+      "recognised": {
+        "title": "Recognised text",
+        "confident": "Recognition confidence {{percent}}%",
+        "uncertain": "Uncertain reading ({{percent}}%) — please check",
+        "none": "No readable text was found in this image. The search will rely on visual similarity; you can type the wording of the mark if you know it.",
+        "ocrFailed": "Text recognition failed for this image. You can type the wording yourself; visual search still runs.",
+        "serviceFailed": "The text-recognition service did not respond; this search will use visual similarity only.",
+        "placeholder": "Words shown in the mark (optional)",
+        "help": "Check and correct the words before searching. Only the words you confirm here are used for text matching.",
+        "edited": "Edited — originally recognised as “{{original}}”.",
+        "variants_one": "Also search {{count}} possible spelling or transliteration variant",
+        "variants_other": "Also search {{count}} possible spelling or transliteration variants",
+        "variantFrom": "Derived from “{{from}}”"
+      },
+      "searchedWith": "Searched with: {{list}}.",
+      "searchedBasic": "Searched with the overall visual signature of the image only (basic mode).",
+      "searchedWords": "Words used:",
+      "modality": {
+        "text": "recognised wording",
+        "visual": "visual similarity",
+        "duplicate": "near-duplicate check"
+      },
+      "limited": {
+        "noText": "No readable text — only visual similarity was used; wordmarks in other fonts may be missed.",
+        "noVisual": "No visual signature was available — only the wording was compared."
+      },
+      "groups": {
+        "filterLabel": "Filter by match type",
+        "all": "All",
+        "text": "Text match",
+        "variant": "Possible spelling or transliteration variant",
+        "visual": "Visually similar",
+        "symbol": "Similar symbol or composition"
+      },
+      "scores": {
+        "text": "Text",
+        "visual": "Visual",
+        "combined": "Combined"
+      },
+      "reasons": {
+        "sameWording": "Same recognised wording",
+        "similarWording": "Similar recognised wording",
+        "transliteration": "Possible spelling or transliteration variant",
+        "soundsAlike": "Wording sounds alike",
+        "ocrOfStoredImage": "Matched the text recognised in the stored image",
+        "nearIdentical": "Near-identical image",
+        "highVisual": "High visual similarity",
+        "similarLayout": "Similar symbol or layout",
+        "matchingClass": "Matching trademark class"
+      },
+      "resultsCandidates_one": "{{count}} candidate record found",
+      "resultsCandidates_other": "{{count}} candidate records found"
     },
     "eyebrow": "Trademark Research Platform",
     "titleRich": "Search Trademarks in <1>Afghanistan</1>",
@@ -1673,6 +1739,38 @@
       },
       "empty": "No requests match these filters.",
       "privacy": "Requests contain personal data. Use them only to review the request and to contact the requester."
+    },
+    "analysis": {
+      "title": "Intelligent image index",
+      "subtitle": "“Search by Image” recognises the words in every matched trademark image (OCR, Latin + Persian/Pashto script) and computes a visual embedding, stored per image with its model version and status. Run batches until nothing is pending; new uploads need a batch too. Re-run after a model change.",
+      "notConfiguredTitle": "The vision service is not configured",
+      "notConfiguredText": "Set VISION_API_URL on the static site to the URL of the deployed services/vision API (see docs/IMAGE_SEARCH.md) and rebuild. Until then, Search by Image runs in basic visual mode.",
+      "checkingService": "Checking the vision service…",
+      "unreachableTitle": "The vision service cannot be reached",
+      "unreachableText": "{{url}}/health did not answer. Check the Render service tmistan-vision and its ALLOWED_ORIGINS setting.",
+      "migrationMissingTitle": "Migration 1200 (intelligent image search) has not been applied",
+      "migrationMissingText": "Paste supabase/APPLY_1200.sql into the Supabase SQL editor and run it once. Nothing else is affected.",
+      "forbiddenTitle": "Administrator sign-in required",
+      "forbiddenText": "The vision service forwards your Supabase session to the database, which only accepts administrators. Sign in again and retry.",
+      "statusFailed": "The index status could not be loaded",
+      "service": "Service: OCR {{ocr}} ({{languages}}) · visual model {{model}}",
+      "indexed": "Analysed",
+      "withText": "With recognised text",
+      "pending": "Pending",
+      "failed": "Failed",
+      "lastIndexed": "Last analysed: {{date}} · model {{model}}",
+      "neverIndexed": "No images analysed yet.",
+      "otherVersions": "{{count}} rows from other model versions (re-run to refresh them)",
+      "batchSize": "Batch size",
+      "run": "Analyse next {{count}} images",
+      "retryFailed": "Retry failed ({{count}})",
+      "hint": "Images are downloaded from Storage by the service and analysed there; only recognised text and vectors are stored. A batch of 100 takes roughly one to two minutes on a small instance.",
+      "running": "Analysing up to {{count}} images — please keep this page open…",
+      "busy": "A batch is already running on the service. Wait for it to finish and refresh.",
+      "runFailed": "The batch could not be completed",
+      "doneText": "{{indexed}} analysed ({{text}} with text) · {{failed}} failed (of {{attempted}}) in {{seconds}} s.",
+      "failuresTitle": "Failed images ({{count}})",
+      "attempts": "{{count}} attempts"
     }
   },
   "common": {

@@ -1,0 +1,8 @@
+models/
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+!.env.example
+eval/*.json
