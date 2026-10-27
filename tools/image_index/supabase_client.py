@@ -1,10 +1,13 @@
-"""Minimal PostgREST / Storage client.
+"""Minimal PostgREST / GoTrue / Storage client for the offline indexer.
 
-The service holds NO privileged database credential by default: administrative
-RPCs are called with the *administrator's own* Supabase access token, which the
-browser sends along with the request, and the database functions enforce the
-administrator role themselves (admin_assert). An optional service-role key can
-be supplied through the environment for unattended CLI indexing runs only.
+Two ways to authenticate, both without ever putting a privileged key in the
+web app:
+
+* `Supabase.sign_in(email, password)` — the administrator's own account via
+  the publishable key; the database functions enforce the admin check
+  (`admin_assert`) exactly as they do for the Import Center. Recommended.
+* a service-role key passed as the bearer (`SUPABASE_SERVICE_ROLE_KEY` from the
+  git-ignored importers/.env) — for unattended runs on a trusted machine only.
 """
 from __future__ import annotations
 
@@ -26,24 +29,52 @@ class RpcError(RuntimeError):
     def code(self) -> str | None:
         return self.payload.get("code") if isinstance(self.payload, dict) else None
 
+    @property
+    def missing_function(self) -> bool:
+        """PostgREST 'function not found' → migrations 1200/1300 not applied."""
+        return self.code == "PGRST202" or (self.status == 404 and "function" in str(self).lower())
+
 
 class Supabase:
     def __init__(self, url: str | None = None, anon_key: str | None = None, timeout: float = 60.0):
         self.url = (url or os.environ.get("SUPABASE_URL", "")).rstrip("/")
         self.rest_url = os.environ.get("SUPABASE_REST_URL", "").rstrip("/") or f"{self.url}/rest/v1"
+        self.auth_url = os.environ.get("SUPABASE_AUTH_URL", "").rstrip("/") or f"{self.url}/auth/v1"
         self.anon_key = anon_key or os.environ.get("SUPABASE_PUBLISHABLE_KEY") or os.environ.get("SUPABASE_ANON_KEY", "")
         self.timeout = timeout
+        self.bearer: str | None = None
 
     @property
     def configured(self) -> bool:
         return bool(self.url and self.anon_key)
 
-    def rpc(self, fn: str, args: dict, bearer: str | None) -> Any:
+    # ------------------------------------------------------------------ auth
+    def sign_in(self, email: str, password: str) -> str:
+        """Password grant with the publishable key → the administrator's access token."""
+        with httpx.Client(timeout=self.timeout) as c:
+            r = c.post(f"{self.auth_url}/token?grant_type=password",
+                       headers={"apikey": self.anon_key, "Content-Type": "application/json"},
+                       content=json.dumps({"email": email, "password": password}))
+        if r.status_code >= 400:
+            try:
+                payload = r.json()
+            except ValueError:
+                payload = {"message": r.text[:300]}
+            raise RpcError(r.status_code, payload)
+        token = r.json().get("access_token")
+        if not token:
+            raise RpcError(500, {"message": "sign-in returned no access token"})
+        self.bearer = token
+        return token
+
+    # ------------------------------------------------------------------ rpc
+    def rpc(self, fn: str, args: dict, bearer: str | None = None) -> Any:
         if not self.configured:
-            raise RpcError(503, {"message": "SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY are not configured on the vision service"})
+            raise RpcError(503, {"message": "SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY are not configured"})
+        token = bearer or self.bearer or self.anon_key
         headers = {
             "apikey": self.anon_key,
-            "Authorization": f"Bearer {bearer or self.anon_key}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Prefer": "return=representation",
         }
@@ -59,6 +90,7 @@ class Supabase:
             return None
         return r.json()
 
+    # ------------------------------------------------------------------ storage (public read)
     def public_object_url(self, bucket: str, path: str) -> str:
         base = os.environ.get("STORAGE_PUBLIC_BASE", "").rstrip("/") or f"{self.url}/storage/v1/object/public"
         return f"{base}/{bucket}/{path}"

@@ -5,7 +5,7 @@
 --  (migration 0500, kept as a near-duplicate signal and as the offline
 --  fallback) to a multimodal retrieval:
 --
---     text    recognised words of the query image (OCR in services/vision)
+--     text    recognised words of the query image (OCR in the browser or tools/image_index)
 --             matched against mark names, printed marks and the OCR text of
 --             the stored images: exact, normalised, substring, trigram fuzzy,
 --             edit distance, optional phonetic (fuzzystrmatch) and

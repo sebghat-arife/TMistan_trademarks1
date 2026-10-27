@@ -24,9 +24,9 @@
 --     never touches Storage objects; the 0500 image search keeps working
 --   • idempotent — running it twice is harmless
 --
--- Afterwards: deploy the vision service (services/vision, see
--- docs/IMAGE_SEARCH.md), set VISION_API_URL on the static site, then
--- /admin → Import Center → "Intelligent image index" → Run batch.
+-- NOTE: superseded by APPLY_1300.sql, which applies 1200 AND 1300 in one go
+-- (the $0 design: browser / offline text recognition, no vision service).
+-- Running this file alone is still safe; run APPLY_1300.sql afterwards.
 -- ============================================================================
 begin;
 
@@ -40,7 +40,7 @@ begin;
 --  (migration 0500, kept as a near-duplicate signal and as the offline
 --  fallback) to a multimodal retrieval:
 --
---     text    recognised words of the query image (OCR in services/vision)
+--     text    recognised words of the query image (OCR in the browser or tools/image_index)
 --             matched against mark names, printed marks and the OCR text of
 --             the stored images: exact, normalised, substring, trigram fuzzy,
 --             edit distance, optional phonetic (fuzzystrmatch) and

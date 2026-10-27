@@ -33,3 +33,6 @@ afg-trademark-registry.zip
 
 # local visual-check artefacts (Playwright screenshots)
 web/.shots/
+
+# tools/image_index: tessdata copies gunzipped from web/public/ocr/tessdata
+tools/image_index/.tessdata/

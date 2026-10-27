@@ -11,7 +11,7 @@ const GROUPS: MatchGroup[] = ['text', 'variant', 'visual', 'symbol']
 export function ImageSearchResults({ c, className }: { c: ImageSearchController; className?: string }) {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
-  const { phase, results, filtered, searchedWith, searchedMode, searchedTerms, searchedModalities, matchFilter, setMatchFilter, groupCounts } = c
+  const { phase, results, filtered, searchedWith, searchedMode, searchedTerms, searchedModalities, matchFilter, setMatchFilter, groupCounts, mode } = c
 
   if (phase === 'analysing' || phase === 'searching' || phase === 'loading-example') {
     return (
@@ -30,7 +30,9 @@ export function ImageSearchResults({ c, className }: { c: ImageSearchController;
     searchedModalities.visual ? 'visual' : null,
     searchedModalities.duplicate ? 'duplicate' : null,
   ].filter(Boolean) as ('text' | 'visual' | 'duplicate')[]
-  const limited = intelligent && (!searchedModalities.text || !searchedModalities.visual)
+  // Intelligent mode was available but the picture yielded no usable words (symbol-only mark,
+  // unreadable lettering, recognition failed) → only the near-duplicate channel could be used; say so.
+  const limited = mode === 'intelligent' && !searchedModalities.text
 
   return (
     <section className={className} aria-live="polite" data-testid="image-results-section">
@@ -60,7 +62,7 @@ export function ImageSearchResults({ c, className }: { c: ImageSearchController;
           {limited && (
             <p className="mt-1 flex items-start gap-1.5 text-[12px] text-amber-900" role="status" data-testid="image-limited-note">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-              {!searchedModalities.text ? t('search.image.limited.noText') : t('search.image.limited.noVisual')}
+              {t('search.image.limited.noText')}
             </p>
           )}
         </div>

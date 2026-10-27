@@ -44,13 +44,6 @@ export default defineConfig(({ mode }) => {
       changeOrigin: true,
       rewrite: (p) => p.replace(/^\/supabase\/storage\/v1/, ''),
     },
-    // Local vision service (cd services/vision && uvicorn app.main:app --port 8000);
-    // set VISION_API_URL=/vision in web/.env.local to use it from the dev server.
-    '/vision': {
-      target: env.VISION_PROXY_TARGET ?? 'http://127.0.0.1:8000',
-      changeOrigin: true,
-      rewrite: (p) => p.replace(/^\/vision/, ''),
-    },
     '/supabase': {
       target: 'http://127.0.0.1:54321',
       changeOrigin: true,
@@ -91,10 +84,6 @@ export default defineConfig(({ mode }) => {
       }),
       // Canonical public origin (no trailing slash). Not a secret.
       __SITE_CANONICAL_URL__: JSON.stringify((env.SITE_CANONICAL_URL || DEFAULT_CANONICAL_URL).replace(/\/+$/, '')),
-      // Public base URL of the TMistan vision service (services/vision) that recognises text in
-      // uploaded images and computes visual embeddings. Empty = intelligent image search off; the
-      // app then falls back to the browser-side descriptor search and says so. Not a secret.
-      __VISION_API_URL__: JSON.stringify((env.VISION_API_URL ?? env.VITE_VISION_API_URL ?? '').replace(/\/+$/, '')),
     },
     server: {
       host: '0.0.0.0',

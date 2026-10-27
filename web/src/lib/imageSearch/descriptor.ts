@@ -67,7 +67,10 @@ export class ImageDecodeError extends Error {
 
 /* ── Decoding ──────────────────────────────────────────────────────────── */
 
-async function decodeBlob(blob: Blob): Promise<{ source: CanvasImageSource; width: number; height: number; close: () => void }> {
+export type DecodedImage = { source: CanvasImageSource; width: number; height: number; close: () => void }
+
+/** Decode a blob to a drawable source (ImageBitmap, or <img> as a fallback). Shared with the OCR pre-processing. */
+export async function decodeImageBlob(blob: Blob): Promise<DecodedImage> {
   if (typeof createImageBitmap === 'function') {
     try {
       const bmp = await createImageBitmap(blob)
@@ -94,7 +97,7 @@ async function decodeBlob(blob: Blob): Promise<{ source: CanvasImageSource; widt
 
 /** Compute the descriptor of an image file/blob. Throws ImageDecodeError when the image cannot be read. */
 export async function describeImage(blob: Blob): Promise<Descriptor> {
-  const decoded = await decodeBlob(blob)
+  const decoded = await decodeImageBlob(blob)
   try {
     return describeSource(decoded.source, decoded.width, decoded.height)
   } finally {
