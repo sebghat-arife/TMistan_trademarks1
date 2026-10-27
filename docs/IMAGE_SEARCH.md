@@ -63,6 +63,43 @@ Administrator → Import Center → "Intelligent image index" → service POST /
    is run (the panel says so). After a model change (`MODEL_VERSION` bump) all images become pending
    for the new version while the old rows keep serving searches until replaced.
 
+### 1.1 Render dashboard click-path (if you do not use the Blueprint)
+
+**Vision service** — Dashboard → **New +** → **Web Service** → connect `sebghat-arife/TMistan_trademarks1`:
+
+| Field | Value |
+|---|---|
+| Name | `tmistan-vision` |
+| Language / runtime | **Docker** |
+| Branch | `main` |
+| Root Directory | `services/vision` |
+| Dockerfile Path | `./Dockerfile` (relative to the root directory) |
+| Instance type | **Starter / `0.5c-512mb`** (512 MB) — *Free* also works for a trial but spins down after 15 min idle and has 0.1 CPU, so the first search after idle takes a minute and OCR is slow |
+| Health Check Path | `/health` |
+| Environment variables | `SUPABASE_URL` = `https://<ref>.supabase.co` · `SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_…` (the same public values as the static site) · `ALLOWED_ORIGINS` = the exact origins the site is opened from, comma-separated, no trailing slash (e.g. `https://www.tmistan.com,https://tmistan.com,https://tmistan.onrender.com`) |
+
+Click **Deploy Web Service**. The first build takes several minutes (Tesseract + the 89 MB model
+are baked into the image). When the status is *Live*, open `https://tmistan-vision.onrender.com/health`
+(the hostname is shown at the top of the service page) — it must answer `{"ok": true, …}`.
+Never put the service-role / secret key here; it is not needed.
+
+**Static site** — open the existing `tmistan` static site → **Environment** → **Add Environment
+Variable** → key `VISION_API_URL`, value `https://tmistan-vision.onrender.com` (the service hostname,
+no trailing slash, no `/health`) → **Save**. Render rebuilds the site automatically (the value is
+inlined at build time); if it does not, **Manual Deploy → Clear build cache & deploy**. After the
+deploy, Admin → Import Center shows the *Intelligent image index* panel with counts instead of
+*"The vision service is not configured"*, and the public *Search by Image* card says *"Text + visual
+search"*.
+
+If the panel then says *"Migration 1200 has not been applied"*, run `supabase/APPLY_1200.sql` in the
+Supabase SQL editor (step 1 above). If the browser console shows a CORS error on `/health`, the
+site's origin is missing from `ALLOWED_ORIGINS` on the service (fix the variable; the service
+restarts by itself).
+
+**Blueprint alternative** — if the static site was created from `render.yaml` (Blueprints → sync),
+syncing again creates `tmistan-vision` and prompts for the `sync: false` values (`SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY` on the service, `VISION_API_URL` on the static site).
+
 ## 2. How a query is processed
 
 ### 2.1 Preprocessing (`services/vision/app/preprocess.py`)
