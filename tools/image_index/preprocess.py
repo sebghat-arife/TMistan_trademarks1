@@ -1,8 +1,9 @@
-"""Image validation and normalisation for the TMistan vision service.
+"""Image validation and normalisation for the offline indexer (tools/image_index).
 
-Everything here is pure Pillow/NumPy. The original bytes are never written
-anywhere; the caller gets in-memory renditions for OCR and for the embedding
-model. Trademark images in Storage are never modified by this module.
+Pure Pillow/NumPy, mirroring web/src/lib/imageSearch/preprocess.ts so the
+offline indexer and the visitor's browser feed Tesseract comparable renditions.
+The original bytes are never written anywhere; trademark images in Storage are
+never modified by this module.
 """
 from __future__ import annotations
 
@@ -145,23 +146,3 @@ def ocr_variants(loaded: Loaded) -> list[tuple[str, Image.Image]]:
 
 def _mean(im: Image.Image) -> float:
     return float(np.asarray(im, dtype=np.uint8).mean())
-
-
-# ----------------------------------------------------------------------------- CLIP input
-
-CLIP_MEAN = np.array([0.48145466, 0.4578275, 0.40821073], dtype=np.float32)
-CLIP_STD = np.array([0.26862954, 0.26130258, 0.27577711], dtype=np.float32)
-
-
-def clip_pixels(loaded: Loaded, size: int = 224) -> np.ndarray:
-    """Letterbox the content crop onto its own background colour (no centre-crop,
-    so wide word marks keep every letter), resize to 224 and normalise."""
-    im = crop_content(loaded)
-    w, h = im.size
-    side = max(w, h)
-    canvas = Image.new("RGB", (side, side), loaded.background)
-    canvas.paste(im, ((side - w) // 2, (side - h) // 2))
-    canvas = canvas.resize((size, size), Image.Resampling.BICUBIC)
-    arr = np.asarray(canvas, dtype=np.float32) / 255.0
-    arr = (arr - CLIP_MEAN) / CLIP_STD
-    return np.ascontiguousarray(arr.transpose(2, 0, 1)[None, ...], dtype=np.float32)

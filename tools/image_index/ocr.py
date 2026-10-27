@@ -1,30 +1,65 @@
 """Tesseract OCR for trademark images — Latin (eng) and Arabic-script (fas + pus).
 
-Returns recognised words with per-word confidence and script, never a single
-"confirmed" string: low-confidence readings are flagged `uncertain` so the UI
-can ask the user to confirm or edit them before searching.
+Native Tesseract 5 (via pytesseract) with the SAME tessdata_fast models the
+browser downloads from web/public/ocr/tessdata, so offline-indexed rows and
+browser-recognised queries use the same recogniser family and model version
+(version.py). Returns recognised words with per-word confidence and script,
+never a single "confirmed" string: low-confidence readings are flagged
+`uncertain`.
 """
 from __future__ import annotations
 
+import gzip
 import os
 import re
 import shutil
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pytesseract
 from PIL import Image
 
 from .preprocess import Loaded, ocr_variants
 from .textnorm import normalize, plausible_token, script_of
+from .version import IMAGE_ANALYSIS_MODEL, OCR_LANGS, TESSDATA_SOURCE
 
-LATIN_LANG = os.environ.get("OCR_LATIN_LANG", "eng")
-ARABIC_LANG = os.environ.get("OCR_ARABIC_LANG", "fas+pus")
+LATIN_LANG = "eng"
+ARABIC_LANG = "fas+pus"
 MIN_WORD_CONF = float(os.environ.get("OCR_MIN_WORD_CONF", "55"))
 CONFIDENT = 75.0
 OCR_TIMEOUT_S = float(os.environ.get("OCR_TIMEOUT_SECONDS", "8"))      # per Tesseract pass
 OCR_BUDGET_S = float(os.environ.get("OCR_BUDGET_SECONDS", "7"))        # no new pass after this
-OCR_VERSION = "tesseract5-eng-fas-pus-v1"
+OCR_VERSION = IMAGE_ANALYSIS_MODEL
+ENGINE = "tesseract-native"
+
+_TESSDATA: Path | None = None
+
+
+def tessdata_dir() -> Path:
+    """Directory with eng/fas/pus .traineddata — gunzipped once from the files the web app
+    ships (web/public/ocr/tessdata), so both sides use byte-identical models. Override with
+    TESSDATA_DIR when the models were installed elsewhere."""
+    global _TESSDATA
+    if _TESSDATA is not None:
+        return _TESSDATA
+    env = os.environ.get("TESSDATA_DIR")
+    if env:
+        _TESSDATA = Path(env)
+        return _TESSDATA
+    target = Path(__file__).resolve().parent / ".tessdata"
+    target.mkdir(exist_ok=True)
+    for lang in OCR_LANGS:
+        out = target / f"{lang}.traineddata"
+        src = TESSDATA_SOURCE / f"{lang}.traineddata.gz"
+        if out.exists() and (not src.exists() or out.stat().st_mtime >= src.stat().st_mtime):
+            continue
+        if not src.exists():
+            raise FileNotFoundError(f"{src} is missing — run from a checkout of the repository or set TESSDATA_DIR")
+        with gzip.open(src, "rb") as fh:
+            out.write_bytes(fh.read())
+    _TESSDATA = target
+    return target
 
 
 @dataclass
@@ -60,24 +95,26 @@ class OcrResult:
             ],
             "passes": self.passes,
             "duration_ms": self.duration_ms,
-            "engine": OCR_VERSION,
+            "engine": ENGINE,
+            "model": OCR_VERSION,
             "error": self.error,
         }
 
 
 def available() -> tuple[bool, str, list[str]]:
+    """(tesseract found, version, languages available in the tessdata dir)."""
     if not shutil.which("tesseract"):
         return False, "", []
     try:
         ver = str(pytesseract.get_tesseract_version())
-        langs = pytesseract.get_languages(config="")
+        langs = pytesseract.get_languages(config=f'--tessdata-dir "{tessdata_dir()}"')
     except Exception:  # pragma: no cover
         return False, "", []
     return True, ver, langs
 
 
 def _run(img: Image.Image, lang: str, psm: int, variant: str) -> list[OcrWord]:
-    cfg = f"--oem 1 --psm {psm}"
+    cfg = f'--oem 1 --psm {psm} --tessdata-dir "{tessdata_dir()}"'
     try:
         data = pytesseract.image_to_data(img, lang=lang, config=cfg, output_type=pytesseract.Output.DICT, timeout=OCR_TIMEOUT_S)
     except (pytesseract.TesseractError, RuntimeError):

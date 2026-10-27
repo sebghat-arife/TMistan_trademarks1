@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   IMAGE_SEARCH_EXACT_MIN_SIMILARITY,
@@ -7,51 +7,51 @@ import {
   IMAGE_SEARCH_MIN_SIMILARITY,
   HYBRID_DEFAULTS,
   MigrationMissingError,
-  VisionError,
-  analyzeImage,
   hybridStatusQuery,
   imageSearchStatusQuery,
   searchTrademarksByDescriptor,
   searchTrademarksHybrid,
-  visionConfigured,
-  visionHealthQuery,
+  type AnalysisVariant,
   type HybridMatchType,
   type HybridResult,
   type ImageSearchExample,
   type ImageSearchResult,
-  type VisionAnalysis,
-  type VisionWord,
+  type OcrWord,
 } from '@/services'
 import { DESCRIPTOR_VERSION, ImageDecodeError, describeImage, toVector, validateQueryFile, type Descriptor } from '@/lib/imageSearch/descriptor'
+import { analyseImage } from '@/lib/imageSearch/analyze'
+import { OcrUnavailableError, getOcrEngineState, ocrSupport, subscribeOcrEngine, warmUpOcr, type OcrEngineState, type OcrSupport } from '@/lib/imageSearch/ocr'
 
 /**
  * State machine behind "Search by Image".
  *
  *   choose file ─▶ analysing ─▶ ready (recognised words shown, editable) ─▶ searching ─▶ done
  *
- * Intelligent mode (vision service configured + reachable, migration 1200 applied):
- *   the picture is sent to the TMistan vision service, which returns the words
- *   it recognised (with confidence), conservative transliteration variants and
- *   a CLIP embedding; the browser also computes the 0500 descriptor. All of it
- *   goes to `search_trademarks_hybrid`, which ranks by text + visual evidence.
+ * Intelligent mode (migration 1200/1300 applied, at least one stored image
+ * analysed, and this browser can run the recogniser): the words in the picture
+ * are recognised IN THE BROWSER (Tesseract.js, Latin + Persian/Pashto), shown
+ * for confirmation, widened with conservative transliteration variants, and
+ * sent together with the 0500 descriptor to `search_trademarks_hybrid`, which
+ * ranks by text evidence (mark names, mark text, text recognised in stored
+ * images) plus the near-duplicate signal. Nothing is uploaded anywhere.
  *
  * Basic mode (anything above missing): the 0500 descriptor search only, and the
- * UI says so — nothing is ever presented as "AI" when it did not run.
+ * UI says so — nothing is ever presented as "intelligent" when it did not run.
  *
  * The three options keep their meaning:
  *   exact    → identical / near-identical images only
- *   similar  → the full ranking (text, visual, combined)
+ *   similar  → the full ranking (text, near-duplicate, combined)
  *   advanced → the full ranking + class / gazette / application-type filters
  */
 
 export type ImageSearchOption = 'exact' | 'similar' | 'advanced'
 export type ImageRefine = { classes: number[]; gazette: string; type: string }
 export type ImagePhase = 'idle' | 'loading-example' | 'analysing' | 'ready' | 'searching' | 'done'
-export type ImageErrorKind = 'invalidType' | 'tooLarge' | 'decode' | 'failed' | 'example' | 'blank' | 'rateLimited' | 'timeout' | null
+export type ImageErrorKind = 'invalidType' | 'tooLarge' | 'decode' | 'failed' | 'example' | 'blank' | null
 export type ImageSource = { kind: 'upload' } | { kind: 'example'; serial: string; trademarkId: string }
 export type SearchMode = 'intelligent' | 'basic'
 /** Why the search ran (or will run) in basic mode. */
-export type BasicReason = 'not_configured' | 'service_unreachable' | 'migration_missing' | 'index_empty' | null
+export type BasicReason = 'migration_missing' | 'index_empty' | 'ocr_unsupported' | 'save_data' | 'ocr_failed' | null
 /** Grouping shown in the results: one primary label per record. */
 export type MatchGroup = 'text' | 'variant' | 'visual' | 'symbol'
 export type MatchFilter = 'all' | MatchGroup
@@ -78,14 +78,13 @@ export type Recognition = {
   confidence: number
   uncertain: boolean
   scripts: string[]
-  words: VisionWord[]
-  variants: VisionAnalysis['variants']
+  words: OcrWord[]
+  variants: AnalysisVariant[]
   /** Whether transliteration variants are included in the search. */
   useVariants: boolean
   blank: boolean
   warnings: string[]
-  models: VisionAnalysis['models']
-  embedding: number[] | null
+  models: { ocr: string | null; embedding: null }
   durationMs: number
 }
 
@@ -129,20 +128,35 @@ async function basicSearch(descriptor: Descriptor | null, opt: ImageSearchOption
 export function useImageSearch(enabled = true) {
   const v1Status = useQuery({ ...imageSearchStatusQuery(), enabled })
   const hybridStatus = useQuery({ ...hybridStatusQuery(), enabled })
-  const health = useQuery({ ...visionHealthQuery(), enabled: enabled && visionConfigured })
+  const engine: OcrEngineState = useSyncExternalStore(subscribeOcrEngine, getOcrEngineState, getOcrEngineState)
+  const support: OcrSupport = useMemo(() => ocrSupport(), [])
+  /** Data-saver connections do not download the recogniser unless the visitor asks for it. */
+  const [ocrOptIn, setOcrOptIn] = useState(false)
 
   const v1Available = v1Status.data?.available ?? false
   const hybridInstalled = hybridStatus.data ? hybridStatus.data.state !== 'not_installed' : false
   const hybridReady = hybridStatus.data?.state === 'ready'
-  const serviceUp = visionConfigured && health.isSuccess && health.data.ok
-  const serviceDown = visionConfigured && (health.isError || (health.isSuccess && !health.data.ok))
+  const ocrEnabled = support === 'ok' || (support === 'save_data' && ocrOptIn)
+  const ocrUsable = ocrEnabled && engine.status !== 'failed'
 
   /** Which mode a search started now would use, and why not the better one. */
-  const mode: SearchMode = serviceUp && hybridReady ? 'intelligent' : 'basic'
-  const basicReason: BasicReason = mode === 'intelligent' ? null : !visionConfigured ? 'not_configured' : serviceDown || health.isPending ? 'service_unreachable' : !hybridInstalled ? 'migration_missing' : 'index_empty'
-  /** Text-only search through the database is possible even without the service (manual words). */
+  const mode: SearchMode = hybridReady && ocrUsable ? 'intelligent' : 'basic'
+  const basicReason: BasicReason =
+    mode === 'intelligent' ? null
+    : !hybridInstalled ? 'migration_missing'
+    : !hybridReady ? 'index_empty'
+    : support === 'unsupported' ? 'ocr_unsupported'
+    : !ocrEnabled ? 'save_data'
+    : 'ocr_failed'
+  /** Text-only search through the database is possible even without OCR (manual words). */
   const textSearchAvailable = hybridInstalled
   const available = v1Available || hybridReady
+
+  // Start the one-time download as soon as the image panel is open on a capable
+  // device, so the first analysis does not wait for it.
+  useEffect(() => {
+    if (enabled && hybridReady && ocrEnabled && engine.status === 'idle') void warmUpOcr().catch(() => undefined)
+  }, [enabled, hybridReady, ocrEnabled, engine.status])
 
   const [file, setFile] = useState<File | null>(null)
   const [source, setSource] = useState<ImageSource>({ kind: 'upload' })
@@ -152,7 +166,7 @@ export function useImageSearch(enabled = true) {
   const [errorKind, setErrorKind] = useState<ImageErrorKind>(null)
   const [errorDetail, setErrorDetail] = useState<string | null>(null)
   const [recognition, setRecognition] = useState<Recognition | null>(null)
-  const [analysisNotice, setAnalysisNotice] = useState<'ocr_failed' | 'service_failed' | null>(null)
+  const [analysisNotice, setAnalysisNotice] = useState<'ocr_failed' | 'engine_failed' | null>(null)
   const [results, setResults] = useState<UnifiedResult[] | null>(null)
   const [searchedWith, setSearchedWith] = useState<ImageSearchOption>('similar')
   const [searchedMode, setSearchedMode] = useState<SearchMode>('basic')
@@ -184,13 +198,15 @@ export function useImageSearch(enabled = true) {
     setMatchFilter('all')
   }, [])
 
-  /** Step 1 — send the picture to the vision service; produces the editable recognition block. */
-  const analyse = useCallback(async (f: File, token: number): Promise<Recognition | null> => {
-    if (!(visionConfigured && hybridInstalled)) return null
+  const canAnalyse = hybridInstalled && ocrUsable
+
+  /** Step 1 — recognise the words in the picture (in this browser); produces the editable recognition block. */
+  const analyse = useCallback(async (f: File, token: number, force = false): Promise<Recognition | null> => {
+    if (!canAnalyse && !force) return null
     const ctl = new AbortController()
     abortRef.current = ctl
     try {
-      const a = await analyzeImage(f, { signal: ctl.signal })
+      const a = await analyseImage(f, { signal: ctl.signal })
       if (token !== runRef.current) return null
       const ocr = a.ocr
       const confident = (ocr?.words ?? []).filter((w) => w.confidence >= 60)
@@ -207,7 +223,6 @@ export function useImageSearch(enabled = true) {
         blank: !!a.image?.blank,
         warnings: a.warnings ?? [],
         models: a.models,
-        embedding: a.embedding,
         durationMs: a.timings_ms?.total ?? 0,
       }
       setRecognition(rec)
@@ -215,20 +230,15 @@ export function useImageSearch(enabled = true) {
       return rec
     } catch (e) {
       if (token !== runRef.current) return null
-      if (e instanceof VisionError) {
-        if (e.code === 'rate_limited') { setErrorKind('rateLimited'); setErrorDetail(e.message); return null }
-        if (e.code === 'timeout') { setErrorKind('timeout'); setErrorDetail(e.message); return null }
-        if (e.code === 'empty' || e.code === 'corrupt' || e.code === 'unsupported' || e.code === 'too_small') { setErrorKind('decode'); setErrorDetail(e.message); return null }
-        if (e.code === 'too_large') { setErrorKind('tooLarge'); setErrorDetail(e.message); return null }
-      }
-      // service unreachable / server error → continue in basic mode and say so
-      setAnalysisNotice('service_failed')
+      if (e instanceof ImageDecodeError) { setErrorKind('decode'); setErrorDetail(e.message); return null }
+      // engine could not start (download blocked, no wasm, …) → basic mode, and say so
+      setAnalysisNotice(e instanceof OcrUnavailableError ? 'engine_failed' : 'ocr_failed')
       setRecognition(null)
       return null
     } finally {
       if (abortRef.current === ctl) abortRef.current = null
     }
-  }, [hybridInstalled])
+  }, [canAnalyse])
 
   /** Validate and select a file (from the picker, a drop, or an example); then analyse it. Returns false when rejected. */
   const choose = useCallback((f: File | null | undefined, src: ImageSource = { kind: 'upload' }): boolean => {
@@ -250,7 +260,7 @@ export function useImageSearch(enabled = true) {
     setErrorKind(null)
     setFile(f)
     setSource(src)
-    if (visionConfigured && hybridInstalled && !serviceDown) {
+    if (canAnalyse) {
       const token = ++runRef.current
       setPhase('analysing')
       void analyse(f, token).then((rec) => {
@@ -262,7 +272,7 @@ export function useImageSearch(enabled = true) {
       setPhase('ready')
     }
     return true
-  }, [analyse, hybridInstalled, serviceDown])
+  }, [analyse, canAnalyse])
 
   /** Step 2 — run the search with whatever evidence is available. */
   const search = useCallback(async (f: File, opt: ImageSearchOption, rec: Recognition | null) => {
@@ -273,28 +283,21 @@ export function useImageSearch(enabled = true) {
     setMatchFilter('all')
     setPhase('searching')
     try {
-      let descriptor: Descriptor | null = null
-      try {
-        descriptor = await describeImage(f)
-      } catch (e) {
-        if (e instanceof ImageDecodeError && !rec?.embedding) throw e
-      }
+      const descriptor: Descriptor = await describeImage(f)
       if (token !== runRef.current) return
       const terms = rec && !rec.blank ? splitWords(rec.text) : []
       const variants = rec?.useVariants ? rec.variants.map((v) => v.text) : []
-      const intelligent = !!rec && hybridInstalled && (!!rec.embedding || terms.length > 0)
       const useFilters = opt === 'advanced'
       let rows: UnifiedResult[]
       let usedMode: SearchMode = 'basic'
       let modalities = { text: false, visual: false, duplicate: false }
-      if (intelligent || (hybridInstalled && terms.length > 0)) {
+      if (hybridInstalled && terms.length > 0) {
         try {
           const hits = await searchTrademarksHybrid({
-            embedding: rec?.embedding ?? null,
-            modelVersion: rec?.models.embedding ?? null,
+            embedding: null,
             terms,
             variants,
-            descriptor: descriptor ? toVector(descriptor) : null,
+            descriptor: toVector(descriptor),
             descriptorVersion: DESCRIPTOR_VERSION,
             classes: useFilters ? refine.classes : [],
             gazette: useFilters ? refine.gazette : '',
@@ -303,7 +306,7 @@ export function useImageSearch(enabled = true) {
             minVisual: opt === 'exact' ? 0.95 : HYBRID_DEFAULTS.minVisual,
           })
           usedMode = 'intelligent'
-          modalities = { text: terms.length > 0 || variants.length > 0, visual: !!rec?.embedding, duplicate: !!descriptor }
+          modalities = { text: true, visual: false, duplicate: true }
           rows = hits
             .filter((h) => (opt === 'exact' ? h.match_types.includes('near_duplicate') : true))
             .map((h) => ({ ...h, similarity: h.combined_score, matched_image_id: h.matched_image_id ?? '', mode: 'intelligent' as const, group: groupOf(h.match_types) }))
@@ -313,6 +316,7 @@ export function useImageSearch(enabled = true) {
           modalities = { text: false, visual: false, duplicate: true }
         }
       } else {
+        // no readable words (symbol-only mark, or recognition unavailable) → near-duplicate / visual signature only
         rows = await basicSearch(descriptor, opt)
         modalities = { text: false, visual: false, duplicate: true }
       }
@@ -342,7 +346,7 @@ export function useImageSearch(enabled = true) {
     void search(file, option, recognition)
   }, [file, available, busy, option, recognition, search])
 
-  /** Re-run text recognition (after a service hiccup). */
+  /** Re-run text recognition (after a hiccup, or once the visitor opted in on a data-saver connection). */
   const reanalyse = useCallback(() => {
     if (!file || busy) return
     const token = ++runRef.current
@@ -357,8 +361,38 @@ export function useImageSearch(enabled = true) {
     })
   }, [file, busy, analyse])
 
+  /** Data-saver opt-in: download the recogniser now (≈ 8 MB once) and analyse the current image, if any. */
+  const enableOcr = useCallback(() => {
+    setOcrOptIn(true)
+    void warmUpOcr().catch(() => undefined)
+  }, [])
+
+  /**
+   * After a failed start (download blocked, transient network error, …): start the
+   * recogniser again and, when an image is selected, analyse it — bypassing the
+   * `canAnalyse` guard, which still reflects the failed state at click time.
+   */
+  const retryEngine = useCallback(() => {
+    if (busy || !hybridInstalled) return
+    setOcrOptIn(true)
+    setAnalysisNotice(null)
+    if (!file) {
+      void warmUpOcr().catch(() => undefined)
+      return
+    }
+    const token = ++runRef.current
+    setErrorKind(null)
+    setErrorDetail(null)
+    setPhase('analysing')
+    void analyse(file, token, true).then((rec) => {
+      if (token !== runRef.current) return
+      setPhase('ready')
+      if (rec?.blank) setErrorKind('blank')
+    })
+  }, [busy, hybridInstalled, file, analyse])
+
   const setRecognisedText = useCallback((text: string) => {
-    setRecognition((r) => (r ? { ...r, text } : { text, original: '', confidence: 0, uncertain: true, scripts: [], words: [], variants: [], useVariants: false, blank: false, warnings: [], models: { ocr: null, embedding: null }, embedding: null, durationMs: 0 }))
+    setRecognition((r) => (r ? { ...r, text } : { text, original: '', confidence: 0, uncertain: true, scripts: [], words: [], variants: [], useVariants: false, blank: false, warnings: [], models: { ocr: null, embedding: null }, durationMs: 0 }))
   }, [])
   const setUseVariants = useCallback((on: boolean) => setRecognition((r) => (r ? { ...r, useVariants: on } : r)), [])
 
@@ -385,7 +419,7 @@ export function useImageSearch(enabled = true) {
       setFile(f)
       setSource(src)
       let rec: Recognition | null = null
-      if (visionConfigured && hybridInstalled && !serviceDown) {
+      if (canAnalyse) {
         const t2 = ++runRef.current
         setPhase('analysing')
         rec = await analyse(f, t2)
@@ -398,7 +432,7 @@ export function useImageSearch(enabled = true) {
       setErrorKind('example')
       setErrorDetail(e instanceof Error ? e.message : String(e))
     }
-  }, [available, busy, option, hybridInstalled, serviceDown, analyse, search])
+  }, [available, busy, option, canAnalyse, analyse, search])
 
   /** Results after the match-type filter (and, in basic "advanced" mode, the client-side refinement). */
   const filtered = useMemo(() => {
@@ -425,7 +459,8 @@ export function useImageSearch(enabled = true) {
   return {
     status: v1Status,
     hybridStatus,
-    health,
+    /** Browser recogniser: capability, data-saver opt-in and download/initialisation state. */
+    ocr: { support, enabled: ocrEnabled, engine, enable: enableOcr, retry: retryEngine },
     available,
     mode,
     basicReason,

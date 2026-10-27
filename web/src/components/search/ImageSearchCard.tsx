@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, ChevronDown, ImageIcon, ImageOff, ImageUp, Info, Loader2, RefreshCw, ScanText, Search, Sparkles, Trash2, UploadCloud } from 'lucide-react'
 import { filterOptionsQuery } from '@/services'
 import { MAX_QUERY_IMAGE_BYTES } from '@/lib/imageSearch/descriptor'
+import { OCR_DOWNLOAD_MB } from '@/lib/imageSearch/ocr'
 import { IMAGE_SEARCH_EXACT_MIN_SIMILARITY, IMAGE_SEARCH_MAX_LIMIT } from '@/services'
 import { cn, formatNumber } from '@/lib/utils'
 import type { ImageSearchController, ImageSearchOption } from './useImageSearch'
@@ -21,7 +22,7 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const lng = i18n.resolvedLanguage
-  const { status, available, file, previewUrl, source, busy, phase, errorKind, errorDetail, mode, basicReason, hybridStatus } = c
+  const { status, available, file, previewUrl, source, busy, phase, errorKind, errorDetail, mode, hybridStatus } = c
 
   const pick = () => inputRef.current?.click()
   const onFiles = (files: FileList | null | undefined) => {
@@ -105,7 +106,7 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
 
           {file && <RecognitionBlock c={c} />}
 
-          <p className="mt-3 text-[12px] leading-relaxed text-ink-500">{mode === 'intelligent' ? t('search.image.privacyService') : t('search.image.privacy')}</p>
+          <p className="mt-3 text-[12px] leading-relaxed text-ink-500">{t('search.image.privacy')}</p>
 
           {errorKind && (
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-800" role="alert" data-testid="image-error">
@@ -141,14 +142,18 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
               {!file && available
                 ? t('search.image.needImage')
                 : mode === 'intelligent' && hybridStatus.data
-                  ? t('search.image.indexedNoteHybrid', { images: formatNumber(hybridStatus.data.indexed_images, lng), text: formatNumber(hybridStatus.data.images_with_text, lng), trademarks: formatNumber(hybridStatus.data.indexed_trademarks, lng) })
+                  ? t('search.image.indexedNoteHybrid', {
+                      text: formatNumber(hybridStatus.data.images_with_text, lng),
+                      images: formatNumber(hybridStatus.data.matched_images ?? hybridStatus.data.indexed_images + hybridStatus.data.images_skipped, lng),
+                      trademarks: formatNumber(hybridStatus.data.indexed_trademarks, lng),
+                    })
                   : status.data?.available
                     ? t('search.image.indexedNote', { images: formatNumber(status.data.indexed_images, lng), trademarks: formatNumber(status.data.indexed_trademarks, lng) })
                     : ''}
             </p>
           </div>
 
-          <ModeNotice mode={mode} reason={basicReason} available={available} />
+          <ModeNotice c={c} />
 
           {status.isSuccess && !available && (
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[13px] text-amber-900" role="status" data-testid="image-unavailable">
@@ -176,8 +181,9 @@ export function ImageSearchCard({ c, className }: { c: ImageSearchController; cl
 }
 
 /** Which engine a search would use right now, and — in basic mode — why. */
-function ModeNotice({ mode, reason, available }: { mode: ImageSearchController['mode']; reason: ImageSearchController['basicReason']; available: boolean }) {
+function ModeNotice({ c }: { c: ImageSearchController }) {
   const { t } = useTranslation()
+  const { mode, basicReason: reason, available, ocr } = c
   if (!available) return null
   if (mode === 'intelligent') {
     return (
@@ -187,12 +193,34 @@ function ModeNotice({ mode, reason, available }: { mode: ImageSearchController['
       </p>
     )
   }
-  const key = reason === 'not_configured' ? 'notConfigured' : reason === 'service_unreachable' ? 'unreachable' : reason === 'migration_missing' ? 'migrationMissing' : 'indexEmpty'
+  const key =
+    reason === 'migration_missing' ? 'migrationMissing'
+    : reason === 'index_empty' ? 'indexEmpty'
+    : reason === 'ocr_unsupported' ? 'ocrUnsupported'
+    : reason === 'save_data' ? 'saveData'
+    : 'ocrFailed'
   return (
-    <p className="mt-3 flex items-start gap-2 rounded-lg border border-ink-200 bg-white p-3 text-[12px] leading-relaxed text-ink-700" role="status" data-testid="image-mode-basic">
+    <p className="mt-3 flex items-start gap-2 rounded-lg border border-ink-200 bg-white p-3 text-[12px] leading-relaxed text-ink-700" role="status" data-testid="image-mode-basic" data-reason={reason ?? ''}>
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-500" aria-hidden />
       <span>
-        <span className="font-semibold">{t('search.image.mode.basicTitle')}</span> {t(`search.image.mode.${key}`)}
+        <span className="font-semibold">{t('search.image.mode.basicTitle')}</span> {t(`search.image.mode.${key}`, { mb: OCR_DOWNLOAD_MB })}
+        {reason === 'save_data' && (
+          <>
+            {' '}
+            <button type="button" onClick={ocr.enable} className="font-semibold text-brand-700 underline underline-offset-2" data-testid="ocr-enable">
+              {t('search.image.mode.enableOcr', { mb: OCR_DOWNLOAD_MB })}
+            </button>
+          </>
+        )}
+        {reason === 'ocr_failed' && (
+          <>
+            {' '}
+            <button type="button" onClick={ocr.retry} className="font-semibold text-brand-700 underline underline-offset-2" data-testid="ocr-retry">
+              {t('common.retry')}
+            </button>
+            {ocr.engine.status === 'failed' && <span className="mt-0.5 block break-words text-[11px] text-ink-500" dir="ltr">{ocr.engine.message}</span>}
+          </>
+        )}
       </span>
     </p>
   )
@@ -203,12 +231,20 @@ function RecognitionBlock({ c }: { c: ImageSearchController }) {
   const { t, i18n } = useTranslation()
   const uid = useId()
   const lng = i18n.resolvedLanguage
-  const { phase, recognition, analysisNotice, mode, textSearchAvailable, busy } = c
+  const { phase, recognition, analysisNotice, mode, textSearchAvailable, busy, ocr } = c
   if (phase === 'analysing') {
+    const loading = ocr.engine.status === 'loading' ? ocr.engine : null
     return (
-      <div className="mt-3 flex items-center gap-2 rounded-lg border border-ink-200 bg-white p-3 text-[13px] text-ink-700" role="status" aria-live="polite" data-testid="recognition-loading">
-        <Loader2 className="h-4 w-4 animate-spin text-brand-600" aria-hidden />
-        {t('search.image.recognising')}
+      <div className="mt-3 rounded-lg border border-ink-200 bg-white p-3 text-[13px] text-ink-700" role="status" aria-live="polite" data-testid="recognition-loading">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin text-brand-600" aria-hidden />
+          {loading ? t('search.image.engineLoading', { mb: OCR_DOWNLOAD_MB, percent: formatNumber(Math.round(loading.progress * 100), lng) }) : t('search.image.recognising')}
+        </div>
+        {loading && (
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-100" aria-hidden>
+            <div className="h-full rounded-full bg-brand-600 transition-[width]" style={{ width: `${Math.max(3, Math.round(loading.progress * 100))}%` }} />
+          </div>
+        )}
       </div>
     )
   }
@@ -232,16 +268,27 @@ function RecognitionBlock({ c }: { c: ImageSearchController }) {
           </span>
         )}
       </div>
-      {analysisNotice === 'service_failed' && mode !== 'intelligent' && (
-        <p className="mt-2 flex items-start gap-2 text-[12px] text-amber-900" role="status">
+      {analysisNotice === 'engine_failed' && mode !== 'intelligent' && (
+        <p className="mt-2 flex items-start gap-2 text-[12px] text-amber-900" role="status" data-testid="recognition-engine-failed">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
           <span>
-            {t('search.image.recognised.serviceFailed')}{' '}
-            <button type="button" onClick={c.reanalyse} disabled={busy} className="font-semibold underline underline-offset-2">{t('common.retry')}</button>
+            {t('search.image.recognised.engineFailed')}{' '}
+            <button type="button" onClick={ocr.retry} disabled={busy} className="font-semibold underline underline-offset-2">{t('common.retry')}</button>
           </span>
         </p>
       )}
-      {analysisNotice === 'ocr_failed' && <p className="mt-2 text-[12px] text-amber-900" role="status">{t('search.image.recognised.ocrFailed')}</p>}
+      {analysisNotice === 'ocr_failed' && (
+        <p className="mt-2 text-[12px] text-amber-900" role="status">
+          {t('search.image.recognised.ocrFailed')}{' '}
+          <button type="button" onClick={c.reanalyse} disabled={busy} className="font-semibold underline underline-offset-2">{t('common.retry')}</button>
+        </p>
+      )}
+      {!recognition && !analysisNotice && mode === 'basic' && c.basicReason === 'save_data' && (
+        <p className="mt-2 text-[12px] text-ink-600" role="status">
+          {t('search.image.recognised.optIn', { mb: OCR_DOWNLOAD_MB })}{' '}
+          <button type="button" onClick={() => { ocr.enable(); c.reanalyse() }} disabled={busy} className="font-semibold text-brand-700 underline underline-offset-2">{t('search.image.mode.enableOcr', { mb: OCR_DOWNLOAD_MB })}</button>
+        </p>
+      )}
       {recognition && !words.length && !analysisNotice && !recognition.blank && <p className="mt-2 text-[12px] text-ink-600" data-testid="recognition-none">{t('search.image.recognised.none')}</p>}
       <input
         id={`${uid}-text`}
