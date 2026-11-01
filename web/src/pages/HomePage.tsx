@@ -1,4 +1,4 @@
-import { useCallback, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useMemo, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -13,18 +13,20 @@ import {
   Clock,
   FilePlus2,
   FileText,
+  FileX,
   GraduationCap,
   Image as ImageIcon,
   Info,
   Layers,
   Lightbulb,
+  MapPin,
   RefreshCw,
   Scale,
   Search,
   SquarePen,
   Users,
 } from 'lucide-react'
-import { deriveRecordTypeStats, filterOptionsQuery, registryStatsQuery, type RecordTypeStats } from '@/services'
+import { deriveRecordTypeStats, filterOptionsQuery, registryStatsQuery, type RecordTypeKind } from '@/services'
 import { cn, formatNumber } from '@/lib/utils'
 import { ArchitecturalArch, GirihMotif } from '@/components/ornament'
 import { MASNAD_URL } from '@/lib/site'
@@ -109,12 +111,19 @@ const AUDIENCE: { key: string; icon: Icon }[] = [
   { key: 'researchers', icon: GraduationCap },
   { key: 'entrepreneurs', icon: Lightbulb },
 ]
-const TYPE_CARDS: { key: keyof RecordTypeStats; icon: Icon }[] = [
-  { key: 'registrations', icon: FilePlus2 },
-  { key: 'renewals', icon: RefreshCw },
-  { key: 'assignments', icon: ArrowLeftRight },
-  { key: 'changes', icon: SquarePen },
-]
+/** Icon per notice-type group; the groups themselves come from the database (see `deriveRecordTypeStats`). */
+const TYPE_ICONS: Record<RecordTypeKind, Icon> = {
+  registration: FilePlus2,
+  renewal: RefreshCw,
+  assignment: ArrowLeftRight,
+  name_change: SquarePen,
+  address_change: MapPin,
+  name_address_change: SquarePen,
+  cancellation: FileX,
+  other: FileText,
+}
+/** Placeholder cards while the counts load (the real list replaces them). */
+const TYPE_SKELETON: RecordTypeKind[] = ['registration', 'renewal', 'assignment', 'name_change']
 
 /**
  * Landing page. The hero IS the search (the former /search page: mode switch,
@@ -129,7 +138,7 @@ function Landing() {
   const { t, i18n } = useTranslation()
   const stats = useQuery(registryStatsQuery())
   const options = useQuery(filterOptionsQuery())
-  const types = deriveRecordTypeStats(options.data?.application_types)
+  const types = useMemo(() => deriveRecordTypeStats(options.data?.application_types), [options.data?.application_types])
 
   const lng = i18n.resolvedLanguage
   const loadingTotals = stats.isPending
@@ -260,15 +269,36 @@ function Landing() {
             {stats.isError ? (
               <ErrorState error={stats.error} onRetry={() => void stats.refetch()} />
             ) : (
-              <Reveal className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" delay={100}>
-                <StatCard icon={FileText} loading={loadingTotals} value={formatNumber(stats.data?.trademarks, lng)} label={t('home.stats.records')} title={t('home.stats.recordsSub')} />
-                <StatCard icon={BookOpen} loading={loadingTotals} value={formatNumber(stats.data?.gazettes, lng)} label={t('home.stats.gazettes')} title={t('home.stats.gazettesSub')} />
-                {/* Record-type totals come from the real application_type counts; a category
-                    with no published notices is omitted rather than shown as a number. */}
-                {!options.isError &&
-                  TYPE_CARDS.filter((c) => loadingTypes || types[c.key] > 0).map((c) => (
-                    <StatCard key={c.key} icon={c.icon} loading={loadingTypes} value={formatNumber(types[c.key], lng)} label={t(`home.stats.${c.key}`)} title={t(`home.stats.${c.key}Sub`)} />
-                  ))}
+              <Reveal className="grid gap-3" delay={100}>
+                <div className="grid grid-cols-2 gap-3">
+                  <StatCard icon={FileText} emphasis loading={loadingTotals} value={formatNumber(stats.data?.trademarks, lng)} label={t('home.stats.records')} title={t('home.stats.recordsSub')} />
+                  <StatCard icon={BookOpen} emphasis loading={loadingTotals} value={formatNumber(stats.data?.gazettes, lng)} label={t('home.stats.gazettes')} title={t('home.stats.gazettesSub')} />
+                </div>
+                {/* One card per notice type present in the database (real application_type
+                    counts — every type is shown); the tooltip names the stored value(s). */}
+                {!options.isError && (
+                  <div>
+                    <p className="mb-2 mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">{t('home.stats.typesHeading')}</p>
+                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" aria-busy={loadingTypes} data-testid="stats-types">
+                      {loadingTypes
+                        ? TYPE_SKELETON.map((kind) => (
+                            <li key={kind}>
+                              <StatCard icon={TYPE_ICONS[kind]} loading value="" label={t(`home.stats.types.${kind}`)} title={t(`home.stats.types.${kind}Sub`)} />
+                            </li>
+                          ))
+                        : types.map((g) => (
+                            <li key={g.key} data-kind={g.kind}>
+                              <StatCard
+                                icon={TYPE_ICONS[g.kind]}
+                                value={formatNumber(g.count, lng)}
+                                label={g.kind === 'other' ? g.values[0] : t(`home.stats.types.${g.kind}`)}
+                                title={`${t(`home.stats.types.${g.kind}Sub`)} — ${t('home.stats.typeValues', { values: g.values.join(', ') })}`}
+                              />
+                            </li>
+                          ))}
+                    </ul>
+                  </div>
+                )}
               </Reveal>
             )}
           </div>
@@ -396,17 +426,17 @@ function Landing() {
   )
 }
 
-function StatCard({ icon: StatIcon, value, label, title, loading }: { icon: Icon; value: string; label: string; title: string; loading?: boolean }) {
+function StatCard({ icon: StatIcon, value, label, title, loading, emphasis }: { icon: Icon; value: string; label: string; title: string; loading?: boolean; emphasis?: boolean }) {
   return (
-    <div className="card flex flex-col items-center px-3 py-5 text-center" title={title}>
-      <span className="icon-circle h-10 w-10">
-        <StatIcon className="h-[18px] w-[18px]" />
+    <div className={cn('card flex h-full flex-col items-center px-3 text-center', emphasis ? 'py-6' : 'py-5')} title={title}>
+      <span className={cn('icon-circle', emphasis ? 'h-11 w-11' : 'h-10 w-10')}>
+        <StatIcon className={emphasis ? 'h-5 w-5' : 'h-[18px] w-[18px]'} />
       </span>
       <span className="mt-3 flex min-h-[30px] items-center text-[12px] font-medium leading-tight text-ink-600">{label}</span>
       {loading ? (
         <span className="mt-2 h-7 w-12 animate-pulse rounded bg-ink-100" aria-hidden />
       ) : (
-        <span className="mt-1.5 text-[26px] font-semibold leading-none tabular-nums text-navy-900">{value}</span>
+        <span className={cn('mt-1.5 font-semibold leading-none tabular-nums text-navy-900', emphasis ? 'text-[32px]' : 'text-[26px]')}>{value}</span>
       )}
     </div>
   )

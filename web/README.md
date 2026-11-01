@@ -48,9 +48,11 @@ header with centred nav (Search · About · Help), globe + language, green **Log
 an enterprise/legal-tech landing page (Oct 2026 "master prompt"): hero with the search bar as the
 primary action over a photograph of Afghan architecture, then Why TMistan → Built by Masnad Law
 Firm → Why it matters → Platform capabilities → **TMistan at a Glance** (live Supabase aggregates:
-records, gazettes, registrations, renewals, assignments, changes — derived from real
-`application_type` counts in `stats_service.ts`; empty categories are omitted and the whole section
-disappears when the database holds no published records) → How it works / Published sources &
+total records and gazettes, then one card for **every** notice type present in the database —
+`deriveRecordTypeStats()` in `stats_service.ts` groups the real `application_type` counts from
+`trademark_filter_options()`; keyword rules only pick the icon/translated label, unrecognised types
+are shown under their stored name, and the whole section disappears when the database holds no
+published records) → How it works / Published sources &
 transparency (with the independence disclaimer) / Who it is for → dark "Built for Afghanistan" and
 Masnad + TMistan vision bands → final CTA → enterprise footer. All wording comes from the client
 brief and lives in `src/i18n/locales/*` (en / fa / ps). Sections fade in on scroll (`.reveal`,

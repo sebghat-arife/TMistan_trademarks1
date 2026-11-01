@@ -32,43 +32,71 @@ export const filterOptionsQuery = () =>
   queryOptions({ queryKey: ['stats', 'filter_options'], queryFn: getFilterOptions, staleTime: 5 * 60_000 })
 
 /* ---------------------------------------------------------------------------
- * Record-type totals for the home page.
+ * Record-type totals for the home page ("TMistan at a Glance").
  *
- * The gazette publishes several kinds of notice and the importer stores the
- * notice type verbatim in `trademarks.application_type` ("New trademark
- * application", "Trademark renewal", "Assignment / transfer", "Owner name
- * change", …). `trademark_filter_options()` already returns every distinct
- * value with its published-row count, so the totals below are derived from
- * that real aggregate with keyword rules — nothing is hard-coded and no
- * additional RPC or schema change is needed. A combined notice such as
- * "Assignment / transfer and owner name change" counts in every category it
- * matches, so the categories are not a partition of the total.
+ * The gazette publishes several kinds of notice and the Import Center stores
+ * the notice type verbatim in `trademarks.application_type` — the wording is
+ * whatever the source spreadsheet used ("New Trademark Registration",
+ * "Trademark Renewal", "Assignment", "Owner Name / Address change",
+ * "Cancellation", …). `trademark_filter_options()` returns every distinct
+ * value with its published-row count, and the home page shows EVERY one of
+ * them: nothing is hard-coded and a notice type can never be dropped because
+ * its wording changed. Keyword rules only decide the icon and the translated
+ * label; a value no rule recognises is shown under its own (verbatim) name.
+ * Each value lands in exactly one group, so the groups add up to the total.
  * ------------------------------------------------------------------------- */
 
-export type RecordTypeStats = {
-  /** "New trademark application" notices. */
-  registrations: number
-  /** Trademark renewal notices. */
-  renewals: number
-  /** Assignment / ownership-transfer notices. */
-  assignments: number
-  /** Owner-name, ownership and address change notices. */
-  changes: number
+export type RecordTypeKind =
+  | 'registration'
+  | 'renewal'
+  | 'assignment'
+  | 'name_change'
+  | 'address_change'
+  | 'name_address_change'
+  | 'cancellation'
+  | 'other'
+
+export type RecordTypeStat = {
+  /** Stable key: the kind, or `other:<value>` for a notice type no rule recognises. */
+  key: string
+  kind: RecordTypeKind
+  /** Published rows across the notice types grouped here (always from the database). */
+  count: number
+  /** The exact `application_type` values (as stored) that make up this figure. */
+  values: string[]
 }
 
-const RECORD_TYPE_RULES: Record<keyof RecordTypeStats, (type: string) => boolean> = {
-  registrations: (v) => /new trademark application/i.test(v),
-  renewals: (v) => /trademark renewal/i.test(v),
-  assignments: (v) => /assignment|transfer/i.test(v),
-  changes: (v) => /change/i.test(v) && /owner|name|address/i.test(v),
+const KIND_ORDER: RecordTypeKind[] = ['registration', 'renewal', 'assignment', 'name_change', 'address_change', 'name_address_change', 'cancellation', 'other']
+
+/** Best-effort classification of a notice-type value (English, Dari or Pashto wording). Affects label/icon only. */
+export function classifyApplicationType(value: string): RecordTypeKind {
+  const v = value.trim().toLowerCase()
+  if (!v) return 'other'
+  if (/cancel|withdraw|revok|invalidat|removal|remove|delet|abandon|فسخ|لغو|ابطال/.test(v)) return 'cancellation'
+  if (/renew|تجدید|تمدید|نوي کول|نوی کول/.test(v)) return 'renewal'
+  if (/assign|transfer|merger|انتقال|واگذاری|لېږد/.test(v)) return 'assignment'
+  const name = /\bname\b|نام|نوم/.test(v)
+  const address = /address|آدرس|نشانی|پته|پتې/.test(v)
+  if (name && address) return 'name_address_change'
+  if (name) return 'name_change'
+  if (address) return 'address_change'
+  if (/regist|new trademark|application|filing|ثبت|درخواست|غوښتن/.test(v)) return 'registration'
+  return 'other'
 }
 
-export function deriveRecordTypeStats(types: FilterOptions['application_types'] | undefined): RecordTypeStats {
-  const out: RecordTypeStats = { registrations: 0, renewals: 0, assignments: 0, changes: 0 }
+/** One entry per notice type present in the database (count > 0), in registry order; same-meaning spellings are grouped. */
+export function deriveRecordTypeStats(types: FilterOptions['application_types'] | undefined): RecordTypeStat[] {
+  const groups = new Map<string, RecordTypeStat>()
   for (const { value, count } of types ?? []) {
-    for (const key of Object.keys(RECORD_TYPE_RULES) as (keyof RecordTypeStats)[]) {
-      if (RECORD_TYPE_RULES[key](value)) out[key] += count
-    }
+    if (!value?.trim() || !(count > 0)) continue
+    const kind = classifyApplicationType(value)
+    const key = kind === 'other' ? `other:${value.trim()}` : kind
+    const g = groups.get(key) ?? { key, kind, count: 0, values: [] }
+    g.count += count
+    g.values.push(value)
+    groups.set(key, g)
   }
-  return out
+  return [...groups.values()].sort(
+    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || b.count - a.count || a.key.localeCompare(b.key),
+  )
 }
