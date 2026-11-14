@@ -2,6 +2,7 @@
 /* Self-hosted fonts (bundled by Vite — no third-party font requests). */
 @import "@fontsource-variable/inter/wght.css";
 @import "@fontsource-variable/source-serif-4/wght.css";
+@import "@fontsource-variable/source-sans-3/wght.css";
 
 /* ──────────────────────────────────────────────────────────────────────────
    TMistan design tokens — sampled from the approved UI mock-up + logo
@@ -11,6 +12,8 @@
   /* editorial display face for headings on the public pages */
   --font-serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Noto Naskh Arabic", "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* header navigation face (approved header mock-up): humanist sans, companion of Source Serif 4 */
+  --font-header: "Source Sans 3 Variable", "Source Sans 3", "Segoe UI", ui-sans-serif, system-ui, "Noto Sans Arabic", "Noto Naskh Arabic", Arial, sans-serif;
 
   /* ── TMistan palette ───────────────────────────────────────────────────
      emerald  #087747  primary actions, links, selected states
@@ -69,6 +72,13 @@
   /* tinted section backgrounds */
   --color-mist-50:  #f2f6f3;
   --color-mist-100: #e8f0eb;
+
+  /* site header — sampled from the approved header mock-up */
+  --color-header-text:   #122b47;   /* navigation items (deep navy) */
+  --color-header-strong: #0b1e30;   /* language code, icons */
+  --color-header-active: #1f9a1a;   /* current page + underline (logo green) */
+  --color-header-line:   #dfe2e7;   /* bottom border */
+  --color-header-sep:    #c9ced5;   /* vertical dividers */
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -160,6 +170,77 @@
 .bidi-auto { unicode-bidi: plaintext; }
 [dir="ltr"] .bidi-auto { text-align: left; }
 [dir="rtl"] .bidi-auto { text-align: right; }
+
+/* ── Site header (components/Layout) ────────────────────────────────────
+   Desktop proportions follow the approved header mock-up 1:1. The mock is a
+   1672 px frame: 163 px bar, 112 px logo, 21 px navigation text, 36 px item
+   gaps, 1 px dividers, 4 px active underline 19 px under the text, 34 px
+   globe. Every size below is that value as a fraction of the frame width, so
+   the header looks like the picture at any desktop width; it stops growing
+   at the 1440 px layout and the content stays centred beyond that. Below
+   `lg` (1024 px) the navigation collapses into the menu button.
+   --hdr-h / --hdr-sticky also drive scroll offsets and sticky sidebars. */
+:root {
+  --hdr-h: 76px;                                   /* phones / tablets */
+  --hdr-sticky: calc(var(--hdr-h) + 20px);        /* top offset for anchors and sticky panels */
+}
+@media (min-width: 1024px) {
+  :root { --hdr-h: clamp(96px, 9.75vw, 140px); }
+}
+.site-header {
+  --hdr-font: clamp(12.5px, 1.256vw, 18px);
+  --hdr-gap: clamp(14px, 2.4vw - 7px, 27.6px);      /* 36 px in the mock; tightens a little faster on narrow desktops so nine items fit at 1024 px */
+  --hdr-sep: clamp(40px, 3.95vw, 57px);
+  --hdr-pad: clamp(16px, 3vw, 43px);
+  --hdr-icon: clamp(21px, 2.03vw, 29px);
+  --hdr-chevron: clamp(12px, 1.02vw, 15px);
+  --hdr-ul: clamp(3px, 0.24vw, 4px);
+  --hdr-ul-off: clamp(8px, 0.81vw, 11.5px);        /* text box → underline (19 px in the mock minus the descender space) */
+  --hdr-sp1: clamp(20px, 2.3vw, 33px);             /* logo → divider */
+  --hdr-sp2: clamp(18px, 1.9vw, 28px);             /* divider → navigation */
+  --hdr-sp3: clamp(24px, 2.7vw, 39px);             /* navigation → divider */
+  --hdr-sp4: clamp(24px, 2.7vw, 39px);             /* divider → language */
+  background: #fff;
+  border-bottom: 1px solid var(--color-header-line);
+}
+.site-header-inner {
+  display: flex; align-items: center;
+  height: var(--hdr-h);
+  margin-inline: auto; max-width: 1440px;
+  padding-inline: var(--hdr-pad);
+}
+.site-header-logo { height: 54px; width: auto; }
+@media (min-width: 1024px) { .site-header-logo { height: clamp(74px, 7.24vw, 104px); } } /* the image file has ≈4% padding around the artwork */
+.site-header-sep { flex-shrink: 0; width: 1px; height: var(--hdr-sep); background: var(--color-header-sep); }
+.site-nav { min-width: 0; align-items: center; gap: var(--hdr-gap); } /* display comes from the `hidden lg:flex` utilities */
+.site-nav-link {
+  position: relative; white-space: nowrap;
+  font-family: var(--font-header);
+  font-size: var(--hdr-font); font-weight: 570; line-height: 1.1; letter-spacing: -0.015em;
+  color: var(--color-header-text);
+  transition: color 0.15s;
+}
+.site-nav-link:hover, .site-nav-link.is-active { color: var(--color-header-active); }
+.site-nav-link.is-active::after {
+  content: ''; position: absolute; inset-inline: 0; top: calc(100% + var(--hdr-ul-off));
+  height: var(--hdr-ul); border-radius: 9999px; background: var(--color-header-active);
+}
+.site-lang { display: inline-flex; align-items: center; color: var(--color-header-strong); }
+.site-lang-globe { width: var(--hdr-icon); height: var(--hdr-icon); margin-inline-end: clamp(12px, 1.45vw, 21px); }
+.site-lang-select {
+  cursor: pointer; appearance: none; background: transparent; outline: none;
+  font-family: var(--font-header); font-size: var(--hdr-font); font-weight: 600; line-height: 1.1; letter-spacing: 0.01em;
+  color: var(--color-header-strong);
+  padding-inline-end: calc(var(--hdr-chevron) + clamp(12px, 1.45vw, 21px));
+}
+.site-lang-chevron { position: absolute; inset-inline-end: 0; width: var(--hdr-chevron); height: var(--hdr-chevron); pointer-events: none; }
+@media (max-width: 1100px) { .site-nav-link { letter-spacing: -0.025em; } }
+[dir="rtl"] .site-nav-link, [dir="rtl"] .site-lang-select { font-family: inherit; font-weight: 600; letter-spacing: 0; }
+/* Dari/Pashto labels are longer and the Arabic-script face is wider: slightly smaller type and gaps keep all nine items on one row. */
+[dir="rtl"] .site-nav-link { font-size: calc(var(--hdr-font) * 0.94); }
+[dir="rtl"] .site-nav { gap: calc(var(--hdr-gap) * 0.8); }
+[lang="ps"] .site-nav-link { font-size: calc(var(--hdr-font) * 0.88); }
+[lang="ps"] .site-nav { gap: calc(var(--hdr-gap) * 0.72); }
 
 /* ── Announcement bar (components/AnnouncementBar) ─────────────────────
    One slim emerald strip above the header. The message is repeated in a

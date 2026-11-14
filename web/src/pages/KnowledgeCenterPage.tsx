@@ -110,7 +110,7 @@ export function KnowledgeCenterPage() {
         </form>
 
         {/* Article list (shown when searching / filtering) */}
-        <div ref={listRef} className="scroll-mt-24" aria-live="polite">
+        <div ref={listRef} className="scroll-mt-(--hdr-sticky)" aria-live="polite">
           {filtering && (
             <section className="mt-8" data-testid="knowledge-results">
               <div className="flex flex-wrap items-end justify-between gap-3">

@@ -446,7 +446,7 @@ export function ContactPage() {
           </div>
 
           {/* ───────────── Aside ───────────── */}
-          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <aside className="space-y-6 lg:sticky lg:top-(--hdr-sticky) lg:self-start">
             <section className="card p-6" aria-labelledby="contact-aside-title">
               <h2 id="contact-aside-title" className="text-[17px] font-semibold text-ink-900">{t('contact.aside.title')}</h2>
               <p className="mt-2 text-[14px] leading-relaxed text-ink-700">{t('contact.aside.operator')}</p>

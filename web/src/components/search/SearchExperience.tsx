@@ -114,7 +114,7 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
       {/* ── Hero: heading, mode switch, search card (+ aside) ─────────────── */}
       {/* Idle: ivory hero with the Darulaman photograph. Results / image mode: a compact
           navy title band with a faint lattice — the controls and results below stay on plain surfaces. */}
-      <section id="search" className={cn('search-hero scroll-mt-[68px]', compact && 'search-hero-compact')} data-testid="search-hero">
+      <section id="search" className={cn('search-hero scroll-mt-(--hdr-h)', compact && 'search-hero-compact')} data-testid="search-hero">
         {compact ? (
           <GirihMotif corner="top-end" size={520} offset={0.45} opacity={0.09} detail="ring" className="hidden text-turquoise-200 md:block" />
         ) : (

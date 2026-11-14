@@ -153,7 +153,7 @@ function Landing() {
     // -mb-12 cancels the footer's top margin so the final CTA band sits flush against it.
     <div className="-mb-12 border-t border-ink-200">
       {/* ── Why TMistan ───────────────────────────────────────────────── */}
-      <section id="why" className="scroll-mt-20 bg-white">
+      <section id="why" className="scroll-mt-(--hdr-sticky) bg-white">
         <div className="container-x grid gap-12 py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-20 lg:py-24">
           <Reveal>
             <p className="eyebrow">{t('home.why.eyebrow')}</p>
@@ -177,7 +177,7 @@ function Landing() {
       </section>
 
       {/* ── Built by Masnad Law Firm ──────────────────────────────────── */}
-      <section id="masnad" className="scroll-mt-20 grid border-t border-ink-200 bg-mist-50 lg:grid-cols-2">
+      <section id="masnad" className="scroll-mt-(--hdr-sticky) grid border-t border-ink-200 bg-mist-50 lg:grid-cols-2">
         <Reveal className="flex items-center">
           <div className="w-full px-6 py-16 sm:px-8 lg:ms-auto lg:max-w-[590px] lg:py-24 lg:pe-14 lg:ps-6">
             <p className="eyebrow">{t('home.masnad.eyebrow')}</p>
@@ -223,7 +223,7 @@ function Landing() {
       </section>
 
       {/* ── Platform capabilities ─────────────────────────────────────── */}
-      <section id="capabilities" className="scroll-mt-20 border-t border-ink-200 bg-mist-50">
+      <section id="capabilities" className="scroll-mt-(--hdr-sticky) border-t border-ink-200 bg-mist-50">
         <div className="container-x py-20 lg:py-24">
           <Reveal className="max-w-xl">
             <p className="eyebrow">{t('home.capabilities.eyebrow')}</p>
@@ -308,7 +308,7 @@ function Landing() {
       {/* ── How it works · Sources · Who it is for ────────────────────── */}
       <section className="border-t border-ink-200 bg-mist-50">
         <div className="container-x grid gap-14 py-20 lg:grid-cols-3 lg:gap-0 lg:divide-x lg:divide-ink-200 lg:py-24 lg:[&>*+*]:ps-10 lg:[&>*:not(:last-child)]:pe-10">
-          <Reveal id="how-it-works" className="scroll-mt-20">
+          <Reveal id="how-it-works" className="scroll-mt-(--hdr-sticky)">
             <p className="eyebrow">{t('home.how.eyebrow')}</p>
             <h2 className="section-title-sm mt-3">{t('home.how.title')}</h2>
             <ol className="mt-8 grid gap-7 sm:grid-cols-3 sm:gap-6 lg:grid-cols-1 lg:gap-6">
@@ -326,7 +326,7 @@ function Landing() {
             </ol>
           </Reveal>
 
-          <Reveal id="sources" className="scroll-mt-20" delay={100}>
+          <Reveal id="sources" className="scroll-mt-(--hdr-sticky)" delay={100}>
             <p className="eyebrow">{t('home.sources.eyebrow')}</p>
             <h2 className="section-title-sm mt-3">{t('home.sources.title')}</h2>
             <p className="mt-6 text-[14px] leading-relaxed text-ink-700">{t('home.sources.text')}</p>
@@ -336,7 +336,7 @@ function Landing() {
             </div>
           </Reveal>
 
-          <Reveal id="who" className="scroll-mt-20" delay={200}>
+          <Reveal id="who" className="scroll-mt-(--hdr-sticky)" delay={200}>
             <p className="eyebrow">{t('home.audience.eyebrow')}</p>
             <h2 className="section-title-sm mt-3">{t('home.audience.title')}</h2>
             <ul className="mt-7 space-y-4">

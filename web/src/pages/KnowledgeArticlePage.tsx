@@ -108,7 +108,7 @@ export function KnowledgeArticlePage() {
             </InfoBanner>
           </article>
 
-          <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+          <aside className="space-y-5 lg:sticky lg:top-(--hdr-sticky) lg:self-start">
             {toc.length > 0 && (
               <SidePanel title={t('knowledge.article.toc')} tone="white" className="hidden lg:block">
                 <ol className="mt-3 space-y-1.5 text-[13.5px]" dir="ltr">
@@ -141,7 +141,7 @@ function Block({ block }: { block: ArticleBlock }) {
     case 'p':
       return <p>{block.text}</p>
     case 'h2':
-      return <h2 id={block.id} className="scroll-mt-24">{block.text}</h2>
+      return <h2 id={block.id} className="scroll-mt-(--hdr-sticky)">{block.text}</h2>
     case 'ul':
       return (
         <ul>

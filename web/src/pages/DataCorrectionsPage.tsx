@@ -250,13 +250,13 @@ export function DataCorrectionsPage() {
           ))}
         </ul>
 
-        <div ref={topRef} className="mt-12 grid scroll-mt-24 gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)] lg:gap-10">
+        <div ref={topRef} className="mt-12 grid scroll-mt-(--hdr-sticky) gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)] lg:gap-10">
           {/* ───────────── Form column ───────────── */}
           <div className="min-w-0 space-y-6">
             {outcome ? (
               <SuccessPanel outcome={outcome} onReset={reset} />
             ) : (
-              <form ref={formRef} className="card scroll-mt-24 p-6 md:p-8" onSubmit={onSubmit} noValidate data-testid="correction-form">
+              <form ref={formRef} className="card scroll-mt-(--hdr-sticky) p-6 md:p-8" onSubmit={onSubmit} noValidate data-testid="correction-form">
                 <SectionLabel>{t('corrections.form.label')}</SectionLabel>
                 <h2 className="ed-h2 mt-2" id="request-form">{t('corrections.form.title')}</h2>
                 <p className="mt-2 text-[14.5px] leading-relaxed text-ink-600">{t('corrections.form.text')}</p>
@@ -528,7 +528,7 @@ function StatusCheck({ available }: { available: boolean }) {
   }
   const view = lookup.data as CorrectionStatusView | null | undefined
   return (
-    <section id="status-check" className="card scroll-mt-24 p-6 md:p-8" aria-labelledby="status-check-title" data-testid="status-check">
+    <section id="status-check" className="card scroll-mt-(--hdr-sticky) p-6 md:p-8" aria-labelledby="status-check-title" data-testid="status-check">
       <SectionLabel>{t('corrections.check.label')}</SectionLabel>
       <h2 id="status-check-title" className="mt-2 font-serif text-[22px] font-semibold text-navy-900">{t('corrections.check.title')}</h2>
       <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-600">{t('corrections.check.text')}</p>

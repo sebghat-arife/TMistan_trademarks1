@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowUpRight, Globe, Menu, X } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
@@ -10,8 +10,9 @@ import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 import { GirihMotif, OrnamentalBand, StarMotif } from './ornament'
 
 // Primary navigation. Nine entries: the desktop bar is shown from the `lg`
-// breakpoint (1024px) with a compact type size and switches to the full size
-// at `xl`; narrower viewports use the menu button.
+// breakpoint (1024px) and scales with the viewport (see `.site-header` in
+// index.css — proportions of the approved header mock-up); narrower
+// viewports use the menu button.
 const NAV: readonly { to: string; key: string; end?: boolean }[] = [
   { to: '/', key: 'nav.search', end: true }, // the search is the landing page
   { to: '/services', key: 'nav.services' },
@@ -48,37 +49,29 @@ export function Layout() {
       {/* ── Site announcement (normal flow: scrolls away, never covers content) ── */}
       <AnnouncementBar />
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
-        <div className="container-x flex h-[68px] items-center justify-between gap-4 xl:gap-6">
+      {/* ── Header (layout and sizes: `.site-header*` in index.css) ──────── */}
+      <header className="site-header sticky top-0 z-40">
+        <div className="site-header-inner">
           <Link to="/" className="flex shrink-0 items-center" aria-label="TMistan — home">
-            <Logo className="h-[48px] xl:h-[52px]" />
+            <Logo className="site-header-logo" />
           </Link>
 
-          <nav className="hidden min-w-0 items-center gap-3.5 lg:flex xl:gap-5" aria-label="Primary">
+          <span className="site-header-sep ms-(--hdr-sp1) me-(--hdr-sp2) hidden lg:block" aria-hidden />
+          <nav className="site-nav me-(--hdr-sp3) hidden lg:flex" aria-label="Primary">
             {NAV.map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                className={({ isActive }) =>
-                  cn(
-                    'relative whitespace-nowrap py-5 text-[13px] font-medium text-ink-700 transition-colors hover:text-brand-700 xl:text-[14.5px]',
-                    isActive && 'font-semibold text-navy-900 after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:rounded-full after:bg-brand-600',
-                  )
-                }
-              >
+              <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('site-nav-link', isActive && 'is-active')}>
                 {t(n.key)}
               </NavLink>
             ))}
           </nav>
 
           {/* The administrator sign-in is deliberately not linked from the public site: open /admin/login directly. */}
-          <div className="hidden shrink-0 items-center gap-4 lg:flex">
-            <LanguageSwitcher />
+          <span className="site-header-sep ms-auto me-(--hdr-sp4) hidden lg:block" aria-hidden />
+          <div className="hidden shrink-0 items-center lg:flex">
+            <LanguageSwitcher size="header" />
           </div>
 
-          <button type="button" className="btn-ghost lg:hidden" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label={t('common.menu')}>
+          <button type="button" className="btn-ghost ms-auto lg:hidden" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label={t('common.menu')}>
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
@@ -189,10 +182,27 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   )
 }
 
-export function LanguageSwitcher({ className, tone = 'light' }: { className?: string; tone?: 'light' | 'dark' }) {
+export function LanguageSwitcher({ className, tone = 'light', size = 'default' }: { className?: string; tone?: 'light' | 'dark'; size?: 'default' | 'header' }) {
   const { i18n, t } = useTranslation()
   const current = LANGUAGES.find((l) => l.code === i18n.resolvedLanguage) ?? LANGUAGES[0]
   const text = tone === 'dark' ? 'text-white/85' : 'text-ink-800'
+  if (size === 'header') {
+    // Desktop header: thin globe · language code · chevron (approved header mock-up); still a native select.
+    return (
+      <label className={cn('site-lang relative', className)}>
+        <Globe className="site-lang-globe" strokeWidth={1.5} aria-hidden />
+        <span className="sr-only">{t('nav.language')}</span>
+        <select value={current.code} onChange={(e) => void i18n.changeLanguage(e.target.value)} className="site-lang-select">
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.short}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="site-lang-chevron" strokeWidth={2} aria-hidden />
+      </label>
+    )
+  }
   return (
     <label className={cn('inline-flex items-center gap-1.5 text-[14px] font-medium', text, className)}>
       <Globe className={cn('h-[18px] w-[18px]', tone === 'dark' ? 'text-white/70' : 'text-ink-700')} aria-hidden />

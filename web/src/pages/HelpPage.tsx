@@ -131,7 +131,7 @@ export function HelpPage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10">
           <div className="min-w-0">
             {/* Search results (only while a query is present) */}
-            <div ref={resultsRef} className="scroll-mt-24" aria-live="polite">
+            <div ref={resultsRef} className="scroll-mt-(--hdr-sticky)" aria-live="polite">
               {results && (
                 <section className="mb-10 rounded-xl border border-ink-200 bg-white p-5 md:p-6" aria-labelledby="help-results-title" data-testid="help-results">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -216,7 +216,7 @@ export function HelpPage() {
             </InfoBanner>
 
             {/* FAQ */}
-            <section id="faq" className="mt-12 scroll-mt-24" aria-labelledby="help-faq-title">
+            <section id="faq" className="mt-12 scroll-mt-(--hdr-sticky)" aria-labelledby="help-faq-title">
               <SectionHeading label={t('help.faq.label')} title={t('help.faq.title')} text={t('help.faq.text')} id="help-faq-title" />
               <div className="mt-6 divide-y divide-ink-100 rounded-xl border border-ink-200 bg-white px-5" data-testid="help-faq">
                 {faqs.map(({ n, q, a }) => (

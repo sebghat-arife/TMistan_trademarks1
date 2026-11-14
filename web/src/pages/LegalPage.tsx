@@ -78,7 +78,7 @@ export function LegalPage() {
         </InfoBanner>
 
         {/* Policy reader */}
-        <div ref={policyRef} className="mt-12 grid scroll-mt-24 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10" id="policy">
+        <div ref={policyRef} className="mt-12 grid scroll-mt-(--hdr-sticky) gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10" id="policy">
           <article className="min-w-0" data-testid="policy-article" aria-labelledby="policy-title">
             <Link to="/legal" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-700 hover:underline">
               <ArrowLeft className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
@@ -134,7 +134,7 @@ export function LegalPage() {
             </nav>
           </article>
 
-          <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+          <aside className="space-y-5 lg:sticky lg:top-(--hdr-sticky) lg:self-start">
             <SidePanel title={t('legal.nav.title')} tone="white">
               <ul className="mt-3 space-y-1">
                 {POLICIES.map(({ key, slug: s, Icon }) => (
