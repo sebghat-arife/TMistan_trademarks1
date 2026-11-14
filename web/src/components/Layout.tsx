@@ -5,6 +5,7 @@ import { ArrowUpRight, Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
+import { AnnouncementBar } from './AnnouncementBar'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 import { GirihMotif, OrnamentalBand, StarMotif } from './ornament'
 
@@ -43,6 +44,9 @@ export function Layout() {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm">
         {t('app.skipToContent')}
       </a>
+
+      {/* ── Site announcement (normal flow: scrolls away, never covers content) ── */}
+      <AnnouncementBar />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">

@@ -161,6 +161,80 @@
 [dir="ltr"] .bidi-auto { text-align: left; }
 [dir="rtl"] .bidi-auto { text-align: right; }
 
+/* ── Announcement bar (components/AnnouncementBar) ─────────────────────
+   One slim emerald strip above the header. The message is repeated in a
+   track that translates by exactly one copy per loop (CSS animation only),
+   pauses on hover / keyboard focus and is shown statically for visitors who
+   prefer reduced motion. Speed is constant in px/s: the component measures
+   one copy's width into --announce-copy-width and the duration is derived. */
+.announce {
+  background-color: var(--color-brand-900);
+  color: #fff;
+  --announce-speed: 52; /* px per second (desktop) */
+}
+.announce-inner { display: flex; min-height: 38px; align-items: center; gap: 12px; }
+.announce-icon {
+  display: flex; flex-shrink: 0; align-items: center;
+  padding-inline-end: 12px;
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.88);
+}
+.announce-icon svg { width: 15px; height: 15px; }
+.announce-viewport {
+  flex: 1 1 auto; min-width: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent);
+}
+.announce-track {
+  --announce-copy-width: 1500;
+  display: flex; width: max-content;
+  will-change: transform;
+  animation: announce-slide calc(var(--announce-copy-width) / var(--announce-speed) * 1s) linear infinite;
+}
+[dir="rtl"] .announce-track { animation-name: announce-slide-rtl; }
+.announce-item {
+  position: relative; flex-shrink: 0;
+  padding-inline-end: 64px; /* gap between repetitions */
+  white-space: nowrap;
+  font-size: 13px; line-height: 1; font-weight: 500; letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.94);
+}
+/* small separator between repetitions */
+.announce-item::after {
+  content: ''; position: absolute; top: 50%; inset-inline-end: 30px;
+  width: 4px; height: 4px; margin-top: -2px; border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.45);
+}
+.announce:hover .announce-track,
+.announce:focus-within .announce-track { animation-play-state: paused; }
+.announce-close {
+  display: flex; flex-shrink: 0; align-items: center; justify-content: center;
+  width: 26px; height: 26px; margin-inline-end: -6px; border-radius: 6px;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.15s, background-color 0.15s;
+}
+.announce-close:hover { color: #fff; background-color: rgba(255, 255, 255, 0.12); }
+.announce-close:focus-visible { outline-color: #fff; }
+.announce-close svg { width: 14px; height: 14px; }
+/* one copy = 100% / 4 copies */
+@keyframes announce-slide { from { transform: translateX(0); } to { transform: translateX(-25%); } }
+@keyframes announce-slide-rtl { from { transform: translateX(0); } to { transform: translateX(25%); } }
+@media (max-width: 640px) {
+  .announce { --announce-speed: 44; }
+  .announce-inner { min-height: 36px; gap: 10px; }
+  .announce-icon { padding-inline-end: 10px; }
+  .announce-item { padding-inline-end: 48px; font-size: 12px; }
+  .announce-item::after { inset-inline-end: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .announce-track { display: block; width: auto; animation: none; will-change: auto; }
+  .announce-item { display: block; padding: 0; white-space: normal; font-size: 12.5px; line-height: 1.45; }
+  .announce-item + .announce-item, .announce-item::after { display: none; }
+  .announce-viewport { -webkit-mask-image: none; mask-image: none; }
+  .announce-inner { padding-block: 8px; }
+}
+@media print { .announce { display: none; } }
+
 /* ── Homepage (enterprise layout) ─────────────────────────────────────── */
 /* The hero is the search (see .search-hero below); the former banner photo is gone. */
 

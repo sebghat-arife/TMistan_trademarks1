@@ -5,6 +5,11 @@
     "tagline": "TMistan is a platform for searching and exploring trademark records published in the Official Gazette of Afghanistan.",
     "skipToContent": "Skip to content"
   },
+  "announcement": {
+    "label": "Announcement",
+    "message": "TMistan is now live. Trademark records published in the Official Gazettes of Afghanistan are being uploaded continuously as we expand our database. We are also continuously improving the platform to enhance the trademark research experience. Thank you for your patience and support.",
+    "dismiss": "Dismiss announcement"
+  },
   "nav": {
     "search": "Search",
     "about": "About",
