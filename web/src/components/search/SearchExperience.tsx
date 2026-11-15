@@ -7,7 +7,9 @@ import { filterOptionsQuery, registryStatsQuery, searchByNumbersSupportedQuery, 
 import { CLEARED_FILTERS, countActiveFilters, hasAnyCriteria, parseSearchParams, toRpcArgs, toSearchParams, type SearchState } from '@/lib/searchParams'
 import { cn, formatNumber } from '@/lib/utils'
 import { CornerAccent, GirihMotif } from '@/components/ornament'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { Seo } from '@/seo/Seo'
+import { homeGraph } from '@/seo/jsonld'
+import type { SiteLocaleCode } from '@/seo/locales'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
 import { EmptyState, ErrorState } from '@/components/AsyncState'
 import { SearchModeSwitch, type SearchMode } from '@/components/search/SearchModeSwitch'
@@ -89,14 +91,19 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
   const total = page?.total ?? 0
   const pages = Math.max(1, Math.ceil(total / state.perPage))
 
-  useDocumentTitle(
-    imageMode
-      ? `${t('search.image.title')} · ${t('app.shortName')}`
-      : enabled
-        ? `${state.q.trim() ? `${state.q.trim()} — ` : ''}${t('search.resultsTitle')} · ${t('app.shortName')}`
-        : t('app.name'),
-    idle ? t('search.lead') : undefined,
-  )
+  // Head metadata. The landing page is the indexable document; a search (any
+  // query parameter) or the image mode is the same URL with a different state,
+  // so those variants are noindex and point their canonical at the clean path.
+  const lng = (i18n.resolvedLanguage ?? 'en') as SiteLocaleCode
+  const seo = imageMode
+    ? { title: t('seo.imageSearch.title'), description: t('seo.imageSearch.description'), robots: 'noindex,follow' as const }
+    : enabled
+      ? {
+          title: state.q.trim() ? t('seo.searchResults.title', { query: state.q.trim() }) : t('seo.searchResults.titleNoQuery'),
+          description: t('seo.searchResults.description'),
+          robots: 'noindex,follow' as const,
+        }
+      : { title: t('seo.home.title'), description: t('seo.home.description'), robots: undefined }
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,6 +118,13 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
 
   return (
     <div>
+      <Seo
+        title={seo.title}
+        description={seo.description}
+        path="/"
+        robots={seo.robots}
+        jsonLd={idle ? homeGraph(lng, t('seo.siteName'), t('seo.home.description'), t('seo.orgDescription')) : undefined}
+      />
       {/* ── Hero: heading, mode switch, search card (+ aside) ─────────────── */}
       {/* Idle: ivory hero with the Darulaman photograph. Results / image mode: a compact
           navy title band with a faint lattice — the controls and results below stay on plain surfaces. */}

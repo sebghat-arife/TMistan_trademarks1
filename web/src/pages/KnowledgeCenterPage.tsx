@@ -1,24 +1,23 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, BookOpen, ChevronRight, Clock, FileText, GraduationCap, HelpCircle, Lightbulb, Search, ShieldCheck, Tag, X, type LucideIcon } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronRight, Clock, FileText, GraduationCap, HelpCircle, Lightbulb, Scale, Search, ShieldCheck, Tag, X, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, IconBadge, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
 import { CornerAccent } from '@/components/ornament'
 import { ARTICLES, KNOWLEDGE_CATEGORIES, KNOWLEDGE_TOPICS, readingMinutes, searchArticles, type Article, type KnowledgeCategory } from '@/content/knowledge'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 import { cn } from '@/lib/utils'
 
 /** Hero photograph: Kabul University Central Library (CC BY 2.0, cropped) — see public/img/CREDITS.md. */
 const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Kabul_University_Central_Library.jpg'
 
-const TOPIC_ICON: Record<KnowledgeCategory, LucideIcon> = { fundamentals: BookOpen, searching: Search, gazette: FileText, classes: Tag, limits: ShieldCheck }
+const TOPIC_ICON: Record<KnowledgeCategory, LucideIcon> = { fundamentals: BookOpen, searching: Search, gazette: FileText, classes: Tag, law: Scale, limits: ShieldCheck }
 
 const isCategory = (v: string | null): v is KnowledgeCategory => !!v && (KNOWLEDGE_CATEGORIES as string[]).includes(v)
 
 /** /knowledge-center — static editorial hub for the launch articles (see src/content/knowledge.ts). */
 export function KnowledgeCenterPage() {
   const { t } = useTranslation()
-  useDocumentTitle(t('knowledge.metaTitle'), t('knowledge.metaDescription'))
   const [params, setParams] = useSearchParams()
   const query = params.get('q') ?? ''
   const topicParam = params.get('topic')
@@ -67,6 +66,7 @@ export function KnowledgeCenterPage() {
 
   return (
     <div data-testid="knowledge-page">
+      <PageSeo seoKey="knowledge" path="/knowledge-center" type="CollectionPage" robots={params.get('q') ? 'noindex,follow' : undefined} />
       <SplitHero
         accent
         label={t('knowledge.label')}
@@ -81,7 +81,7 @@ export function KnowledgeCenterPage() {
       <div className="container-x py-12 md:py-14">
         {/* Browse by topic */}
         <SectionHeading label={t('knowledge.topics.label')} title={t('knowledge.topics.title')} text={t('knowledge.topics.text')} id="topics" />
-        <ul className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {KNOWLEDGE_TOPICS.map((key) => (
             <li key={key}>
               <FeatureCard

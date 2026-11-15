@@ -26,7 +26,9 @@ import {
 } from 'lucide-react'
 import { ClosingBanner, FeatureCard, IconBadge, InfoBanner, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
 import { readingMinutes, searchArticles } from '@/content/knowledge'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { Seo } from '@/seo/Seo'
+import { breadcrumbList, faqPage } from '@/seo/jsonld'
+import { localizePath, type SiteLocaleCode } from '@/seo/locales'
 import { SITE_CONTACT } from '@/lib/site'
 
 /* ---------------------------------------------------------------------------
@@ -50,8 +52,8 @@ const TOPICS: { key: string; Icon: LucideIcon; to: string }[] = [
 const GLOSSARY = ['class', 'gazette', 'objection', 'applicant'] as const
 
 export function HelpPage() {
-  const { t } = useTranslation()
-  useDocumentTitle(`${t('help.title')} · ${t('app.shortName')}`, t('help.metaDescription'))
+  const { t, i18n } = useTranslation()
+  const lng = (i18n.resolvedLanguage ?? 'en') as SiteLocaleCode
   const [params, setParams] = useSearchParams()
   const query = (params.get('q') ?? '').trim()
   const [draft, setDraft] = useState(query)
@@ -114,8 +116,17 @@ export function HelpPage() {
     </form>
   )
 
+  // Every FAQ shown on the page is also exposed as FAQPage structured data (same questions, same answers).
+  const seoTitle = t('seo.help.title')
+  const seoDescription = t('seo.help.description')
+  const jsonLd = [
+    faqPage({ lng, url: localizePath('/help', lng), name: seoTitle, description: seoDescription, faqs: faqs.map(({ q, a }) => ({ q, a })) }),
+    breadcrumbList([{ name: t('seo.breadcrumbHome'), path: localizePath('/', lng) }, { name: t('help.title'), path: localizePath('/help', lng) }]),
+  ]
+
   return (
     <div data-testid="help-page">
+      <Seo title={seoTitle} description={seoDescription} path="/help" robots={query ? 'noindex,follow' : undefined} jsonLd={jsonLd} />
       <SplitHero
         label={t('help.label')}
         title={t('help.heroTitle')}

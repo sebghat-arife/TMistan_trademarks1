@@ -4,7 +4,9 @@ import { ArrowLeft, ArrowRight, BookOpen, Check, Clock, Info, Languages, Lightbu
 import { InfoBanner, SectionLabel, SidePanel } from '@/components/editorial'
 import { ArticleCard } from '@/pages/KnowledgeCenterPage'
 import { ARTICLE_BY_SLUG, articleToc, articleWordCount, readingMinutes, type ArticleBlock } from '@/content/knowledge'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { Seo } from '@/seo/Seo'
+import { article as articleLd, breadcrumbList } from '@/seo/jsonld'
+import { localizePath, type SiteLocaleCode } from '@/seo/locales'
 import { formatDate } from '@/lib/utils'
 
 /** /knowledge-center/:slug — one launch article (static content, English body). */
@@ -15,9 +17,32 @@ export function KnowledgeArticlePage() {
   const lng = i18n.resolvedLanguage ?? 'en'
   const title = article ? t(`knowledge.articles.${article.slug}.title`, { defaultValue: article.title }) : t('knowledge.article.notFound')
   const summary = article ? t(`knowledge.articles.${article.slug}.summary`, { defaultValue: article.summary }) : ''
-  useDocumentTitle(`${title} | ${t('knowledge.label')} | TMistan`, summary || undefined)
 
   if (!article) return <Navigate to="/knowledge-center" replace />
+
+  // Articles are written in English; the English URL is the canonical page for every language.
+  const path = `/knowledge-center/${article.slug}`
+  const seoLng = lng as SiteLocaleCode
+  const jsonLd = [
+    articleLd({
+      lng: seoLng,
+      url: path,
+      headline: article.title,
+      description: article.summary,
+      image: article.thumbnail,
+      datePublished: article.written,
+      dateModified: article.updated ?? article.written,
+      authorName: 'TMistan',
+      wordCount: articleWordCount(article),
+      keywords: article.keywords,
+      section: t(`knowledge.categories.${article.category}.title`, { lng: 'en' }),
+    }),
+    breadcrumbList([
+      { name: t('seo.breadcrumbHome'), path: localizePath('/', seoLng) },
+      { name: t('knowledge.label'), path: localizePath('/knowledge-center', seoLng) },
+      { name: title, path },
+    ]),
+  ]
 
   const toc = articleToc(article)
   const related = article.related.map((s) => ARTICLE_BY_SLUG[s]).filter(Boolean)
@@ -26,6 +51,18 @@ export function KnowledgeArticlePage() {
 
   return (
     <div data-testid="article-page">
+      <Seo
+        title={t('seo.article.title', { title })}
+        description={summary}
+        path={path}
+        canonical="english"
+        type="article"
+        image={article.thumbnail}
+        imageAlt={title}
+        publishedTime={article.written}
+        modifiedTime={article.updated ?? article.written}
+        jsonLd={jsonLd}
+      />
       <div className="split-hero">
         <div className="container-x relative py-10 md:py-12">
           <Link to="/knowledge-center" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-700 hover:underline">
@@ -201,6 +238,21 @@ function Block({ block }: { block: ArticleBlock }) {
           <img src={block.src} alt={block.alt} loading="lazy" decoding="async" width={1200} height={750} className="w-full rounded-xl border border-ink-200 shadow-sm" />
           <figcaption className="mt-2 text-center text-[12.5px] text-ink-500">{block.caption}</figcaption>
         </figure>
+      )
+    case 'sources':
+      return (
+        <section className="not-prose mt-9 rounded-xl border border-ink-200 bg-ink-50 p-5" aria-labelledby="article-sources">
+          <h2 id="article-sources" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-700">{t('knowledge.article.sources')}</h2>
+          <ol className="mt-3 list-decimal space-y-2 ps-5 text-[13.5px] leading-relaxed text-ink-700">
+            {block.items.map((src) => (
+              <li key={src.href}>
+                <a href={src.href} target="_blank" rel="noopener noreferrer" className="text-brand-700 underline decoration-brand-300 underline-offset-2 hover:text-brand-800">{src.label}</a>
+                <span className="ms-1 text-ink-400" aria-hidden>↗</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-[12.5px] text-ink-500">{t('knowledge.article.sourcesNote')}</p>
+        </section>
       )
   }
 }

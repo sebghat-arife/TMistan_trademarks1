@@ -69,8 +69,15 @@ select id, 'admin' from auth.users where email = '<e-mail>' on conflict do nothi
 ## 4. Web app — Render Static Site
 
 `render.yaml` (Blueprint) = Static Site, root `web`, build `npm ci && npm run build`, publish `dist`,
-rewrite `/* → /index.html`, Node 22.12.0. Environment: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
+rewrite `/* → /app.html`, Node 22.12.0. Environment: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`
+(both needed **at build time** — besides being inlined into the bundle they let `scripts/prerender.mjs`
+read the public records and write the prerendered pages, sitemaps and robots.txt; see `docs/SEO.md`).
+Optional: `SITE_CANONICAL_URL` (default `https://tmistan.com`), `SITE_GA4_MEASUREMENT_ID`.
 Exact click-by-click steps are in the README ("Deploying to Render").
+
+> Since 2026-11-15 the SPA rewrite destination is **`/app.html`**, not `/index.html` (`/index.html` is
+> now the prerendered English home page). A service created by hand in the Dashboard must have its
+> rule updated; the Blueprint already contains it.
 
 Before the first deploy: `python3 scripts/check_supabase.py` (add `--expect-rows N` once you know
 how many records your files contain).

@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, ChevronDown, Globe, Menu, X } from 'lucide-react'
-import { LANGUAGES } from '@/i18n'
+import { LANGUAGES, rememberLanguage } from '@/i18n'
+import { languageSwitchUrl } from '@/seo/clientLocale'
+import type { SiteLocaleCode } from '@/seo/locales'
+import { ConsentBar } from './ConsentBar'
 import { cn } from '@/lib/utils'
 import { Logo } from './Logo'
 import { AnnouncementBar } from './AnnouncementBar'
@@ -161,6 +164,7 @@ export function Layout() {
           </div>
         </div>
       </footer>
+      <ConsentBar />
     </div>
   )
 }
@@ -182,6 +186,17 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   )
 }
 
+/**
+ * The language is part of the URL (/fa/…, /ps/…; English without prefix), so
+ * switching is a navigation to the same page in the other language — the
+ * prerendered document of that language is served and the choice is
+ * remembered for the next visit (see seo/clientLocale.ts).
+ */
+function switchLanguage(lng: SiteLocaleCode) {
+  rememberLanguage(lng)
+  window.location.assign(languageSwitchUrl(window.location, lng))
+}
+
 export function LanguageSwitcher({ className, tone = 'light', size = 'default' }: { className?: string; tone?: 'light' | 'dark'; size?: 'default' | 'header' }) {
   const { i18n, t } = useTranslation()
   const current = LANGUAGES.find((l) => l.code === i18n.resolvedLanguage) ?? LANGUAGES[0]
@@ -192,7 +207,7 @@ export function LanguageSwitcher({ className, tone = 'light', size = 'default' }
       <label className={cn('site-lang relative', className)}>
         <Globe className="site-lang-globe" strokeWidth={1.5} aria-hidden />
         <span className="sr-only">{t('nav.language')}</span>
-        <select value={current.code} onChange={(e) => void i18n.changeLanguage(e.target.value)} className="site-lang-select">
+        <select value={current.code} onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode)} className="site-lang-select">
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code}>
               {l.short}
@@ -209,7 +224,7 @@ export function LanguageSwitcher({ className, tone = 'light', size = 'default' }
       <span className="sr-only">{t('nav.language')}</span>
       <select
         value={current.code}
-        onChange={(e) => void i18n.changeLanguage(e.target.value)}
+        onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode)}
         className={cn('cursor-pointer appearance-none bg-transparent pe-1 text-[14px] font-medium outline-none', text, tone === 'dark' && '[&>option]:text-ink-900')}
       >
         {LANGUAGES.map((l) => (

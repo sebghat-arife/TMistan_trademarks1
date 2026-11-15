@@ -1,10 +1,12 @@
-import { lazy, Suspense, useEffect } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+/* oxlint-disable react/only-export-components -- route tree / build entry, not a Fast Refresh boundary */
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { hydrate, QueryClient, QueryClientProvider, type DehydratedState } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { ConfigScreen } from '@/components/ConfigScreen'
 import { supabaseConfigError } from '@/lib/supabase'
 import { HomePage } from '@/pages/HomePage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // Route-level code splitting: the home page ships in the main bundle, the
 // rest load on demand.
@@ -30,11 +32,13 @@ const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage').then((m
 const AdminInquiriesPage = lazy(() => import('@/pages/admin/AdminInquiriesPage').then((m) => ({ default: m.AdminInquiriesPage })))
 const AdminCorrectionsPage = lazy(() => import('@/pages/admin/AdminCorrectionsPage').then((m) => ({ default: m.AdminCorrectionsPage })))
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
-  },
-})
+export function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: 1, refetchOnWindowFocus: false },
+    },
+  })
+}
 
 /** `/search?…` → `/?…` — the search moved onto the landing page; every query parameter is kept. */
 function SearchRedirect() {
@@ -62,54 +66,80 @@ function PageFallback() {
   return <div className="container-x py-10 text-sm text-ink-400">…</div>
 }
 
-export default function App() {
+/**
+ * The route tree. Shared by the browser (BrowserRouter, below) and the
+ * prerenderer (StaticRouter in entry-server.tsx). Paths are locale-less: the
+ * language prefix (/fa, /ps) is the router basename — see seo/locales.ts.
+ */
+export function AppRoutes() {
+  return (
+    <>
+      <ScrollToTop />
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            {/* The search lives on the landing page; old links and bookmarks keep working. */}
+            <Route path="/search" element={<SearchRedirect />} />
+            <Route path="/trademark/:serial" element={<TrademarkPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/data-sources" element={<DataSourcesPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/knowledge-center" element={<KnowledgeCenterPage />} />
+            <Route path="/knowledge-center/:slug" element={<KnowledgeArticlePage />} />
+            <Route path="/data-corrections" element={<DataCorrectionsPage />} />
+            <Route path="/legal/:policy?" element={<LegalPage />} />
+            {/* Former policy URLs keep working */}
+            <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
+            <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
+            <Route path="/disclaimer" element={<Navigate to="/legal/disclaimer" replace />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            {/* Unknown URLs: a real "not found" page (noindex) instead of a silent redirect to the home page. */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+          <Route path="/admin" element={<AdminLayout />}>
+            {/* Admin Data Management Center — see docs/ADMIN_DATA_MANAGEMENT.md */}
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="trademarks" element={<AdminTrademarksPage />} />
+            <Route path="images" element={<AdminImagesPage mode="all" />} />
+            <Route path="images/unmatched" element={<AdminImagesPage mode="unmatched" />} />
+            <Route path="imports" element={<ImportCenterPage mode="all" />} />
+            <Route path="imports/excel" element={<ImportCenterPage mode="excel" />} />
+            <Route path="imports/images" element={<ImportCenterPage mode="images" />} />
+            <Route path="import" element={<Navigate to="/admin/imports" replace />} />
+            <Route path="history" element={<AdminImportHistoryPage />} />
+            <Route path="storage" element={<AdminStoragePage />} />
+            <Route path="audit" element={<AdminAuditPage />} />
+            <Route path="inquiries" element={<AdminInquiriesPage />} />
+            <Route path="corrections" element={<AdminCorrectionsPage />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Route>
+        </Routes>
+      </Suspense>
+    </>
+  )
+}
+
+export type AppProps = {
+  /** Router basename — '' for English, '/fa' or '/ps' (seo/locales.ts). */
+  basename: string
+  /** Query cache captured by the prerenderer for this page (lets a prerendered record page show its data without a loading state). */
+  dehydratedState?: DehydratedState | null
+}
+
+export default function App({ basename, dehydratedState }: AppProps) {
+  const [queryClient] = useState(() => {
+    const qc = createQueryClient()
+    if (dehydratedState) hydrate(qc, dehydratedState)
+    return qc
+  })
   if (supabaseConfigError) return <ConfigScreen message={supabaseConfigError} />
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
-              {/* The search lives on the landing page; old links and bookmarks keep working. */}
-              <Route path="/search" element={<SearchRedirect />} />
-              <Route path="/trademark/:serial" element={<TrademarkPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/help" element={<HelpPage />} />
-              <Route path="/data-sources" element={<DataSourcesPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/knowledge-center" element={<KnowledgeCenterPage />} />
-              <Route path="/knowledge-center/:slug" element={<KnowledgeArticlePage />} />
-              <Route path="/data-corrections" element={<DataCorrectionsPage />} />
-              <Route path="/legal/:policy?" element={<LegalPage />} />
-              {/* Former policy URLs keep working */}
-              <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
-              <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
-              <Route path="/disclaimer" element={<Navigate to="/legal/disclaimer" replace />} />
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-            <Route path="/admin" element={<AdminLayout />}>
-              {/* Admin Data Management Center — see docs/ADMIN_DATA_MANAGEMENT.md */}
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="trademarks" element={<AdminTrademarksPage />} />
-              <Route path="images" element={<AdminImagesPage mode="all" />} />
-              <Route path="images/unmatched" element={<AdminImagesPage mode="unmatched" />} />
-              <Route path="imports" element={<ImportCenterPage mode="all" />} />
-              <Route path="imports/excel" element={<ImportCenterPage mode="excel" />} />
-              <Route path="imports/images" element={<ImportCenterPage mode="images" />} />
-              <Route path="import" element={<Navigate to="/admin/imports" replace />} />
-              <Route path="history" element={<AdminImportHistoryPage />} />
-              <Route path="storage" element={<AdminStoragePage />} />
-              <Route path="audit" element={<AdminAuditPage />} />
-              <Route path="inquiries" element={<AdminInquiriesPage />} />
-              <Route path="corrections" element={<AdminCorrectionsPage />} />
-              <Route path="*" element={<Navigate to="/admin" replace />} />
-            </Route>
-          </Routes>
-        </Suspense>
+      <BrowserRouter basename={basename}>
+        <AppRoutes />
       </BrowserRouter>
     </QueryClientProvider>
   )

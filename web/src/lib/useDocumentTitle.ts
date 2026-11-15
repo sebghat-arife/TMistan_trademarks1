@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 
-/** Sets <title> and meta description — basic SEO for public record pages. */
+/**
+ * Sets <title> (and optionally the description) for ADMIN pages only. Public
+ * pages declare their metadata with <Seo> (src/seo/head.tsx), which also
+ * manages canonical/hreflang/Open Graph/JSON-LD and works during prerendering.
+ */
 export function useDocumentTitle(title: string, description?: string) {
   useEffect(() => {
     const prev = document.title

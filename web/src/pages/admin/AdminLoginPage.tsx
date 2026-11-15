@@ -5,6 +5,7 @@ import { KeyRound, LogIn } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { isLocalStack } from '@/lib/supabase'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { Seo } from '@/seo/Seo'
 import { Logo } from '@/components/Logo'
 
 export function AdminLoginPage() {
@@ -34,6 +35,7 @@ export function AdminLoginPage() {
 
   return (
     <div className="container-x flex justify-center py-16">
+      <Seo title={t('seo.admin.title')} description={t('seo.admin.title')} path="/admin/login" canonical="english" robots="noindex,nofollow" />
       <form onSubmit={submit} className="card w-full max-w-md p-8">
         <Logo className="mx-auto h-12" />
         <h1 className="mt-6 text-center font-serif text-[24px] font-semibold text-navy-900">{t('admin.loginTitle')}</h1>

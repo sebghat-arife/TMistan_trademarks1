@@ -14,7 +14,7 @@
  * (~3.9 MB JS+wasm, SIMD build) and the language models (eng 2.0 MB, fas 0.3 MB,
  * pus 1.4 MB, gzip). Both are served from this static site.
  */
-import { createWorker, OEM, PSM, type Block, type Worker } from 'tesseract.js'
+import type { Block, PSM, Worker } from 'tesseract.js'
 import { simd } from 'wasm-feature-detect'
 import workerUrl from 'tesseract.js/dist/worker.min.js?url'
 import coreSimdUrl from 'tesseract.js-core/tesseract-core-simd-lstm.wasm.js?url'
@@ -116,7 +116,12 @@ function friendlyStartupError(err: unknown): Error {
   return new Error(raw || 'Text recognition could not be started.')
 }
 
+/** tesseract.js itself (≈63 kB) is fetched only when text recognition actually starts — never on page load. */
+let tesseractModule: Promise<typeof import('tesseract.js')> | null = null
+const loadTesseract = () => (tesseractModule ??= import('tesseract.js'))
+
 async function spawn(onProgress?: (p: number, step: 'core' | 'language' | 'init') => void): Promise<Slot> {
+  const { createWorker, OEM } = await loadTesseract()
   const corePath = (await simd()) ? coreSimdUrl : coreUrl
   const base = import.meta.env.BASE_URL.replace(/\/$/, '')
   // Tesseract.js reports download/initialisation failures through `errorHandler` and never
@@ -259,6 +264,7 @@ async function runPass(pass: Pass, maxWorkers: number, signal?: AbortSignal): Pr
   try {
     if (signal?.aborted) return []
     if (slot.langs !== pass.lang) {
+      const { OEM } = await loadTesseract()
       await slot.worker.reinitialize(pass.lang, OEM.LSTM_ONLY)
       slot.langs = pass.lang
     }
@@ -330,6 +336,7 @@ export async function recogniseImage(img: LoadedImage, opts: RecogniseOptions = 
       passes += 1
     }
   }
+  const { PSM } = await loadTesseract()
   await both(normal, PSM.SINGLE_BLOCK)
   if (!good(found) && budgetLeft()) await both(inverted, PSM.SINGLE_BLOCK)
   if (!found.length && budgetLeft()) await both(normal, PSM.SPARSE_TEXT) // sparse mode only when nothing plausible at all

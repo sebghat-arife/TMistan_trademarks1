@@ -96,7 +96,7 @@ service-role key exists only on the machine that runs importers / the storage se
 |---|---|---|
 | `web/` | React 19 + TypeScript + Vite + Tailwind SPA (the product) | **yes** (built to static files) |
 | `web/src/services/` | the centralised data-access layer — the *only* place that talks to Supabase | yes |
-| `render.yaml` | **Render Blueprint — Static Site** (root `web`, `npm ci && npm run build`, publish `dist`, SPA rewrite) | — |
+| `render.yaml` | **Render Blueprint — Static Site** (root `web`, `npm ci && npm run build` incl. SEO prerender, publish `dist`, rewrite `/*` → `/app.html`) | — |
 | `Dockerfile`, `deploy/nginx.conf.template`, `.dockerignore` | *optional* container image for Docker hosts (Railway, Fly…) — not needed for Render | — |
 | `web/src/pages/admin/ImportCenterPage.tsx`, `web/src/lib/import/` | Admin Import Center: spreadsheet parsing/validation (official 21-column structure), image intake (ZIP, sniffing, hashing), serial matching | yes |
 | `web/src/pages/admin/Admin*Page.tsx`, `web/src/services/admin_data_service.ts`, `web/src/components/admin/AdminUi.tsx` | Admin Data Management Center (records, images, history, storage, audit) — typed client for the 0600 RPCs, confirmation dialogs | yes |
@@ -193,7 +193,8 @@ python3 scripts/local-stack/static_storage.py local-storage 54322 &
 cd web && npm run dev
 ```
 
-Quality gates: `cd web && npx tsc -b && npm run lint && npm run build`.
+Quality gates: `cd web && npm run check` (typecheck, lint, build + prerender — the build needs `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY` in the environment because the prerenderer reads the public records; see `docs/SEO.md`).
 
 ## Supabase configuration (one-time, done by a project owner)
 
@@ -298,8 +299,10 @@ unmatched/ambiguous files are parked for review and never shown publicly. Every 
    Firm website, defaults to `https://www.masnadip.af/`).
    Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the frontend never uses it.
 4. **Apply / Deploy**. Build log should end with `✓ built in …` and "Your site is live".
-5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /index.html`).
-   For a hand-made service: Redirects/Rewrites → Add rule → Source `/*`, Destination `/index.html`, Action **Rewrite**.
+5. **SPA rewrite** — already declared in `render.yaml` (`routes: rewrite /* → /app.html`).
+   For a hand-made service: Redirects/Rewrites → Add rule → Source `/*`, Destination **`/app.html`**, Action **Rewrite**.
+   (`/app.html` is the SPA shell; prerendered pages — home, static pages in 3 languages, eligible
+   record pages — are real files in `dist/` and are served directly. See `docs/SEO.md`.)
 6. **Verify** — open `https://tmistan.onrender.com` (or your name): the home page shows the real
    counts from the database; reload `/?q=<a mark you imported>` and
    `/trademark/<serial>` directly (no 404 thanks to the rewrite).

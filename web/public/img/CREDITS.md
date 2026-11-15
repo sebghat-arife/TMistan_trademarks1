@@ -63,7 +63,33 @@ locale, 1366 px viewport, captured 2026-10-13). No stock or generated imagery.
 | `fig-record-page.jpg` | Record page of 1022-073 (Edifier, OG 1022, page 15-16) |
 | `fig-image-search.jpg` | Search by Image mode |
 | `fig-data-sources.jpg` | Data Sources & Methodology page (top) |
-| `<article-slug>.jpg` | 600×480 thumbnails cropped from the same captures |
+| `<article-slug>.jpg` (launch articles) | 600×480 thumbnails cropped from the same captures |
 
 Re-capture these after a visible change to the Search, record or Data Sources pages so the
 figures keep matching the real interface.
+
+### Law & procedure series (added 2026-11-15)
+
+The fifteen articles on Afghan trademark law, procedure and treaties have no interface to
+screenshot, so their 600×480 thumbnails are **typographic cards** rendered from the TMistan design
+tokens (ivory background, brand-green band, Source Serif 4 / Inter from the app's own font packages,
+the TMistan logo). They are produced by `tools/kc_cards/make_cards.py` — plain typography, no stock,
+AI-generated or historic imagery. Re-run the script after changing a title or key fact.
+
+| File | Card text |
+|---|---|
+| `trademark-registration-process-afghanistan.jpg` | "Application → Gazette" |
+| `afghanistan-trademark-law-overview.jpg` | "5 chapters · 36 articles" |
+| `what-can-be-registered-as-a-trademark-in-afghanistan.jpg` | "15 excluded categories" |
+| `trademark-opposition-in-afghanistan.jpg` | "30 days" |
+| `trademark-renewal-and-validity-afghanistan.jpg` | "10 years" |
+| `madrid-protocol-afghanistan.jpg` | "26 June 2018" |
+| `afghanistan-ip-treaties.jpg` | "2005 → 2021" |
+| `trademark-assignment-and-ownership-changes.jpg` | "Assignment · Change · Merger" |
+| `well-known-marks-afghanistan.jpg` | "Used in two or more countries" |
+| `trademark-infringement-and-penalties-afghanistan.jpg` | "Compensation · Confiscation" |
+| `first-use-and-ownership-afghanistan.jpg` | "First use" |
+| `how-to-check-if-a-trademark-is-taken-in-afghanistan.jpg` | "6 steps" |
+| `nice-classes-for-common-goods-and-services.jpg` | "45 classes" |
+| `trademark-search-for-foreign-companies-afghanistan.jpg` | "6-month priority" |
+| `glossary-of-afghanistan-trademark-terms.jpg` | "A → Z" |

@@ -19,9 +19,10 @@ import { reactPdfTextkitFix } from './vite-plugins/reactPdfTextkitFix.ts'
  */
 /** Default public website of Masnad Law Firm (overridable with SITE_MASNAD_URL). */
 const DEFAULT_MASNAD_URL = 'https://www.masnadip.af/'
-/** Default canonical public origin of TMistan (overridable with SITE_CANONICAL_URL); used for links in
- * generated documents such as the PDF Trademark Publication Report. */
-const DEFAULT_CANONICAL_URL = 'https://www.tmistan.com'
+/** Default canonical public origin of TMistan (overridable with SITE_CANONICAL_URL). The apex domain is the
+ * primary host in production (www. redirects to it). Used for canonical/hreflang links, structured data,
+ * the sitemap and links inside generated documents such as the PDF Trademark Publication Report. */
+const DEFAULT_CANONICAL_URL = 'https://tmistan.com'
 
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
@@ -84,6 +85,8 @@ export default defineConfig(({ mode }) => {
       }),
       // Canonical public origin (no trailing slash). Not a secret.
       __SITE_CANONICAL_URL__: JSON.stringify((env.SITE_CANONICAL_URL || DEFAULT_CANONICAL_URL).replace(/\/+$/, '')),
+      // Google Analytics 4 measurement ID (optional, e.g. G-XXXXXXXXXX). Loaded only after visitor consent — see src/seo/analytics.ts.
+      __SITE_GA4_ID__: JSON.stringify(env.SITE_GA4_MEASUREMENT_ID ?? ''),
     },
     server: {
       host: '0.0.0.0',
@@ -101,7 +104,7 @@ export default defineConfig(({ mode }) => {
             groups: [
               { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
               { name: 'vendor-supabase', test: /node_modules[\\/]@supabase[\\/]/ },
-              { name: 'vendor-i18n', test: /node_modules[\\/](i18next|react-i18next|i18next-browser-languagedetector)[\\/]/ },
+              { name: 'vendor-i18n', test: /node_modules[\\/](i18next|react-i18next)[\\/]/ },
             ],
           },
         },

@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { AlertCircle, ArrowLeft, ArrowRight, Check, Copyright, FileText, Info, Scale, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, InfoBanner, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
 import { StarDivider } from '@/components/ornament'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
+import { localizePath, type SiteLocaleCode } from '@/seo/locales'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -35,7 +36,6 @@ export function LegalPage() {
   const current: PolicyKey = entry?.key ?? 'terms'
   const policy = t(`legal.policies.${current}`, { returnObjects: true }) as Policy
   const hubTitle = t('legal.title')
-  useDocumentTitle(slug && entry ? `${policy.title} | TMistan` : t('legal.metaTitle'), t('legal.metaDescription'))
 
   const policyRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -50,8 +50,18 @@ export function LegalPage() {
     { key: 'responsible', Icon: Scale },
   ]
 
+  const lng = (i18n.resolvedLanguage ?? 'en') as SiteLocaleCode
+  const policyPath = slug && entry ? `/legal/${entry.slug}` : '/legal'
+
   return (
     <div data-testid="legal-page">
+      <PageSeo
+        seoKey="legal"
+        path={policyPath}
+        title={slug && entry ? t('seo.legal.policyTitle', { policy: policy.title }) : undefined}
+        description={slug && entry ? policy.short : undefined}
+        crumbs={slug && entry ? [{ name: hubTitle, path: localizePath('/legal', lng) }, { name: policy.title, path: localizePath(policyPath, lng) }] : []}
+      />
       <SplitHero
         label={t('legal.label')}
         title={hubTitle}

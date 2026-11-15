@@ -6,12 +6,18 @@
 #   Root Directory ..... web
 #   Build Command ...... npm ci && npm run build
 #   Publish Directory .. dist
-#   Redirects/Rewrites . /*  →  /index.html   (Rewrite)
+#   Redirects/Rewrites . /*  →  /app.html   (Rewrite — the SPA shell; prerendered pages are real files and win)
 #   Environment ........ SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY   (public values; NEVER the secret key)
 #                        optional: SITE_MASNAD_URL (public website of Masnad Law Firm linked from the
 #                        homepage/footer; defaults to https://www.masnadip.af/ — empty string = no link)
-#                        optional: SITE_CANONICAL_URL (public origin used in generated PDF reports;
-#                        defaults to https://www.tmistan.com)
+#                        optional: SITE_CANONICAL_URL (canonical public origin — canonical/hreflang links,
+#                        sitemap, structured data, PDF reports; defaults to https://tmistan.com, the apex
+#                        domain to which www. redirects)
+#                        optional: SITE_GA4_MEASUREMENT_ID (Google Analytics 4 "G-…" id; analytics load only
+#                        after the visitor agrees — see docs/SEO.md)
+#
+#   SEO (docs/SEO.md): `npm run build` also prerenders every public page (3 languages), eligible
+#   trademark records, sitemap.xml and robots.txt into dist/ — still a plain static site.
 #
 #   "Search by Image" (text recognition + near-duplicate matching) needs NO second service and no
 #   extra variable: the recogniser (Tesseract.js) is served from this static site (web/public/ocr/)
@@ -41,11 +47,11 @@ services:
       - key: SITE_MASNAD_URL
         value: https://www.masnadip.af/   # public Masnad Law Firm website (not a secret); "" disables the link
       - key: SITE_CANONICAL_URL
-        value: https://www.tmistan.com    # canonical public origin used for links inside generated PDF reports
+        value: https://tmistan.com        # canonical public origin (apex; www. 301s here) — canonicals, hreflang, sitemap, PDFs
     routes:
-      - type: rewrite                     # client-side routing: every path serves the SPA
+      - type: rewrite                     # client-side routing: URLs without a prerendered file serve the SPA shell
         source: /*
-        destination: /index.html
+        destination: /app.html
     headers:
       - path: /*
         name: X-Content-Type-Options
@@ -56,6 +62,9 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - path: /admin/*
+        name: X-Robots-Tag
+        value: noindex, nofollow          # administration area is never indexed (the pages also carry a robots meta tag)
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable

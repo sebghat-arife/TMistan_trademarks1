@@ -7,9 +7,10 @@
  * taken from the real interface (see the kc/ section of web/public/img/CREDITS.md).
  * Reading times are computed from the word count — never hand-written.
  * ------------------------------------------------------------------------- */
+import { LAW_ARTICLES } from './knowledgeLaw'
 
-export type KnowledgeCategory = 'fundamentals' | 'searching' | 'gazette' | 'classes' | 'limits'
-export const KNOWLEDGE_TOPICS: KnowledgeCategory[] = ['searching', 'gazette', 'classes', 'limits']
+export type KnowledgeCategory = 'fundamentals' | 'searching' | 'gazette' | 'classes' | 'law' | 'limits'
+export const KNOWLEDGE_TOPICS: KnowledgeCategory[] = ['searching', 'gazette', 'classes', 'law', 'limits']
 export const KNOWLEDGE_CATEGORIES: KnowledgeCategory[] = ['fundamentals', ...KNOWLEDGE_TOPICS]
 
 export type ArticleBlock =
@@ -21,6 +22,8 @@ export type ArticleBlock =
   | { type: 'example'; title: string; rows: [string, string][]; caption?: string }
   | { type: 'note'; title: string; text: string }
   | { type: 'figure'; src: string; alt: string; caption: string }
+  /** Cited sources, rendered as an external-links list at the end of the body. */
+  | { type: 'sources'; items: readonly { label: string; href: string }[] }
 
 export type Article = {
   slug: string
@@ -31,6 +34,8 @@ export type Article = {
   summary: string
   /** Date the text was written (real authoring date). */
   written: string
+  /** Date of the last substantive revision, when later than `written` (sitemap lastmod / article:modified_time). */
+  updated?: string
   thumbnail: string
   featured: boolean
   body: ArticleBlock[]
@@ -43,7 +48,8 @@ export type Article = {
 
 const WRITTEN = '2026-10-13'
 
-export const ARTICLES: Article[] = [
+/** Launch articles (October 2026). The law/procedure series lives in knowledgeLaw.ts. */
+const LAUNCH_ARTICLES: Article[] = [
   /* ───────────────────────────── 1. What is a trademark ───────────────────────────── */
   {
     slug: 'what-is-a-trademark',
@@ -393,6 +399,8 @@ export const ARTICLES: Article[] = [
   },
 ]
 
+export const ARTICLES: Article[] = [...LAUNCH_ARTICLES, ...LAW_ARTICLES]
+
 export const ARTICLE_BY_SLUG: Record<string, Article> = Object.fromEntries(ARTICLES.map((a) => [a.slug, a]))
 
 /** Words per minute used for the displayed reading time (a common average for adult readers). */
@@ -414,6 +422,8 @@ function blockText(b: ArticleBlock): string {
       return `${b.title} ${b.text}`
     case 'figure':
       return b.caption
+    case 'sources':
+      return ''
   }
 }
 

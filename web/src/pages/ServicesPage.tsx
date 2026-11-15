@@ -18,7 +18,7 @@ import {
   Users,
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 
 /** Service cards; `research` maps to the research-type option preselected on the contact form. */
 const SERVICES = [
@@ -35,7 +35,6 @@ const REQUEST_URL = '/contact?type=trademark-research'
 /** /services — professional research assistance offered through Masnad Law Firm (inquiry-based, never automated). */
 export function ServicesPage() {
   const { t } = useTranslation()
-  useDocumentTitle(t('services.metaTitle'), t('services.metaDescription'))
 
   const steps = t('services.process.steps', { returnObjects: true }) as { title: string; text: string }[]
   const audience = t('services.audience.items', { returnObjects: true }) as string[]
@@ -44,6 +43,7 @@ export function ServicesPage() {
 
   return (
     <div data-testid="services-page">
+      <PageSeo seoKey="services" path="/services" />
       <PageHero
         eyebrow={t('services.eyebrow')}
         title={t('services.title')}

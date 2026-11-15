@@ -1,9 +1,7 @@
 import i18n from 'i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import en from './locales/en.json'
-import fa from './locales/fa.json'
-import ps from './locales/ps.json'
+import { isSiteLocale, siteLocale, type SiteLocaleCode } from '@/seo/locales'
 
 export const LANGUAGES = [
   { code: 'en', label: 'English', short: 'EN', dir: 'ltr' },
@@ -13,24 +11,64 @@ export const LANGUAGES = [
 
 export type LanguageCode = (typeof LANGUAGES)[number]['code']
 
-void i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources: { en: { translation: en }, fa: { translation: fa }, ps: { translation: ps } },
-    fallbackLng: 'en',
-    supportedLngs: LANGUAGES.map((l) => l.code),
-    interpolation: { escapeValue: false },
-    detection: { order: ['querystring', 'localStorage', 'navigator'], lookupQuerystring: 'lang', caches: ['localStorage'] },
-  })
+/**
+ * The language is part of the URL (/fa/…, /ps/…, English without prefix — see
+ * seo/locales.ts). The stored preference uses the key the former browser
+ * language detector wrote, so returning visitors keep their choice.
+ */
+export const LANGUAGE_STORAGE_KEY = 'i18nextLng'
 
-export function applyDocumentDirection(lng: string) {
-  const lang = LANGUAGES.find((l) => l.code === lng) ?? LANGUAGES[0]
-  document.documentElement.lang = lang.code
-  document.documentElement.dir = lang.dir
+/* Only English ships in the main bundle; Dari and Pashto are loaded on demand
+ * for the language in the URL (≈200 kB of JSON each that English visitors
+ * never needed). The prerenderer loads whichever language it is rendering. */
+const LOCALE_LOADERS: Record<Exclude<SiteLocaleCode, 'en'>, () => Promise<{ default: Record<string, unknown> }>> = {
+  fa: () => import('./locales/fa.json'),
+  ps: () => import('./locales/ps.json'),
 }
 
-applyDocumentDirection(i18n.resolvedLanguage ?? 'en')
-i18n.on('languageChanged', applyDocumentDirection)
+void i18n.use(initReactI18next).init({
+  resources: { en: { translation: en } },
+  lng: 'en',
+  fallbackLng: 'en',
+  supportedLngs: LANGUAGES.map((l) => l.code),
+  partialBundledLanguages: true,
+  interpolation: { escapeValue: false },
+  initAsync: false,
+})
+
+/** Make sure a language's resources are loaded, then activate it. */
+export async function loadLanguage(lng: SiteLocaleCode): Promise<void> {
+  if (lng !== 'en' && !i18n.hasResourceBundle(lng, 'translation')) {
+    const mod = await LOCALE_LOADERS[lng]()
+    i18n.addResourceBundle(lng, 'translation', mod.default, true, true)
+  }
+  if (i18n.resolvedLanguage !== lng) await i18n.changeLanguage(lng)
+}
+
+export function applyDocumentDirection(lng: string) {
+  if (typeof document === 'undefined') return
+  const locale = siteLocale(lng)
+  document.documentElement.lang = locale.htmlLang
+  document.documentElement.dir = locale.dir
+}
+
+if (typeof document !== 'undefined') i18n.on('languageChanged', applyDocumentDirection)
+
+export function storedLanguage(): SiteLocaleCode | null {
+  try {
+    const v = localStorage.getItem(LANGUAGE_STORAGE_KEY)
+    return isSiteLocale(v) ? v : null
+  } catch {
+    return null
+  }
+}
+
+export function rememberLanguage(lng: SiteLocaleCode) {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lng)
+  } catch {
+    /* storage unavailable (private mode) — the URL still carries the language */
+  }
+}
 
 export default i18n

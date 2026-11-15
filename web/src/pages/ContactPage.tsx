@@ -20,7 +20,7 @@ import {
   FileSearch,
 } from 'lucide-react'
 import { PageHero } from '@/components/PageHero'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 import { cn } from '@/lib/utils'
 import {
@@ -92,7 +92,6 @@ function pick<T extends string>(raw: string | null, allowed: readonly T[]): T | 
 /** /contact — public inquiry form (server-validated, rate-limited, stored privately) plus the approved contact details. */
 export function ContactPage() {
   const { t, i18n } = useTranslation()
-  useDocumentTitle(t('contact.metaTitle'), t('contact.metaDescription'))
   const [params, setParams] = useSearchParams()
 
   const type: InquiryType = isInquiryType(params.get('type')) ? (params.get('type') as InquiryType) : 'general'
@@ -222,6 +221,7 @@ export function ContactPage() {
 
   return (
     <div data-testid="contact-page">
+      <PageSeo seoKey="contact" path="/contact" type="ContactPage" />
       <PageHero eyebrow={t('contact.eyebrow')} title={t('contact.title')} motif="none">
         <p>{t('contact.intro1')}</p>
         <p>{t('contact.intro2')}</p>

@@ -27,7 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClosingBanner, FeatureCard, NumberedSteps, SectionHeading, SectionLabel, SidePanel, SplitHero } from '@/components/editorial'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 
 /** Hero image: illuminated frontispiece of the Makhzan al-Asrar, Herat, late 15th century (LACMA, public domain, cropped) — see public/img/CREDITS.md. */
 const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Illuminated_frontispiece_from_the_Makhzan_al-Asrar_(Treasury_of_Mysteries)_LACMA_M.73.5.529.jpg'
@@ -73,7 +73,6 @@ type Outcome = { receipt: CorrectionReceipt; uploads: EvidenceUploadResult[] }
 /** /data-corrections — public, controlled correction workflow (migration 0900). */
 export function DataCorrectionsPage() {
   const { t, i18n } = useTranslation()
-  useDocumentTitle(t('corrections.metaTitle'), t('corrections.metaDescription'))
   const [params] = useSearchParams()
 
   // Deep links: /data-corrections?type=image&serial=1022-073  or  ?gazette=1022
@@ -218,6 +217,7 @@ export function DataCorrectionsPage() {
 
   return (
     <div data-testid="corrections-page">
+      <PageSeo seoKey="corrections" path="/data-corrections" />
       <SplitHero
         label={t('corrections.label')}
         title={t('corrections.title')}

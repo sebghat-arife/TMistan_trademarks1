@@ -17,5 +17,13 @@ export const APP_VERSION = __APP_VERSION__
 /** Public website of Masnad Law Firm, or '' when not configured (links are then omitted). */
 export const MASNAD_URL = /^https?:\/\//i.test(SITE_CONTACT.masnad ?? '') ? SITE_CONTACT.masnad : ''
 
-/** Canonical public origin of the site (e.g. https://www.tmistan.com), without a trailing slash. */
-export const CANONICAL_URL = /^https?:\/\//i.test(__SITE_CANONICAL_URL__ ?? '') ? __SITE_CANONICAL_URL__.replace(/\/+$/, '') : window.location.origin
+/**
+ * Canonical public origin of the site (https://tmistan.com — the apex domain is the primary
+ * host; www.tmistan.com redirects to it), without a trailing slash. Used for canonical links,
+ * hreflang alternates, Open Graph URLs, structured data, the sitemap and PDF reports.
+ */
+export const CANONICAL_URL = /^https?:\/\//i.test(__SITE_CANONICAL_URL__ ?? '')
+  ? __SITE_CANONICAL_URL__.replace(/\/+$/, '')
+  : typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://tmistan.com'

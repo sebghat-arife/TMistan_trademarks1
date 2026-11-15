@@ -29,7 +29,7 @@ import {
 import { ClosingBanner, FeatureCard, IconBadge, InfoBanner, SectionHeading, SectionLabel, SidePanel, SplitHero } from '@/components/editorial'
 import { CornerAccent, StarDivider } from '@/components/ornament'
 import { registryStatsQuery, trademarksByClassQuery } from '@/services'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 import { formatNumber } from '@/lib/utils'
 
 /* ---------------------------------------------------------------------------
@@ -68,7 +68,6 @@ const GLANCE: { key: string; Icon: LucideIcon; to: string }[] = [
 export function AboutPage() {
   const { t, i18n } = useTranslation()
   const lng = i18n.resolvedLanguage
-  useDocumentTitle(`${t('about.title')} · ${t('app.shortName')}`, t('about.metaDescription'))
 
   const stats = useQuery(registryStatsQuery())
   const byClass = useQuery(trademarksByClassQuery())
@@ -93,6 +92,7 @@ export function AboutPage() {
 
   return (
     <div data-testid="about-page">
+      <PageSeo seoKey="about" path="/about" type="AboutPage" />
       <SplitHero
         label={t('about.label')}
         title={t('about.title')}

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
 import { GirihMotif, StarDivider } from '@/components/ornament'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { PageSeo } from '@/seo/PageSeo'
 import { REPORT_DISCLAIMER } from '@/lib/pdf/disclaimer'
 
 const FIELD_ICONS = {
@@ -47,7 +47,6 @@ const FLOW = [
 /** /data-sources — where the records come from, how they are organised, and what they can and cannot tell a reader. */
 export function DataSourcesPage() {
   const { t } = useTranslation()
-  useDocumentTitle(t('dataSources.metaTitle'), t('dataSources.metaDescription'))
 
   const approach = t('dataSources.quality.approach', { returnObjects: true }) as string[]
   const points = t('dataSources.coverage.points', { returnObjects: true }) as string[]
@@ -55,6 +54,7 @@ export function DataSourcesPage() {
 
   return (
     <div data-testid="data-sources-page">
+      <PageSeo seoKey="dataSources" path="/data-sources" />
       <PageHero eyebrow={t('dataSources.eyebrow')} title={t('dataSources.title')} imagePosition="75% 40%" imageOpacity={0.45} accent>
         <p>{t('dataSources.intro1')}</p>
         <p>{t('dataSources.intro2')}</p>

@@ -2272,6 +2272,10 @@
         "title": "Trademark Classes",
         "text": "Learn about classes, goods and services, and how they are organized."
       },
+      "law": {
+        "title": "Trademark Law & Procedure",
+        "text": "Afghanistan’s trademark law, registration, opposition, renewal and international treaties, explained for researchers."
+      },
       "limits": {
         "title": "Limits & Important Considerations",
         "text": "Understand what TMistan includes, what it doesn't, and how to use the information responsibly."
@@ -2336,7 +2340,9 @@
       "disclaimer": "This article explains how to use TMistan and general trademark concepts. It is not legal advice, does not describe the current legal status of any mark and does not create a lawyer-client relationship. For decisions with legal or commercial consequences, consult a qualified professional.",
       "englishOnly": "This article is currently available in English only.",
       "notFound": "This article does not exist.",
-      "policies": "See also the <1>Disclaimer</1> and the <3>Data Sources & Methodology</3> page."
+      "policies": "See also the <1>Disclaimer</1> and the <3>Data Sources & Methodology</3> page.",
+      "sources": "Sources",
+      "sourcesNote": "External links open in a new tab. TMistan is not responsible for the content of external sites; official texts in Dari and Pashto take precedence over translations."
     },
     "articles": {
       "what-is-a-trademark": {
@@ -2362,6 +2368,66 @@
       "what-a-search-can-and-cannot-tell-you": {
         "title": "What a Trademark Search Can and Cannot Tell You",
         "summary": "Understand what TMistan includes, what it doesn’t, and how to use the information responsibly."
+      },
+      "trademark-registration-process-afghanistan": {
+        "title": "How Trademark Registration Works in Afghanistan: From Application to Gazette",
+        "summary": "Application, examination within 30 days, registration, Gazette publication and the ten-year term — and where TMistan’s records sit in that path."
+      },
+      "afghanistan-trademark-law-overview": {
+        "title": "Afghanistan’s Law on Trade Marks Registration: An Overview",
+        "summary": "What the 2009 law covers, chapter by chapter, and how to read it alongside TMistan’s records."
+      },
+      "what-can-be-registered-as-a-trademark-in-afghanistan": {
+        "title": "What Can and Cannot Be Registered as a Trademark in Afghanistan",
+        "summary": "The forms a mark may take and the fifteen categories of signs the law excludes — flags, religious symbols, generic words, misleading marks and more."
+      },
+      "trademark-opposition-in-afghanistan": {
+        "title": "Trademark Opposition in Afghanistan: The 30-Day Window After Gazette Publication",
+        "summary": "Who may object, the statutory deadlines, and what the “Objection Deadline” on a record refers to."
+      },
+      "trademark-renewal-and-validity-afghanistan": {
+        "title": "How Long Does a Trademark Last in Afghanistan? Validity, Renewal and Lapse",
+        "summary": "The ten-year term, the six-month renewal rule and the ways ownership of a trademark ends — including three years of non-use."
+      },
+      "madrid-protocol-afghanistan": {
+        "title": "Afghanistan and the Madrid System: International Trademark Registrations",
+        "summary": "Afghanistan joined the Madrid Protocol in 2018. What that means for designations, where to look them up, and why they are a separate source from Gazette records."
+      },
+      "afghanistan-ip-treaties": {
+        "title": "Afghanistan’s Membership of International Intellectual Property Treaties",
+        "summary": "From the WIPO Convention in 2005 to the Madrid Protocol in 2018 — the treaties Afghanistan has joined and what each means for trademark owners."
+      },
+      "trademark-assignment-and-ownership-changes": {
+        "title": "Assignments, Owner Changes and Address Changes in Gazette Records",
+        "summary": "Why transfers and changes are published, what the law requires, and how TMistan shows notice types and recorded changes."
+      },
+      "well-known-marks-afghanistan": {
+        "title": "Well-Known Marks Under Afghan Trademark Law",
+        "summary": "A mark used in two or more countries is protected without local registration. What that broad definition means in practice."
+      },
+      "trademark-infringement-and-penalties-afghanistan": {
+        "title": "Trademark Infringement in Afghanistan: Violations, Remedies and Penalties",
+        "summary": "The acts the law treats as violations and the remedies: compensation, doubled damages or imprisonment for repeat violations, confiscation and closure."
+      },
+      "first-use-and-ownership-afghanistan": {
+        "title": "Who Owns a Trademark in Afghanistan? First Use, Registration and Non-Use",
+        "summary": "The first-user presumption, the role of registration and continuous use, and how ownership is lost."
+      },
+      "how-to-check-if-a-trademark-is-taken-in-afghanistan": {
+        "title": "How to Check Whether a Trademark Is Already Taken in Afghanistan",
+        "summary": "A step-by-step method for checking a name or logo against the published records and WIPO’s international register."
+      },
+      "nice-classes-for-common-goods-and-services": {
+        "title": "Choosing Nice Classes: Examples for Common Goods and Services",
+        "summary": "The 45 classes in brief, where everyday goods and services fall, and how to use the class filter on TMistan."
+      },
+      "trademark-search-for-foreign-companies-afghanistan": {
+        "title": "Trademark Research in Afghanistan for Foreign Businesses",
+        "summary": "National treatment, the six-month priority rule, the Madrid route since 2018 and how to research publications from abroad."
+      },
+      "glossary-of-afghanistan-trademark-terms": {
+        "title": "Glossary of Afghanistan Trademark Terms",
+        "summary": "Short definitions of the terms used on TMistan and in the law — from applicant and serial number to objection deadline and designation."
       }
     },
     "photoCredit": "Photo: Kabul University Central Library — stepnout (Flickr), via Wikimedia Commons, CC BY 2.0 (cropped)"
@@ -2556,5 +2622,91 @@
       "button": "Learn More About Our Process"
     },
     "photoCredit": "Image: Makhzan al-Asrar frontispiece, Herat, late 15th century — LACMA, public domain, via Wikimedia Commons (cropped)"
+  },
+  "seo": {
+    "siteName": "TMistan",
+    "orgDescription": "TMistan is a trademark research platform developed by Masnad Law Firm to make trademark information published in the Official Gazette of Afghanistan more accessible.",
+    "home": {
+      "title": "TMistan – Afghanistan Trademark Search & Research Platform",
+      "description": "Search Afghanistan trademark records published in the Official Gazette by name, applicant, class or image. A research platform developed by Masnad Law Firm."
+    },
+    "searchResults": {
+      "title": "{{query}} – Afghanistan Trademark Search Results | TMistan",
+      "titleNoQuery": "Afghanistan Trademark Search Results | TMistan",
+      "description": "Trademark records published in the Official Gazette of Afghanistan that match your search on TMistan."
+    },
+    "imageSearch": {
+      "title": "Trademark Search by Image – Afghanistan | TMistan",
+      "description": "Upload a logo or mark image to find visually similar trademark records published in the Official Gazette of Afghanistan."
+    },
+    "services": {
+      "title": "Trademark Research Services in Afghanistan | TMistan",
+      "description": "Tailored Afghanistan trademark research through Masnad Law Firm: availability and similar-mark research, Gazette history, record review and portfolio reports."
+    },
+    "dataSources": {
+      "title": "Data Sources & Methodology | TMistan Afghanistan Trademarks",
+      "description": "Where TMistan's Afghanistan trademark records come from: Official Gazette issues, how records, images and page references are organised, and known limits."
+    },
+    "knowledge": {
+      "title": "Afghanistan Trademark Knowledge Center | TMistan",
+      "description": "Guides to trademark research in Afghanistan: searching existing trademarks, reading Official Gazette publications, Nice classes, opposition and registration."
+    },
+    "article": {
+      "title": "{{title}} | TMistan Knowledge Center"
+    },
+    "corrections": {
+      "title": "Data Correction & Verification Requests | TMistan",
+      "description": "Report an incorrect name, class, image, Gazette reference or duplicate in a TMistan trademark record. Every request is checked against the source publication."
+    },
+    "legal": {
+      "title": "Legal Information & Policies | TMistan",
+      "description": "Terms of Use, Privacy Policy, Disclaimer and Intellectual Property notice for TMistan, the Afghanistan trademark research platform developed by Masnad Law Firm.",
+      "policyTitle": "{{policy}} | TMistan"
+    },
+    "about": {
+      "title": "About TMistan | Trademark Research Platform by Masnad Law Firm",
+      "description": "TMistan is a trademark research platform developed by Masnad Law Firm to make trademark records published in the Official Gazette of Afghanistan more accessible."
+    },
+    "help": {
+      "title": "Help Center: Searching Afghanistan Trademarks | TMistan",
+      "description": "Help Center for TMistan: how to search trademark records, read Official Gazette references, understand classes, report a possible error and contact the team."
+    },
+    "contact": {
+      "title": "Contact TMistan | Afghanistan Trademark Research",
+      "description": "Contact TMistan and Masnad Law Firm: ask a question, request trademark research, report missing or incorrect information, or get technical support."
+    },
+    "record": {
+      "title": "{{mark}} ({{serial}}) – Afghanistan Trademark Record | TMistan",
+      "description": "{{mark}}: trademark published in Official Gazette {{gazette}} of Afghanistan{{date}}. Applicant: {{applicant}}. Class {{classes}}: {{goods}}",
+      "descriptionShort": "Trademark record {{serial}} as published in Official Gazette {{gazette}} of Afghanistan, shown on TMistan for research purposes.",
+      "datePart": " on {{date}}",
+      "imageAlt": "Trademark image of {{mark}} as published in Official Gazette {{gazette}} of Afghanistan",
+      "notFoundTitle": "Record not found | TMistan",
+      "notFoundDescription": "No trademark record with this serial number is available on TMistan."
+    },
+    "notFound": {
+      "title": "Page Not Found | TMistan",
+      "description": "The page you requested does not exist on TMistan. Use the search or the navigation to continue."
+    },
+    "admin": {
+      "title": "Administration | TMistan"
+    },
+    "breadcrumbHome": "Home"
+  },
+  "consent": {
+    "title": "Anonymous usage statistics",
+    "text": "TMistan uses Google Analytics to understand how the site is used (pages visited, searches started). No analytics cookies are set unless you agree. You can change your choice at any time in the Privacy Policy.",
+    "accept": "Allow analytics",
+    "decline": "Decline",
+    "privacy": "Privacy Policy"
+  },
+  "notFound": {
+    "eyebrow": "Error 404",
+    "title": "Page not found",
+    "text": "The address you entered does not match any page on TMistan. It may have been mistyped, or the link you followed may be out of date.",
+    "search": "Search trademarks",
+    "home": "Go to the home page",
+    "knowledge": "Browse the Knowledge Center",
+    "help": "Visit the Help Center"
   }
 }

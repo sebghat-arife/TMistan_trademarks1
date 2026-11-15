@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Megaphone, X } from 'lucide-react'
+import { useClientFlag } from '@/lib/useIsClient'
 
 /**
  * Slim site-wide announcement strip rendered above the header (see Layout).
@@ -33,7 +34,11 @@ function readDismissed(): boolean {
 
 export function AnnouncementBar() {
   const { t, i18n } = useTranslation()
-  const [dismissed, setDismissed] = useState(readDismissed)
+  // Hydration-safe: the prerendered HTML always contains the bar; a dismissal stored for this
+  // session hides it on the first client render, a click hides it immediately.
+  const dismissedBefore = useClientFlag(readDismissed)
+  const [dismissedNow, setDismissed] = useState(false)
+  const dismissed = dismissedBefore || dismissedNow
   const trackRef = useRef<HTMLDivElement>(null)
 
   // Keep the speed constant: duration = copy width / speed (computed in CSS from this variable).

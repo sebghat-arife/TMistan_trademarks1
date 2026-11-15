@@ -8,7 +8,10 @@ import { cn, formatRegistryDate, formatToday, trademarkPath } from '@/lib/utils'
 import { storagePublicUrl } from '@/lib/supabase'
 import { CANONICAL_URL } from '@/lib/site'
 import { REPORT_DISCLAIMER, reportFileName } from '@/lib/pdf/disclaimer'
-import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { Seo } from '@/seo/Seo'
+import { breadcrumbList, trademarkRecordPage } from '@/seo/jsonld'
+import { localizePath, type SiteLocaleCode } from '@/seo/locales'
+import { recordIndexDecision } from '@/seo/recordPolicy'
 import { TrademarkImage } from '@/components/TrademarkImage'
 import { ImageViewer } from '@/components/ImageViewer'
 import { TrademarkCard, classText } from '@/components/ResultCards'
@@ -33,17 +36,19 @@ export function TrademarkPage() {
 
   const { data: similar } = useQuery({ ...similarTrademarksQuery(tm?.id ?? ''), enabled: !!tm })
 
-  const title = tm ? `${tm.mark_name ?? tm.serial_number} (${tm.serial_number}) — ${t('app.shortName')}` : t('app.name')
-  const description = tm
-    ? `${t('fields.mark')} ${tm.mark_name ?? ''}, ${t('fields.serial')} ${tm.serial_number}, ${t('fields.gazette')} ${tm.official_gazette_number}${tm.applicant_name ? `, ${t('fields.applicant')} ${tm.applicant_name}` : ''}.`
-    : undefined
-  useDocumentTitle(title, description)
+  // Head metadata (see docs/SEO.md). The English URL is canonical for every language because
+  // the record itself is shown exactly as published, never translated. Only sufficiently
+  // complete registration notices are indexable (seo/recordPolicy.ts); the rest are noindex.
+  const seoLng = (i18n.resolvedLanguage ?? 'en') as SiteLocaleCode
+  const recordPath = `/trademark/${encodeURIComponent(serial)}`
+  const seo = tm ? recordSeo(tm, images, seoLng, recordPath, t) : null
 
   if (isLoading) return <div className="container-x py-10"><LoadingState lines={6} /></div>
   if (isError) return <div className="container-x py-10"><ErrorState error={error} onRetry={() => void refetch()} /></div>
   if (!tm) {
     return (
       <div className="container-x py-10">
+        <Seo title={t('seo.record.notFoundTitle')} description={t('seo.record.notFoundDescription')} path={recordPath} canonical="english" robots="noindex,follow" />
         <div className="card p-8 text-center">
           <p className="text-[15px] font-medium text-ink-900">{t('trademark.notFound')}</p>
           <p className="mt-1 font-mono text-xs text-ink-500">{serial}</p>
@@ -66,6 +71,7 @@ export function TrademarkPage() {
 
   return (
     <div className="container-x py-6">
+      {seo && <Seo {...seo} />}
       {/* ── Breadcrumb + Download ─────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[14px] text-ink-500">
@@ -131,7 +137,7 @@ export function TrademarkPage() {
                     aria-pressed={i === imageIndex}
                     className={cn('block h-[72px] w-[92px] overflow-hidden rounded-md border bg-white p-1 transition-colors', i === imageIndex ? 'border-brand-600 ring-1 ring-brand-600' : 'border-ink-200 hover:border-ink-400')}
                   >
-                    <TrademarkImage bucket={img.storage_bucket} path={img.storage_path} thumbnailPath={img.thumbnail_path} alt={t(`trademark.imageType.${img.image_type}`)} className="h-full w-full !bg-white" plain />
+                    <TrademarkImage bucket={img.storage_bucket} path={img.storage_path} thumbnailPath={img.thumbnail_path} alt={t(`trademark.imageType.${img.image_type}`)} className="h-full w-full !bg-white" plain loading="eager" />
                   </button>
                 </li>
               ))}
@@ -364,3 +370,55 @@ function fetchLogo(): Promise<string | null> {
 }
 
 export { trademarkPath }
+
+/* ── Head metadata for a record ─────────────────────────────────────────── */
+type Translate = (key: string, opts?: Record<string, unknown>) => string
+
+function recordSeo(tm: TrademarkPublicRow, images: TrademarkImagePublicRow[], lng: SiteLocaleCode, path: string, t: Translate) {
+  const decision = recordIndexDecision(tm)
+  const mark = tm.mark_name?.trim() || tm.serial_number
+  const gazette = tm.official_gazette_number
+  const image = storagePublicUrl(images[0]?.storage_bucket, images[0]?.storage_path)
+  const classes = classText(tm.class_numbers, tm.trademark_class, '')
+  const goods = (tm.goods_and_services ?? '').replace(/\s+/g, ' ').trim()
+  const description = decision.indexable
+    ? t('seo.record.description', {
+        mark,
+        gazette,
+        date: tm.publication_date ? t('seo.record.datePart', { date: formatRegistryDate(tm.publication_date, lng) }) : '',
+        applicant: tm.applicant_name,
+        classes,
+        goods: goods.length > 110 ? `${goods.slice(0, 107).trimEnd()}…` : goods,
+      })
+    : t('seo.record.descriptionShort', { serial: tm.serial_number, gazette })
+  const title = t('seo.record.title', { mark, serial: tm.serial_number })
+  const englishUrl = localizePath(path, 'en')
+  const jsonLd = [
+    trademarkRecordPage({
+      lng,
+      url: englishUrl,
+      name: mark,
+      description,
+      serial: tm.serial_number,
+      image,
+      publicationDate: tm.publication_date,
+      updatedAt: tm.updated_at,
+      applicant: tm.applicant_name,
+      classes: tm.class_numbers,
+    }),
+    breadcrumbList([
+      { name: t('seo.breadcrumbHome'), path: localizePath('/', lng) },
+      { name: `${mark} (${tm.serial_number})`, path: englishUrl },
+    ]),
+  ]
+  return {
+    title,
+    description,
+    path,
+    canonical: 'english' as const,
+    robots: decision.indexable ? undefined : 'noindex,follow',
+    image,
+    imageAlt: image ? t('seo.record.imageAlt', { mark, gazette }) : undefined,
+    jsonLd,
+  }
+}

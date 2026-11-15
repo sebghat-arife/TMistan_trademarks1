@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/Layout'
+import { Seo } from '@/seo/Seo'
 
 /** Admin Data Management Center navigation (order mandated by the client brief). */
 export const ADMIN_NAV = [
@@ -27,11 +28,15 @@ export function AdminLayout() {
   const auth = useAuth()
   const loc = useLocation()
 
-  if (auth.loading) return <div className="flex min-h-screen items-center justify-center text-sm text-ink-500">{t('common.loading')}</div>
+  // The administration area is never indexed, whatever page is open.
+  const seo = <Seo title={t('seo.admin.title')} description={t('seo.admin.title')} path="/admin" canonical="english" robots="noindex,nofollow" />
+
+  if (auth.loading) return <>{seo}<div className="flex min-h-screen items-center justify-center text-sm text-ink-500">{t('common.loading')}</div></>
   if (!auth.isAdmin) return <Navigate to="/admin/login" replace state={{ from: loc.pathname }} />
 
   return (
     <div className="flex min-h-screen bg-ivory-50">
+      {seo}
       <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 flex-col bg-navy-950 text-white md:flex">
         <div className="px-5 pb-4 pt-5">
           <Logo variant="dark" className="h-10" />
