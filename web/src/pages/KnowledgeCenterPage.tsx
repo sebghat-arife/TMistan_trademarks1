@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, BookOpen, ChevronRight, Clock, FileText, GraduationCap, HelpCircle, Lightbulb, Scale, Search, ShieldCheck, Tag, X, type LucideIcon } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronRight, Clock, Compass, FileText, GraduationCap, HelpCircle, Lightbulb, Scale, Search, ShieldCheck, Tag, X, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, IconBadge, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
 import { CornerAccent } from '@/components/ornament'
 import { ARTICLES, KNOWLEDGE_CATEGORIES, KNOWLEDGE_TOPICS, readingMinutes, searchArticles, type Article, type KnowledgeCategory } from '@/content/knowledge'
@@ -58,6 +58,7 @@ export function KnowledgeCenterPage() {
 
   const featured = ARTICLES.filter((a) => a.featured)
   const quickLinks: { Icon: LucideIcon; label: string; to: string }[] = [
+    { Icon: Compass, label: t('knowledge.quickLinks.guides'), to: '/guides' },
     { Icon: FileText, label: t('knowledge.quickLinks.howTo'), to: '/help' },
     { Icon: Tag, label: t('knowledge.quickLinks.classes'), to: '/knowledge-center/understanding-trademark-classes' },
     { Icon: FileText, label: t('knowledge.quickLinks.gazette'), to: '/data-sources#ds-gazette' },
@@ -198,6 +199,39 @@ export function KnowledgeCenterPage() {
           </aside>
         </div>
 
+        {/* Complete article index by topic: every article reachable from the hub with a plain link (users and crawlers alike). */}
+        <section aria-labelledby="article-index" className="mt-14" data-testid="article-index">
+          <SectionHeading label={t('knowledge.index.label')} title={t('knowledge.index.title')} text={t('knowledge.index.text')} id="article-index" />
+          <div className="mt-7 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {KNOWLEDGE_CATEGORIES.map((key) => {
+              const list = ARTICLES.filter((a) => a.category === key)
+              if (list.length === 0) return null
+              return (
+                <div key={key}>
+                  <h3 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                    <TopicGlyph Icon={TOPIC_ICON[key]} />
+                    {t(`knowledge.categories.${key}.title`)}
+                    <span className="font-normal tabular-nums text-ink-400">({list.length})</span>
+                  </h3>
+                  <ul className="mt-3 space-y-2">
+                    {list.map((a) => (
+                      <li key={a.slug}>
+                        <Link to={`/knowledge-center/${a.slug}`} className="text-[14px] leading-snug text-ink-800 hover:text-brand-700 hover:underline">
+                          {t(`knowledge.articles.${a.slug}.title`)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-8 text-[14px] text-ink-700">
+            {t('knowledge.index.guides')}{' '}
+            <Link to="/guides" className="font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 hover:text-brand-800">{t('knowledge.quickLinks.guides')}</Link>
+          </p>
+        </section>
+
         <ClosingBanner
           className="mt-12"
           title={t('knowledge.path.title')}
@@ -225,6 +259,10 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 /** Article card: thumbnail, category label, title, summary, reading time. Shared with the article page (related). */
+function TopicGlyph({ Icon }: { Icon: LucideIcon }) {
+  return <Icon className="h-3.5 w-3.5 text-brand-600" aria-hidden />
+}
+
 export function ArticleCard({ article, compact }: { article: Article; compact?: boolean }) {
   const { t } = useTranslation()
   const minutes = readingMinutes(article)

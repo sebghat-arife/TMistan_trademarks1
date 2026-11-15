@@ -60,7 +60,7 @@ locale, 1366 px viewport, captured 2026-10-13). No stock or generated imagery.
 | `fig-search-results.jpg` | Search page with the results for the keyword "technology" |
 | `fig-advanced-search.jpg` | Advanced Search panel of the Search page |
 | `fig-class-picker.jpg` | Class picker open in Advanced Search (counts per class come from the database) |
-| `fig-record-page.jpg` | Record page of 1022-073 (Edifier, OG 1022, page 15-16) |
+| `fig-record-page.jpg` | Record page of 1022-073 (Edifier, OG 1022, page 15-16) — re-captured 2026-11-16 (1200 px viewport, 2× scale) after the record-page field changes |
 | `fig-image-search.jpg` | Search by Image mode |
 | `fig-data-sources.jpg` | Data Sources & Methodology page (top) |
 | `<article-slug>.jpg` (launch articles) | 600×480 thumbnails cropped from the same captures |
@@ -93,3 +93,11 @@ AI-generated or historic imagery. Re-run the script after changing a title or ke
 | `nice-classes-for-common-goods-and-services.jpg` | "45 classes" |
 | `trademark-search-for-foreign-companies-afghanistan.jpg` | "6-month priority" |
 | `glossary-of-afghanistan-trademark-terms.jpg` | "A → Z" |
+
+### Practice series (added 2026-11-16)
+
+Four further articles (reading a record page, monitoring new publications, Dari/Pashto script
+variants, geographical names) use the same typographic cards from `tools/kc_cards/make_cards.py`:
+`how-to-read-a-tmistan-record-page.jpg`, `monitoring-new-trademark-publications-afghanistan.jpg`,
+`searching-dari-and-pashto-trademarks-scripts-and-transliteration.jpg`,
+`geographical-names-in-afghan-trademark-law.jpg`.

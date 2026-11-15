@@ -86,3 +86,28 @@ Operating documentation is in `docs/SEO.md`.
 * Static hosting cannot emit 404/410 status codes or `Vary: Accept-Language` redirects.
 * Dari/Pashto article bodies are not translated (English only, canonicalised to English) — a
   future translation would simply turn `canonical: 'english'` off for those slugs.
+
+## G. Phase 2 (2026-11-16) — measured on the local build
+
+* 78 static pages (14 routes × 3 languages + 11 English guide pages + 25 English article pages) +
+  3 595 record pages; `sitemap-pages.xml` lists all 78, `sitemap-records-1.xml` the records.
+* Every guide and article has a unique `<title>` (≤ 65 characters before the brand suffix) and a
+  meta description ≤ 160 characters; one `<h1>`, `h2`/`h3` outline, sources section with the official
+  translation of the law and WIPO pages, `Article` (+ `FAQPage` on guides) + `BreadcrumbList` JSON-LD.
+* Guide page `trademark-opposition-afghanistan`: ~1 400 words, 23 distinct internal link targets,
+  external citations to wto.org / wipo.int.
+* Record `1011-002`: image alt "Caravell – trademark image, Gazette Number 1011", "Understand this
+  record" block with 4 educational links; attorney never rendered.
+* Crawl paths: every article reachable from `/knowledge-center` (article index) and every guide from
+  `/guides`, the home page and the footer; unknown `/guides/*` and `/knowledge-center/*` slugs show
+  the not-found view with `noindex,follow`.
+* Main bundle 386 kB (120 kB gzip) — smaller than after Phase 1 (398 kB) despite +15 pages of
+  content, because the content modules are split out of the entry chunk.
+* Playwright smoke suite: 64 checks (Phase 1 set + guides hub/page, Dari guide notice, article
+  index, practice article structure, record alt/links, unknown-slug 404s) — all passing.
+* Secret scan of `dist/`: clean. Verification meta tags absent without the env variables, present
+  (and validated) with them.
+
+Owner actions added: set `SITE_GOOGLE_SITE_VERIFICATION` (and optionally
+`SITE_BING_SITE_VERIFICATION`) in the Render environment, redeploy, verify the property, submit
+`https://tmistan.com/sitemap.xml`; the records sitemap grows automatically with each deploy.

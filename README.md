@@ -154,7 +154,9 @@ platform's variables. `.env.example` files contain placeholders only.
 | `SUPABASE_PUBLISHABLE_KEY` | web build | publishable (`sb_publishable_…`) or legacy anon JWT — public by design; the build **refuses** a `sb_secret_`/service-role key |
 | `SITE_CONTACT_EMAIL` `SITE_CONTACT_PHONE` `SITE_CONTACT_ADDRESS` `SITE_FACEBOOK_URL` `SITE_TWITTER_URL` `SITE_LINKEDIN_URL` | web build, optional | footer contact / social links (hidden when unset) |
 | `SITE_MASNAD_URL` | web build, optional | public website of Masnad Law Firm linked from the homepage and footer (default `https://www.masnadip.af/`; empty string = firm name without a link) |
-| `SITE_CANONICAL_URL` | web build, optional | public origin printed in the PDF report (record link) and used for canonical links (default `https://www.tmistan.com`) |
+| `SITE_CANONICAL_URL` | web build, optional | public origin printed in the PDF report (record link) and used for canonical links, hreflang and sitemaps (default `https://tmistan.com`) |
+| `SITE_GA4_MEASUREMENT_ID` | web build, optional | Google Analytics 4 id (`G-…`); analytics load only after visitor consent |
+| `SITE_GOOGLE_SITE_VERIFICATION`, `SITE_BING_SITE_VERIFICATION` | web build, optional | Search Console / Bing Webmaster ownership tokens (the `content` value only) → `<meta name="google-site-verification">` / `msvalidate.01` on every page |
 | `NODE_VERSION` | Render build (set by `render.yaml`, also `web/.node-version`) | `22.12.0` — Vite 8 needs Node ≥ 20.19 / ≥ 22.12 |
 | `PORT`, `ENVIRONMENT` | optional Docker image only | nginx listen port / label — not used by the static site |
 | `SUPABASE_SERVICE_ROLE_KEY` | **importers only** (`importers/.env`) | bypasses RLS — never in the web app, never in the image |

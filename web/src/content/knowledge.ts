@@ -8,14 +8,21 @@
  * Reading times are computed from the word count — never hand-written.
  * ------------------------------------------------------------------------- */
 import { LAW_ARTICLES } from './knowledgeLaw'
+import { PRACTICE_ARTICLES } from './knowledgePractice'
 
 export type KnowledgeCategory = 'fundamentals' | 'searching' | 'gazette' | 'classes' | 'law' | 'limits'
 export const KNOWLEDGE_TOPICS: KnowledgeCategory[] = ['searching', 'gazette', 'classes', 'law', 'limits']
 export const KNOWLEDGE_CATEGORIES: KnowledgeCategory[] = ['fundamentals', ...KNOWLEDGE_TOPICS]
 
+/**
+ * Inline links inside block text use a minimal Markdown form: `[label](/internal/path)` becomes a
+ * router <Link>, `[label](https://…)` an external link (see components/content/ContentBlocks.tsx).
+ * `inlineToText()` strips them for word counts, search and structured data.
+ */
 export type ArticleBlock =
   | { type: 'p'; text: string }
   | { type: 'h2'; id: string; text: string }
+  | { type: 'h3'; id?: string; text: string }
   | { type: 'ul'; items: string[] }
   | { type: 'ol'; items: string[] }
   | { type: 'check'; title: string; items: string[] }
@@ -36,6 +43,10 @@ export type Article = {
   written: string
   /** Date of the last substantive revision, when later than `written` (sitemap lastmod / article:modified_time). */
   updated?: string
+  /** Search-result title (≤ 60 chars recommended); defaults to `title`. The brand suffix is added by the page. */
+  seoTitle?: string
+  /** Meta description (≤ 160 chars recommended); defaults to `summary`. */
+  metaDescription?: string
   thumbnail: string
   featured: boolean
   body: ArticleBlock[]
@@ -399,27 +410,33 @@ const LAUNCH_ARTICLES: Article[] = [
   },
 ]
 
-export const ARTICLES: Article[] = [...LAUNCH_ARTICLES, ...LAW_ARTICLES]
+export const ARTICLES: Article[] = [...LAUNCH_ARTICLES, ...LAW_ARTICLES, ...PRACTICE_ARTICLES]
 
 export const ARTICLE_BY_SLUG: Record<string, Article> = Object.fromEntries(ARTICLES.map((a) => [a.slug, a]))
 
 /** Words per minute used for the displayed reading time (a common average for adult readers). */
 const WPM = 200
 
-function blockText(b: ArticleBlock): string {
+/** Strip inline `[label](target)` links, keeping the label. */
+export function inlineToText(text: string): string {
+  return text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+}
+
+export function blockText(b: ArticleBlock): string {
   switch (b.type) {
     case 'p':
     case 'h2':
-      return b.text
+    case 'h3':
+      return inlineToText(b.text)
     case 'ul':
     case 'ol':
-      return b.items.join(' ')
+      return inlineToText(b.items.join(' '))
     case 'check':
-      return `${b.title} ${b.items.join(' ')}`
+      return inlineToText(`${b.title} ${b.items.join(' ')}`)
     case 'example':
-      return `${b.title} ${b.rows.map((r) => r.join(' ')).join(' ')} ${b.caption ?? ''}`
+      return inlineToText(`${b.title} ${b.rows.map((r) => r.join(' ')).join(' ')} ${b.caption ?? ''}`)
     case 'note':
-      return `${b.title} ${b.text}`
+      return inlineToText(`${b.title} ${b.text}`)
     case 'figure':
       return b.caption
     case 'sources':

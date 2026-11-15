@@ -44,7 +44,8 @@
     "legalHub": "Legal Information",
     "ip": "Intellectual Property",
     "knowledge": "Knowledge Center",
-    "corrections": "Data Corrections"
+    "corrections": "Data Corrections",
+    "guides": "Trademark Guides"
   },
   "home": {
     "why": {
@@ -231,6 +232,13 @@
       "text": "Explore published trademark records from the Official Gazette of Afghanistan through TMistan.",
       "search": "Search Trademarks",
       "learn": "Learn About TMistan"
+    },
+    "learn": {
+      "eyebrow": "Learn",
+      "title": "Understand trademarks in Afghanistan",
+      "text": "Sourced guides and articles on searching, registration, opposition, renewal, classes and the law — written for businesses, attorneys and researchers.",
+      "all": "All guides",
+      "knowledge": "Knowledge Center"
     }
   },
   "search": {
@@ -588,7 +596,18 @@
     },
     "sourceValue": "OG {{gazette}} — Page {{page}}",
     "sourceValueNoPage": "OG {{gazette}}",
-    "reportIssue": "Report an issue with this record"
+    "reportIssue": "Report an issue with this record",
+    "learn": {
+      "title": "Understand this record",
+      "text": "Educational resources on what a Gazette publication shows and the rules behind each field.",
+      "fields": "How to read a record page, field by field",
+      "opposition": "The 30-day objection window after publication",
+      "changes": "Assignments, owner and address changes",
+      "renewal": "Validity, renewal and lapse",
+      "classes": "Trademark classes and goods",
+      "search": "Trademark search in Afghanistan: the guide"
+    },
+    "imageAlt": "{{name}} – trademark image, Gazette Number {{gazette}}"
   },
   "about": {
     "title": "About TMistan",
@@ -2310,7 +2329,8 @@
       "howTo": "How to Use TMistan",
       "classes": "Trademark Classes",
       "gazette": "Official Gazette",
-      "faq": "Frequently Asked Questions"
+      "faq": "Frequently Asked Questions",
+      "guides": "Trademark Guides"
     },
     "help": {
       "title": "Need More Help?",
@@ -2428,9 +2448,31 @@
       "glossary-of-afghanistan-trademark-terms": {
         "title": "Glossary of Afghanistan Trademark Terms",
         "summary": "Short definitions of the terms used on TMistan and in the law — from applicant and serial number to objection deadline and designation."
+      },
+      "how-to-read-a-tmistan-record-page": {
+        "title": "How to Read a TMistan Record Page, Field by Field",
+        "summary": "Every field on a record page explained — with the rule of law behind each one and what it cannot tell you."
+      },
+      "monitoring-new-trademark-publications-afghanistan": {
+        "title": "Monitoring New Trademark Publications in Afghanistan",
+        "summary": "A practical routine for rights owners and counsel: cadence, searches by name, script, class and image, and what to do when a look-alike appears during the objection window."
+      },
+      "searching-dari-and-pashto-trademarks-scripts-and-transliteration": {
+        "title": "Searching Dari and Pashto Trademarks: Scripts, Transliteration and Spelling Variants",
+        "summary": "Why one mark can be printed in three scripts, how to build a variant list, when fuzzy matching helps and how image search fills the gaps."
+      },
+      "geographical-names-in-afghan-trademark-law": {
+        "title": "Geographical Names and Indications in Afghan Trademark Law",
+        "summary": "When a place name cannot be registered, the duties of an owner whose mark includes a famous place, the ban on deceptive use, and how to research place-name marks."
       }
     },
-    "photoCredit": "Photo: Kabul University Central Library — stepnout (Flickr), via Wikimedia Commons, CC BY 2.0 (cropped)"
+    "photoCredit": "Photo: Kabul University Central Library — stepnout (Flickr), via Wikimedia Commons, CC BY 2.0 (cropped)",
+    "index": {
+      "label": "Article index",
+      "title": "All articles by topic",
+      "text": "Every Knowledge Center article, grouped by topic. Articles are written in English and cite the official English translation of the Law on Trade Marks Registration, WIPO and the Official Gazette.",
+      "guides": "Looking for a shorter orientation first? Start with the"
+    }
   },
   "corrections": {
     "metaTitle": "Data Correction & Verification Requests | TMistan",
@@ -2691,7 +2733,11 @@
     "admin": {
       "title": "Administration | TMistan"
     },
-    "breadcrumbHome": "Home"
+    "breadcrumbHome": "Home",
+    "guides": {
+      "title": "Afghanistan Trademark Guides – Search, Registration, Opposition, Classes | TMistan",
+      "description": "Educational guides to trademark search, registration, availability and clearance research, opposition, renewal, classification, foreign-business protection and the law in Afghanistan."
+    }
   },
   "consent": {
     "title": "Anonymous usage statistics",
@@ -2708,5 +2754,37 @@
     "home": "Go to the home page",
     "knowledge": "Browse the Knowledge Center",
     "help": "Visit the Help Center"
+  },
+  "guides": {
+    "label": "Guides",
+    "title": "Trademark Guides for Afghanistan",
+    "intro": "Practical, sourced orientation on the questions trademark researchers ask most: how to search and clear a mark, how registration, opposition and renewal work under Afghan law, how classes are used, and what foreign businesses need to know. Each guide links to the detailed Knowledge Center articles and to the TMistan tools that help.",
+    "all": {
+      "label": "All guides",
+      "title": "Choose a topic",
+      "text": "Eleven guides, each with key facts, a structured explanation, frequently asked questions and sources."
+    },
+    "knowledge": {
+      "label": "Go deeper",
+      "title": "Knowledge Center",
+      "text": "Twenty-five articles on the law, the Gazette, classes, search method and the limits of the data.",
+      "button": "Open the Knowledge Center"
+    },
+    "search": {
+      "label": "Put it to use",
+      "title": "Search the published records",
+      "text": "Search by name, applicant, class, Gazette number or image — free.",
+      "button": "Start a search"
+    },
+    "readGuide": "Read the guide",
+    "back": "All guides",
+    "audience": "Who this guide is for",
+    "keyFacts": "Key facts",
+    "tools": "How TMistan helps",
+    "faq": "Frequently asked questions",
+    "goDeeper": "Go deeper",
+    "relatedGuides": "Related guides",
+    "startWithGuide": "Start with the guide",
+    "items": {}
   }
 }

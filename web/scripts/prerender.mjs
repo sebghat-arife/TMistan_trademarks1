@@ -57,7 +57,7 @@ await build({
   ssr: { noExternal: ['react-i18next', 'i18next'] },
 })
 const server = await import(pathToFileURL(path.join(SSR_DIR, 'entry-server.js')).href)
-const { render, STATIC_ROUTES, ARTICLES, loadPrerenderDataset, recordIndexDecision, localizePath, CANONICAL_URL } = server
+const { render, STATIC_ROUTES, ENGLISH_PAGES, loadPrerenderDataset, recordIndexDecision, localizePath, CANONICAL_URL } = server
 
 // 2. Template: the browser build's index.html (hashed asset tags included).
 const template = await readFile(path.join(DIST, 'index.html'), 'utf8')
@@ -120,12 +120,11 @@ for (const route of STATIC_ROUTES) {
   }
   pageEntries.push({ path: route.path, lastmod: route.lastmod, changefreq: route.changefreq, priority: route.priority, languages: true })
 }
-for (const a of ARTICLES) {
-  const p = `/knowledge-center/${a.slug}`
-  const result = await render({ path: p, lng: 'en', dataset })
-  await writePage(p, result)
+for (const page of ENGLISH_PAGES) {
+  const result = await render({ path: page.path, lng: 'en', dataset })
+  await writePage(page.path, result)
   count++
-  pageEntries.push({ path: p, lastmod: a.updated ?? a.written, changefreq: 'monthly', priority: 0.6, languages: false })
+  pageEntries.push({ path: page.path, lastmod: page.lastmod, changefreq: 'monthly', priority: page.priority, languages: false })
 }
 log(`${count} static pages written`)
 

@@ -16,6 +16,8 @@ const HelpPage = lazy(() => import('@/pages/HelpPage').then((m) => ({ default: m
 const LegalPage = lazy(() => import('@/pages/LegalPage').then((m) => ({ default: m.LegalPage })))
 const KnowledgeCenterPage = lazy(() => import('@/pages/KnowledgeCenterPage').then((m) => ({ default: m.KnowledgeCenterPage })))
 const KnowledgeArticlePage = lazy(() => import('@/pages/KnowledgeArticlePage').then((m) => ({ default: m.KnowledgeArticlePage })))
+const GuidesPage = lazy(() => import('@/pages/GuidesPage').then((m) => ({ default: m.GuidesPage })))
+const GuidePage = lazy(() => import('@/pages/GuidePage').then((m) => ({ default: m.GuidePage })))
 const DataCorrectionsPage = lazy(() => import('@/pages/DataCorrectionsPage').then((m) => ({ default: m.DataCorrectionsPage })))
 const DataSourcesPage = lazy(() => import('@/pages/DataSourcesPage').then((m) => ({ default: m.DataSourcesPage })))
 const ServicesPage = lazy(() => import('@/pages/ServicesPage').then((m) => ({ default: m.ServicesPage })))
@@ -89,6 +91,8 @@ export function AppRoutes() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/knowledge-center" element={<KnowledgeCenterPage />} />
             <Route path="/knowledge-center/:slug" element={<KnowledgeArticlePage />} />
+            <Route path="/guides" element={<GuidesPage />} />
+            <Route path="/guides/:slug" element={<GuidePage />} />
             <Route path="/data-corrections" element={<DataCorrectionsPage />} />
             <Route path="/legal/:policy?" element={<LegalPage />} />
             {/* Former policy URLs keep working */}

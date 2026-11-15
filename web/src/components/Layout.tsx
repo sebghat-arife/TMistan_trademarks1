@@ -140,7 +140,7 @@ export function Layout() {
           <FooterCol title={t('footer.platform')} links={[['/', t('nav.search')], ['/services', t('footer.services')], ['/about', t('nav.about')], ['/help', t('nav.help')]]} />
           <FooterCol
             title={t('footer.information')}
-            links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/knowledge-center', t('footer.knowledge')], ['/data-corrections', t('footer.corrections')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
+            links={[['/about', t('footer.aboutTMistan')], ['/data-sources', t('footer.dataSources')], ['/knowledge-center', t('footer.knowledge')], ['/guides', t('footer.guides')], ['/data-corrections', t('footer.corrections')], ['/#how-it-works', t('footer.howItWorks')], ['/contact', t('footer.contact')]]}
           />
           <div>
             <h3 className="font-serif text-[16px] font-semibold text-navy-900">{t('footer.masnad')}</h3>

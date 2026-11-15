@@ -16,6 +16,8 @@ interface Props {
   /** Small caption under the icon in the empty/broken state (e.g. "No image on file"). */
   fallbackLabel?: string
   loading?: 'lazy' | 'eager'
+  /** Resource priority hint; 'high' for the largest above-the-fold image (record page). */
+  fetchPriority?: 'high' | 'low' | 'auto'
   /** Plain white background (cards) instead of the transparency checkerboard (viewer). */
   plain?: boolean
 }
@@ -34,6 +36,7 @@ export function TrademarkImage({
   imgClassName,
   fallbackLabel,
   loading = 'lazy',
+  fetchPriority,
   plain = false,
 }: Props) {
   const src = variant === 'thumb' ? (storagePublicUrl(bucket, thumbnailPath) ?? storagePublicUrl(bucket, path)) : storagePublicUrl(bucket, path)
@@ -50,6 +53,7 @@ export function TrademarkImage({
           src={src}
           alt={alt}
           loading={loading}
+          fetchPriority={fetchPriority}
           decoding="async"
           onLoad={() => setState('ok')}
           onError={() => setState('error')}

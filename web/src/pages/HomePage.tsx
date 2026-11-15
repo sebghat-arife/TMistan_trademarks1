@@ -32,6 +32,8 @@ import { ArchitecturalArch, GirihMotif } from '@/components/ornament'
 import { MASNAD_URL } from '@/lib/site'
 import { ErrorState } from '@/components/AsyncState'
 import { SearchExperience } from '@/components/search/SearchExperience'
+import { GUIDE_META } from '@/content/guidesMeta'
+import { GUIDE_ICON } from '@/components/guideIcons'
 
 type Icon = React.ComponentType<{ className?: string }>
 
@@ -130,6 +132,16 @@ const TYPE_SKELETON: RecordTypeKind[] = ['registration', 'renewal', 'assignment'
  * search card, advanced filters, results); the sections below introduce the
  * platform and are shown while no search is running.
  */
+const HOME_GUIDE_SLUGS = [
+  'trademark-search-afghanistan',
+  'trademark-registration-afghanistan',
+  'trademark-availability-search',
+  'trademark-opposition-afghanistan',
+  'trademark-protection-foreign-businesses',
+  'afghanistan-trademark-law-and-regulations',
+] as const
+const HOME_GUIDES = HOME_GUIDE_SLUGS.map((slug) => GUIDE_META.find((g) => g.slug === slug)).filter((g): g is NonNullable<typeof g> => Boolean(g))
+
 export function HomePage() {
   return <SearchExperience landing={<Landing />} />
 }
@@ -351,6 +363,46 @@ function Landing() {
                   </div>
                 </li>
               ))}
+            </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Learn: guides + Knowledge Center (internal linking to the educational layer) ── */}
+      <section id="learn" className="scroll-mt-(--hdr-sticky) border-t border-ink-200 bg-white" aria-labelledby="learn-title">
+        <div className="container-x py-16 lg:py-20">
+          <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-[620px]">
+              <p className="eyebrow">{t('home.learn.eyebrow')}</p>
+              <h2 id="learn-title" className="section-title-sm mt-3">{t('home.learn.title')}</h2>
+              <p className="mt-4 text-[15px] leading-relaxed text-ink-700">{t('home.learn.text')}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/guides" className="btn-secondary h-11 px-5 text-[14px]" data-testid="home-guides-link">
+                {t('home.learn.all')}
+                <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+              </Link>
+              <Link to="/knowledge-center" className="btn-secondary h-11 px-5 text-[14px]">
+                {t('home.learn.knowledge')}
+              </Link>
+            </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {HOME_GUIDES.map((guide) => {
+                const GuideIcon = GUIDE_ICON[guide.icon]
+                return (
+                  <li key={guide.slug} className="flex">
+                    <Link to={`/guides/${guide.slug}`} className="card flex w-full items-start gap-4 p-5 transition-colors hover:border-brand-300">
+                      <span className="icon-circle h-10 w-10 shrink-0"><GuideIcon className="h-[18px] w-[18px]" aria-hidden /></span>
+                      <span className="min-w-0">
+                        <span className="block text-[15px] font-semibold leading-snug text-navy-900">{t(`guides.items.${guide.slug}.title`, { defaultValue: guide.title })}</span>
+                        <span className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-ink-600">{t(`guides.items.${guide.slug}.description`, { defaultValue: guide.metaDescription })}</span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </Reveal>
         </div>

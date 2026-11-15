@@ -21,12 +21,15 @@ export type StaticRoute = {
 
 /** Content/metadata release of the SEO programme — every public page changed on this date. */
 export const SEO_RELEASE_DATE = '2026-11-15'
+/** Guides (educational landing pages) release — phase 2. */
+export const GUIDES_RELEASE_DATE = '2026-11-16'
 
 export const STATIC_ROUTES: readonly StaticRoute[] = [
   { path: '/', lastmod: SEO_RELEASE_DATE, changefreq: 'daily', priority: 1.0 },
   { path: '/services', lastmod: SEO_RELEASE_DATE, changefreq: 'monthly', priority: 0.8 },
   { path: '/data-sources', lastmod: SEO_RELEASE_DATE, changefreq: 'monthly', priority: 0.7 },
   { path: '/knowledge-center', lastmod: SEO_RELEASE_DATE, changefreq: 'weekly', priority: 0.8 },
+  { path: '/guides', lastmod: GUIDES_RELEASE_DATE, changefreq: 'weekly', priority: 0.8 },
   { path: '/data-corrections', lastmod: SEO_RELEASE_DATE, changefreq: 'monthly', priority: 0.5 },
   { path: '/about', lastmod: SEO_RELEASE_DATE, changefreq: 'monthly', priority: 0.7 },
   { path: '/help', lastmod: SEO_RELEASE_DATE, changefreq: 'monthly', priority: 0.6 },

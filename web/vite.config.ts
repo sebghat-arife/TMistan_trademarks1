@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv, type ProxyOptions } from 'vite'
 import { reactPdfTextkitFix } from './vite-plugins/reactPdfTextkitFix.ts'
+import { siteVerification } from './vite-plugins/siteVerification.ts'
 
 /**
  * Environment variables.
@@ -59,7 +60,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [reactPdfTextkitFix(), react(), tailwindcss()],
+    plugins: [reactPdfTextkitFix(), react(), tailwindcss(), siteVerification(env)],
     // The PDF engine is only loaded on demand; keep it out of dev pre-bundling so the
     // textkit fix above can also reach it in `vite dev` (the production build is the verified path).
     optimizeDeps: { exclude: ['@react-pdf/renderer'] },

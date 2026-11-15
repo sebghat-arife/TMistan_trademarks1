@@ -45,6 +45,11 @@ CARDS: dict[str, tuple[str, str, str]] = {
     "nice-classes-for-common-goods-and-services": ("Nice Classification · WIPO", "45 classes", "Choosing classes for common goods and services"),
     "trademark-search-for-foreign-companies-afghanistan": ("Articles 7, 10 and 15 · Paris · Madrid", "6-month priority", "Trademark research for foreign businesses"),
     "glossary-of-afghanistan-trademark-terms": ("Reference", "A → Z", "Glossary of Afghanistan trademark terms"),
+    # practice series (2026-11-16)
+    "how-to-read-a-tmistan-record-page": ("Record pages · Articles 12, 18, 26", "Field by field", "How to read a TMistan record page"),
+    "monitoring-new-trademark-publications-afghanistan": ("Articles 26 and 30", "Every 2 weeks", "Monitoring new trademark publications"),
+    "searching-dari-and-pashto-trademarks-scripts-and-transliteration": ("Search technique", "3 scripts", "Dari and Pashto marks: scripts and transliteration"),
+    "geographical-names-in-afghan-trademark-law": ("Articles 8, 23, 24 and 31", "Place names", "Geographical names in Afghan trademark law"),
 }
 
 HTML = """<!doctype html><html><head><meta charset="utf-8">

@@ -1,9 +1,13 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Trans, useTranslation } from 'react-i18next'
-import { ArrowLeft, ArrowRight, BookOpen, Check, Clock, Info, Languages, Lightbulb } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, Check, Clock, Compass, Info, Languages, Lightbulb } from 'lucide-react'
 import { InfoBanner, SectionLabel, SidePanel } from '@/components/editorial'
+import { Blocks } from '@/components/content/ContentBlocks'
 import { ArticleCard } from '@/pages/KnowledgeCenterPage'
-import { ARTICLE_BY_SLUG, articleToc, articleWordCount, readingMinutes, type ArticleBlock } from '@/content/knowledge'
+import { GuideCard } from '@/components/GuideCard'
+import { ARTICLE_BY_SLUG, articleToc, articleWordCount, readingMinutes } from '@/content/knowledge'
+import { GUIDE_BY_SLUG, GUIDE_FOR_ARTICLE, GUIDE_FOR_CATEGORY } from '@/content/guides'
 import { Seo } from '@/seo/Seo'
 import { article as articleLd, breadcrumbList } from '@/seo/jsonld'
 import { localizePath, type SiteLocaleCode } from '@/seo/locales'
@@ -18,7 +22,8 @@ export function KnowledgeArticlePage() {
   const title = article ? t(`knowledge.articles.${article.slug}.title`, { defaultValue: article.title }) : t('knowledge.article.notFound')
   const summary = article ? t(`knowledge.articles.${article.slug}.summary`, { defaultValue: article.summary }) : ''
 
-  if (!article) return <Navigate to="/knowledge-center" replace />
+  // Unknown slug: a real "not found" page (noindex) rather than a soft redirect to the hub.
+  if (!article) return <NotFoundPage />
 
   // Articles are written in English; the English URL is the canonical page for every language.
   const path = `/knowledge-center/${article.slug}`
@@ -48,12 +53,16 @@ export function KnowledgeArticlePage() {
   const related = article.related.map((s) => ARTICLE_BY_SLUG[s]).filter(Boolean)
   const label = article.label ? t(`knowledge.labels.${article.label}`) : t(`knowledge.categories.${article.category}.title`)
   const englishOnly = !lng.startsWith('en')
+  const guide = GUIDE_BY_SLUG[GUIDE_FOR_ARTICLE[article.slug] ?? GUIDE_FOR_CATEGORY[article.category] ?? '']
+  // Search-result title/description: the hand-written SEO fields in English, the translated title/summary otherwise.
+  const seoTitle = lng.startsWith('en') ? (article.seoTitle ?? article.title) : title
+  const seoDescription = lng.startsWith('en') ? (article.metaDescription ?? article.summary) : summary
 
   return (
     <div data-testid="article-page">
       <Seo
-        title={t('seo.article.title', { title })}
-        description={summary}
+        title={t('seo.article.title', { title: seoTitle })}
+        description={seoDescription}
         path={path}
         canonical="english"
         type="article"
@@ -108,7 +117,7 @@ export function KnowledgeArticlePage() {
               </nav>
             )}
             <div className="article-body">
-              {article.body.map((b, i) => <Block key={i} block={b} />)}
+              <Blocks blocks={article.body} />
             </div>
 
             <section className="mt-10 rounded-xl border border-brand-100 bg-brand-50/70 p-6" aria-labelledby="meaning">
@@ -155,6 +164,15 @@ export function KnowledgeArticlePage() {
                 </ol>
               </SidePanel>
             )}
+            {guide && (
+              <section aria-labelledby="start-guide" data-testid="article-guide">
+                <h2 id="start-guide" className="flex items-center gap-2 font-serif text-[18px] font-semibold text-navy-900">
+                  <Compass className="h-4.5 w-4.5 text-brand-600" aria-hidden />
+                  {t('guides.startWithGuide')}
+                </h2>
+                <div className="mt-3"><GuideCard guide={guide} compact /></div>
+              </section>
+            )}
             {related.length > 0 && (
               <section aria-labelledby="related">
                 <h2 id="related" className="font-serif text-[18px] font-semibold text-navy-900">{t('knowledge.article.related')}</h2>
@@ -170,89 +188,4 @@ export function KnowledgeArticlePage() {
       </div>
     </div>
   )
-}
-
-function Block({ block }: { block: ArticleBlock }) {
-  const { t } = useTranslation()
-  switch (block.type) {
-    case 'p':
-      return <p>{block.text}</p>
-    case 'h2':
-      return <h2 id={block.id} className="scroll-mt-(--hdr-sticky)">{block.text}</h2>
-    case 'ul':
-      return (
-        <ul>
-          {block.items.map((it) => <li key={it}>{it}</li>)}
-        </ul>
-      )
-    case 'ol':
-      return (
-        <ol>
-          {block.items.map((it) => <li key={it}>{it}</li>)}
-        </ol>
-      )
-    case 'check':
-      return (
-        <section className="not-prose my-7 rounded-xl border border-ink-200 bg-white p-5" aria-label={t('knowledge.article.checklist')}>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-700">{t('knowledge.article.checklist')}</p>
-          <h3 className="mt-1 font-serif text-[18px] font-semibold text-navy-900">{block.title}</h3>
-          <ul className="mt-3 space-y-2">
-            {block.items.map((it) => (
-              <li key={it} className="flex items-start gap-2.5 text-[14.5px] leading-relaxed text-ink-800">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-brand-300 bg-brand-50 text-brand-700" aria-hidden>
-                  <Check className="h-3.5 w-3.5" />
-                </span>
-                <span>{it}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    case 'example':
-      return (
-        <figure className="not-prose my-7 overflow-hidden rounded-xl border border-ink-200 bg-white">
-          <figcaption className="border-b border-ink-200 bg-ink-50 px-5 py-3">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-700">{t('knowledge.article.example')}</p>
-            <p className="mt-0.5 font-serif text-[16px] font-semibold text-navy-900">{block.title}</p>
-          </figcaption>
-          <dl className="divide-y divide-ink-100">
-            {block.rows.map(([k, v]) => (
-              <div key={k} className="grid grid-cols-[150px_minmax(0,1fr)] gap-3 px-5 py-2.5 text-[14px]">
-                <dt className="text-ink-500">{k}</dt>
-                <dd className="font-medium text-ink-900">{v}</dd>
-              </div>
-            ))}
-          </dl>
-          {block.caption && <p className="border-t border-ink-200 px-5 py-3 text-[12.5px] text-ink-500">{block.caption}</p>}
-        </figure>
-      )
-    case 'note':
-      return (
-        <div className="not-prose my-7">
-          <InfoBanner Icon={Info} title={block.title}>{block.text}</InfoBanner>
-        </div>
-      )
-    case 'figure':
-      return (
-        <figure className="not-prose my-7">
-          <img src={block.src} alt={block.alt} loading="lazy" decoding="async" width={1200} height={750} className="w-full rounded-xl border border-ink-200 shadow-sm" />
-          <figcaption className="mt-2 text-center text-[12.5px] text-ink-500">{block.caption}</figcaption>
-        </figure>
-      )
-    case 'sources':
-      return (
-        <section className="not-prose mt-9 rounded-xl border border-ink-200 bg-ink-50 p-5" aria-labelledby="article-sources">
-          <h2 id="article-sources" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-700">{t('knowledge.article.sources')}</h2>
-          <ol className="mt-3 list-decimal space-y-2 ps-5 text-[13.5px] leading-relaxed text-ink-700">
-            {block.items.map((src) => (
-              <li key={src.href}>
-                <a href={src.href} target="_blank" rel="noopener noreferrer" className="text-brand-700 underline decoration-brand-300 underline-offset-2 hover:text-brand-800">{src.label}</a>
-                <span className="ms-1 text-ink-400" aria-hidden>↗</span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-3 text-[12.5px] text-ink-500">{t('knowledge.article.sourcesNote')}</p>
-        </section>
-      )
-  }
 }

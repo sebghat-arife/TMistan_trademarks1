@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Download, Flag, Loader2, Maximize2 } from 'lucide-react'
-import { trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
+import { BookOpen, ChevronRight, Download, Flag, Loader2, Maximize2 } from 'lucide-react'
+import { classifyApplicationType, trademarkBySerialQuery, similarTrademarksQuery } from '@/services'
 import { cn, formatRegistryDate, formatToday, trademarkPath } from '@/lib/utils'
 import { storagePublicUrl } from '@/lib/supabase'
 import { CANONICAL_URL } from '@/lib/site'
@@ -115,9 +115,10 @@ export function TrademarkPage() {
               bucket={current?.storage_bucket}
               path={current?.storage_path}
               variant="full"
-              alt={name}
+              alt={t('trademark.imageAlt', { name, gazette: tm.official_gazette_number ?? 'N/A' })}
               fallbackLabel={t('trademark.noImage')}
               loading="eager"
+              fetchPriority="high"
               className="aspect-[4/3] w-full !bg-white p-5"
               plain
             />
@@ -241,9 +242,42 @@ export function TrademarkPage() {
         </section>
       )}
 
+      {/* ── Understand this record (educational resources; English guides/articles) ── */}
+      <section className="card mt-4 p-5 md:p-6" aria-labelledby="record-learn-title" data-testid="record-learn">
+        <div className="flex items-start gap-3">
+          <span className="icon-circle h-9 w-9 shrink-0"><BookOpen className="h-4 w-4" aria-hidden /></span>
+          <div className="min-w-0">
+            <h2 id="record-learn-title" className="text-[18px] font-semibold text-ink-900">{t('trademark.learn.title')}</h2>
+            <p className="muted mt-0.5">{t('trademark.learn.text')}</p>
+          </div>
+        </div>
+        <ul className="mt-4 grid gap-x-8 gap-y-2 text-[14px] sm:grid-cols-2">
+          {learnLinks(tm, t).map(([to, label]) => (
+            <li key={to}>
+              <Link to={to} className="inline-flex items-center gap-1.5 font-medium text-brand-700 hover:underline">
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:-scale-x-100" aria-hidden />
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <ImageViewer images={images} index={imageIndex} open={viewerOpen} onOpenChange={setViewerOpen} onIndexChange={setImageIndex} title={name} />
     </div>
   )
+}
+
+/** Educational links shown under every record: the generic set plus one or two chosen by the notice type. */
+function learnLinks(tm: TrademarkPublicRow, t: Translate): [string, string][] {
+  const kind = classifyApplicationType(tm.application_type ?? '')
+  const links: [string, string][] = [['/knowledge-center/how-to-read-a-tmistan-record-page', t('trademark.learn.fields')]]
+  if (kind === 'registration' || kind === 'other') links.push(['/guides/trademark-opposition-afghanistan', t('trademark.learn.opposition')])
+  if (kind === 'assignment' || kind === 'name_change' || kind === 'address_change' || kind === 'name_address_change') links.push(['/knowledge-center/trademark-assignment-and-ownership-changes', t('trademark.learn.changes')])
+  if (kind === 'renewal' || kind === 'cancellation') links.push(['/guides/trademark-renewal-and-ownership-changes', t('trademark.learn.renewal')])
+  if (tm.class_numbers && tm.class_numbers.length > 0) links.push(['/guides/trademark-classification-afghanistan', t('trademark.learn.classes')])
+  links.push(['/guides/trademark-search-afghanistan', t('trademark.learn.search')])
+  return links
 }
 
 function Fact({ label, children, mono }: { label: string; children: React.ReactNode; mono?: boolean }) {

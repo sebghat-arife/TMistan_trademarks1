@@ -19,11 +19,18 @@ import { localeBasename, localizePath, type SiteLocaleCode } from '@/seo/locales
 import { loadPrerenderDataset, seedHome, seedRecord, type PrerenderDataset } from '@/seo/prerenderData'
 import { recordIndexDecision } from '@/seo/recordPolicy'
 import { ARTICLES } from '@/content/knowledge'
+import { GUIDES } from '@/content/guides'
 import { STATIC_ROUTES } from '@/seo/routes'
 import type { TrademarkPublicRow } from '@/lib/database.types'
 import { CANONICAL_URL } from '@/lib/site'
 
-export { STATIC_ROUTES, ARTICLES, loadPrerenderDataset, recordIndexDecision, localizePath, CANONICAL_URL }
+export { STATIC_ROUTES, ARTICLES, GUIDES, loadPrerenderDataset, recordIndexDecision, localizePath, CANONICAL_URL }
+
+/** English-only pages (canonical = English URL): Knowledge Center articles and Guides. */
+export const ENGLISH_PAGES: { path: string; lastmod: string; priority: number }[] = [
+  ...GUIDES.map((g) => ({ path: `/guides/${g.slug}`, lastmod: g.updated ?? g.written, priority: 0.7 })),
+  ...ARTICLES.map((a) => ({ path: `/knowledge-center/${a.slug}`, lastmod: a.updated ?? a.written, priority: 0.6 })),
+]
 
 export type RenderResult = {
   html: string

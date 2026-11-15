@@ -48,6 +48,12 @@ services:
         value: https://www.masnadip.af/   # public Masnad Law Firm website (not a secret); "" disables the link
       - key: SITE_CANONICAL_URL
         value: https://tmistan.com        # canonical public origin (apex; www. 301s here) — canonicals, hreflang, sitemap, PDFs
+      - key: SITE_GOOGLE_SITE_VERIFICATION
+        sync: false                       # optional: Google Search Console HTML-tag token (content value only) → <meta name="google-site-verification">
+      - key: SITE_BING_SITE_VERIFICATION
+        sync: false                       # optional: Bing Webmaster Tools token → <meta name="msvalidate.01">
+      - key: SITE_GA4_MEASUREMENT_ID
+        sync: false                       # optional: GA4 measurement ID (G-XXXXXXXXXX); loaded only after visitor consent
     routes:
       - type: rewrite                     # client-side routing: URLs without a prerendered file serve the SPA shell
         source: /*
