@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { PageHero, SectionTitle } from '@/components/PageHero'
 import { PageSeo } from '@/seo/PageSeo'
+import { track } from '@/seo/analytics'
 
 /** Service cards; `research` maps to the research-type option preselected on the contact form. */
 const SERVICES = [
@@ -51,7 +52,7 @@ export function ServicesPage() {
         accent
         actions={
           <>
-            <Link to={REQUEST_URL} className="btn btn-primary" data-testid="services-request">
+            <Link to={REQUEST_URL} onClick={() => track({ event: 'cta_click', cta_id: 'service_enquiry', cta_location: 'services_hero' })} className="btn btn-primary" data-testid="services-request">
               <Send className="h-4 w-4" aria-hidden />
               {t('services.request')}
             </Link>
@@ -97,7 +98,7 @@ export function ServicesPage() {
                     <dd className="mt-0.5 text-ink-600">{t(`services.cards.items.${key}.note`)}</dd>
                   </div>
                 </dl>
-                <Link to={`${REQUEST_URL}&research=${research}`} className="link-green mt-auto inline-flex items-center gap-1.5 pt-5">
+                <Link to={`${REQUEST_URL}&research=${research}`} onClick={() => track({ event: 'cta_click', cta_id: `service_enquiry:${research}`, cta_location: 'services_card' })} className="link-green mt-auto inline-flex items-center gap-1.5 pt-5">
                   {t('services.cards.inquire')}
                   <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
                 </Link>
@@ -196,7 +197,7 @@ export function ServicesPage() {
               <p className="mt-2 text-[15px] leading-relaxed text-white/80">{t('services.cta.text')}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link to={REQUEST_URL} className="btn btn-primary">
+              <Link to={REQUEST_URL} onClick={() => track({ event: 'cta_click', cta_id: 'service_enquiry', cta_location: 'services_footer' })} className="btn btn-primary">
                 <Send className="h-4 w-4" aria-hidden />
                 {t('services.cta.request')}
               </Link>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { durationBucket, resultsBucket, track } from '@/seo/analytics'
 import {
   IMAGE_SEARCH_EXACT_MIN_SIMILARITY,
   IMAGE_SEARCH_LIMIT,
@@ -277,6 +278,7 @@ export function useImageSearch(enabled = true) {
   /** Step 2 — run the search with whatever evidence is available. */
   const search = useCallback(async (f: File, opt: ImageSearchOption, rec: Recognition | null) => {
     const token = ++runRef.current
+    const startedAt = performance.now()
     setErrorKind(null)
     setErrorDetail(null)
     setResults(null)
@@ -327,6 +329,19 @@ export function useImageSearch(enabled = true) {
       setSearchedTerms(terms)
       setSearchedModalities(modalities)
       setPhase('done')
+      // Analytics: the picture and the recognised words never leave the browser; only the
+      // mode, the option, whether text was found and bucketed counts/durations are reported.
+      track({
+        event: 'image_search',
+        image_source: source.kind,
+        image_option: opt,
+        search_mode: usedMode,
+        basic_reason: usedMode === 'basic' ? (basicReason ?? (terms.length === 0 ? 'no_text' : undefined)) : undefined,
+        text_recognised: terms.length > 0 ? 'yes' : 'no',
+        results_total: rows.length,
+        results_bucket: resultsBucket(rows.length),
+        duration_bucket: durationBucket(performance.now() - startedAt),
+      })
     } catch (e) {
       if (token !== runRef.current) return
       setPhase('ready')
@@ -335,8 +350,9 @@ export function useImageSearch(enabled = true) {
         setErrorKind('failed')
         setErrorDetail(e instanceof Error ? e.message : String(e))
       }
+      track({ event: 'image_search_error', image_source: source.kind, error_kind: e instanceof ImageDecodeError ? 'decode' : 'failed' })
     }
-  }, [hybridInstalled, refine])
+  }, [hybridInstalled, refine, source.kind, basicReason])
 
   const busy = phase === 'analysing' || phase === 'searching' || phase === 'loading-example'
 

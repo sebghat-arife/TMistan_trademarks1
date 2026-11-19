@@ -7,6 +7,8 @@
  * What it produces inside dist/:
  *   <route>/index.html            every public page in English, Dari (/fa) and
  *                                 Pashto (/ps); Knowledge Center articles and
+ *                                 guides in all three (the /fa and /ps copies are
+ *                                 canonicalised to English and not in the sitemap);
  *                                 eligible trademark records in English
  *                                 (their canonical language)
  *   sitemap.xml                   sitemap index
@@ -120,13 +122,19 @@ for (const route of STATIC_ROUTES) {
   }
   pageEntries.push({ path: route.path, lastmod: route.lastmod, changefreq: route.changefreq, priority: route.priority, languages: true })
 }
+let localizedCopies = 0
 for (const page of ENGLISH_PAGES) {
-  const result = await render({ path: page.path, lng: 'en', dataset })
-  await writePage(page.path, result)
-  count++
+  for (const lng of LOCALES) {
+    const result = await render({ path: page.path, lng, dataset })
+    await writePage(localizePath(page.path, lng), result)
+    if (lng === 'en') count++
+    else localizedCopies++
+  }
+  // Only the English URL is listed: the /fa and /ps copies carry a canonical to it (they are
+  // prerendered so that the links from Dari/Pashto pages resolve to real HTML instead of the shell).
   pageEntries.push({ path: page.path, lastmod: page.lastmod, changefreq: 'monthly', priority: page.priority, languages: false })
 }
-log(`${count} static pages written`)
+log(`${count} static pages written (+ ${localizedCopies} Dari/Pashto copies of English-canonical pages, not in the sitemap)`)
 
 const recordEntries = []
 if (dataset) {

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { track } from '@/seo/analytics'
 import { Info, Loader2 } from 'lucide-react'
 import { cn, formatNumber } from '@/lib/utils'
 import { TrademarkCard } from '@/components/ResultCards'
@@ -86,10 +87,10 @@ export function ImageSearchResults({ c, className }: { c: ImageSearchController;
             <EmptyState className="mt-4" title={t('search.image.noRefined')} hint={t('search.image.noRefinedHint')} />
           ) : (
             <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="image-results">
-              {filtered.map((r) => (
+              {filtered.map((r, i) => (
                 <li key={r.id} className="flex min-w-0 flex-col" data-group={r.group}>
                   <div className="relative flex flex-1">
-                    <TrademarkCard r={r} className="w-full" detailed />
+                    <TrademarkCard r={r} className="w-full" detailed onSelect={() => track({ event: 'select_result', search_mode: 'image', result_serial: r.serial_number, result_position: i + 1, result_group: r.group })} />
                     <GroupBadge group={r.group} />
                   </div>
                   <Evidence r={r} />

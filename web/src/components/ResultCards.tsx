@@ -30,12 +30,13 @@ export function classText(classes: number[] | null, raw: string | null | undefin
 
 /* ── Card ──────────────────────────────────────────────────────────────── */
 
-export function TrademarkCard({ r, query, className, detailed }: { r: TrademarkSearchResult; query?: string; className?: string; /** Also show publication date, source page and an explicit "View record" action. */ detailed?: boolean }) {
+export function TrademarkCard({ r, query, className, detailed, onSelect }: { r: TrademarkSearchResult; query?: string; className?: string; /** Also show publication date, source page and an explicit "View record" action. */ detailed?: boolean; /** Analytics hook: the visitor opened this result. */ onSelect?: () => void }) {
   const { t, i18n } = useTranslation()
   const name = r.mark_name ?? t('fields.unnamed')
   return (
     <Link
       to={trademarkPath(r.serial_number, r.official_gazette_number)}
+      onClick={onSelect}
       className={cn('card group flex min-w-0 flex-col p-4 no-underline transition-shadow hover:border-brand-300 hover:shadow-[0_2px_12px_rgba(16,43,67,0.08)]', className)}
     >
       <TrademarkImage
@@ -81,12 +82,12 @@ function Row({ label, children, mono }: { label: string; children: React.ReactNo
   )
 }
 
-export function ResultGrid({ results, query, columns = 4, detailed }: { results: TrademarkSearchResult[]; query?: string; columns?: 4 | 5; detailed?: boolean }) {
+export function ResultGrid({ results, query, columns = 4, detailed, onSelect }: { results: TrademarkSearchResult[]; query?: string; columns?: 4 | 5; detailed?: boolean; /** Analytics hook: (result, 1-based position). */ onSelect?: (r: TrademarkSearchResult, position: number) => void }) {
   return (
     <ul className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-5')}>
-      {results.map((r) => (
+      {results.map((r, i) => (
         <li key={r.id} className="flex min-w-0">
-          <TrademarkCard r={r} query={query} className="w-full" detailed={detailed} />
+          <TrademarkCard r={r} query={query} className="w-full" detailed={detailed} onSelect={onSelect ? () => onSelect(r, i + 1) : undefined} />
         </li>
       ))}
     </ul>
@@ -95,7 +96,7 @@ export function ResultGrid({ results, query, columns = 4, detailed }: { results:
 
 /* ── Table ─────────────────────────────────────────────────────────────── */
 
-export function ResultTable({ results, query, compact }: { results: TrademarkSearchResult[]; query?: string; compact?: boolean }) {
+export function ResultTable({ results, query, compact, onSelect }: { results: TrademarkSearchResult[]; query?: string; compact?: boolean; onSelect?: (r: TrademarkSearchResult, position: number) => void }) {
   const { t, i18n } = useTranslation()
   return (
     <div className="card overflow-x-auto">
@@ -110,13 +111,13 @@ export function ResultTable({ results, query, compact }: { results: TrademarkSea
           </tr>
         </thead>
         <tbody className="divide-y divide-ink-100">
-          {results.map((r) => (
+          {results.map((r, i) => (
             <tr key={r.id} className="hover:bg-brand-50/50">
               <td className="px-4 py-3 tabular-nums text-ink-800">
-                <Link to={trademarkPath(r.serial_number, r.official_gazette_number)} className="hover:text-brand-600">{r.serial_number}</Link>
+                <Link to={trademarkPath(r.serial_number, r.official_gazette_number)} onClick={onSelect ? () => onSelect(r, i + 1) : undefined} className="hover:text-brand-600">{r.serial_number}</Link>
               </td>
               <td className="px-4 py-3">
-                <Link to={trademarkPath(r.serial_number, r.official_gazette_number)} className="flex items-center gap-3 text-ink-900 hover:text-brand-600">
+                <Link to={trademarkPath(r.serial_number, r.official_gazette_number)} onClick={onSelect ? () => onSelect(r, i + 1) : undefined} className="flex items-center gap-3 text-ink-900 hover:text-brand-600">
                   {!compact && (
                     <TrademarkImage bucket={r.primary_image_bucket} path={r.primary_image_path} thumbnailPath={r.primary_thumbnail_path} alt="" className="h-9 w-12 shrink-0 rounded border border-ink-200 !bg-white" plain />
                   )}

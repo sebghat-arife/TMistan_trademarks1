@@ -9,6 +9,7 @@ import { storagePublicUrl } from '@/lib/supabase'
 import { CANONICAL_URL } from '@/lib/site'
 import { REPORT_DISCLAIMER, reportFileName } from '@/lib/pdf/disclaimer'
 import { Seo } from '@/seo/Seo'
+import { track } from '@/seo/analytics'
 import { breadcrumbList, trademarkRecordPage } from '@/seo/jsonld'
 import { localizePath, type SiteLocaleCode } from '@/seo/locales'
 import { recordIndexDecision } from '@/seo/recordPolicy'
@@ -35,6 +36,20 @@ export function TrademarkPage() {
   const report = useRecordDownload()
 
   const { data: similar } = useQuery({ ...similarTrademarksQuery(tm?.id ?? ''), enabled: !!tm })
+
+  // Analytics: one `view_record` per loaded record (identifiers and counts only, no owner data).
+  useEffect(() => {
+    if (!tm) return
+    track({
+      event: 'view_record',
+      record_serial: tm.serial_number,
+      record_gazette: tm.official_gazette_number,
+      record_type: tm.application_type || 'unknown',
+      record_indexable: recordIndexDecision(tm).indexable ? 'yes' : 'no',
+      record_has_image: images.length > 0 ? 'yes' : 'no',
+      record_class_count: tm.class_numbers?.length ?? 0,
+    })
+  }, [tm, images.length])
 
   // Head metadata (see docs/SEO.md). The English URL is canonical for every language because
   // the record itself is shown exactly as published, never translated. Only sufficiently
@@ -372,9 +387,11 @@ function useRecordDownload() {
         imageFailed: picture.failed,
         fileName: reportFileName(tm.serial_number),
       })
+      track({ event: 'report_download', record_serial: tm.serial_number, record_gazette: tm.official_gazette_number, report_format: 'pdf' })
       if (alive.current) setStatus('idle')
     } catch (err) {
       console.error('[TMistan] PDF report failed', err)
+      track({ event: 'report_download_error', record_serial: tm.serial_number, error_kind: err instanceof Error ? err.name || 'Error' : 'unknown' })
       if (alive.current) setStatus('error')
     }
   }
@@ -411,6 +428,10 @@ type Translate = (key: string, opts?: Record<string, unknown>) => string
 function recordSeo(tm: TrademarkPublicRow, images: TrademarkImagePublicRow[], lng: SiteLocaleCode, path: string, t: Translate) {
   const decision = recordIndexDecision(tm)
   const mark = tm.mark_name?.trim() || tm.serial_number
+  // Very long marks (descriptive labels) are shortened in the <title> only — the H1, description
+  // and structured data keep the full name. 60 characters keeps mark + serial within what
+  // result pages display before truncating.
+  const titleMark = mark.length > 60 ? `${mark.slice(0, 57).replace(/\s+\S*$/, '').trimEnd()}…` : mark
   const gazette = tm.official_gazette_number
   const image = storagePublicUrl(images[0]?.storage_bucket, images[0]?.storage_path)
   const classes = classText(tm.class_numbers, tm.trademark_class, '')
@@ -418,14 +439,15 @@ function recordSeo(tm: TrademarkPublicRow, images: TrademarkImagePublicRow[], ln
   const description = decision.indexable
     ? t('seo.record.description', {
         mark,
+        serial: tm.serial_number,
         gazette,
         date: tm.publication_date ? t('seo.record.datePart', { date: formatRegistryDate(tm.publication_date, lng) }) : '',
         applicant: tm.applicant_name,
         classes,
-        goods: goods.length > 110 ? `${goods.slice(0, 107).trimEnd()}…` : goods,
+        goods: goods.length > 90 ? `${goods.slice(0, 87).trimEnd()}…` : goods,
       })
     : t('seo.record.descriptionShort', { serial: tm.serial_number, gazette })
-  const title = t('seo.record.title', { mark, serial: tm.serial_number })
+  const title = t('seo.record.title', { mark: titleMark, serial: tm.serial_number })
   const englishUrl = localizePath(path, 'en')
   const jsonLd = [
     trademarkRecordPage({

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, ChevronDown, Globe, Menu, X } from 'lucide-react'
 import { LANGUAGES, rememberLanguage } from '@/i18n'
 import { languageSwitchUrl } from '@/seo/clientLocale'
+import { track } from '@/seo/analytics'
 import type { SiteLocaleCode } from '@/seo/locales'
 import { ConsentBar } from './ConsentBar'
 import { cn } from '@/lib/utils'
@@ -119,12 +120,12 @@ export function Layout() {
               <ul className="mt-4 space-y-1.5 text-[13px] text-ink-600">
                 {SITE_CONTACT.email && (
                   <li>
-                    <a href={`mailto:${SITE_CONTACT.email}`} className="hover:text-brand-700 hover:underline">{SITE_CONTACT.email}</a>
+                    <a href={`mailto:${SITE_CONTACT.email}`} onClick={() => track({ event: 'contact_click', contact_method: 'email', location: 'footer' })} className="hover:text-brand-700 hover:underline">{SITE_CONTACT.email}</a>
                   </li>
                 )}
                 {SITE_CONTACT.phone && (
                   <li>
-                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} className="hover:text-brand-700 hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
+                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^+\d]/g, '')}`} onClick={() => track({ event: 'contact_click', contact_method: 'phone', location: 'footer' })} className="hover:text-brand-700 hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
                   </li>
                 )}
               </ul>
@@ -192,8 +193,10 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
  * prerendered document of that language is served and the choice is
  * remembered for the next visit (see seo/clientLocale.ts).
  */
-function switchLanguage(lng: SiteLocaleCode) {
+function switchLanguage(lng: SiteLocaleCode, from: string, location: 'header' | 'mobile') {
+  if (lng === from) return
   rememberLanguage(lng)
+  track({ event: 'language_select', from_language: from, to_language: lng, location })
   window.location.assign(languageSwitchUrl(window.location, lng))
 }
 
@@ -207,7 +210,7 @@ export function LanguageSwitcher({ className, tone = 'light', size = 'default' }
       <label className={cn('site-lang relative', className)}>
         <Globe className="site-lang-globe" strokeWidth={1.5} aria-hidden />
         <span className="sr-only">{t('nav.language')}</span>
-        <select value={current.code} onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode)} className="site-lang-select">
+        <select value={current.code} onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode, current.code, 'header')} className="site-lang-select">
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code}>
               {l.short}
@@ -224,7 +227,7 @@ export function LanguageSwitcher({ className, tone = 'light', size = 'default' }
       <span className="sr-only">{t('nav.language')}</span>
       <select
         value={current.code}
-        onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode)}
+        onChange={(e) => switchLanguage(e.target.value as SiteLocaleCode, current.code, 'mobile')}
         className={cn('cursor-pointer appearance-none bg-transparent pe-1 text-[14px] font-medium outline-none', text, tone === 'dark' && '[&>option]:text-ink-900')}
       >
         {LANGUAGES.map((l) => (

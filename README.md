@@ -119,7 +119,8 @@ service-role key exists only on the machine that runs importers / the storage se
 | `scripts/setup_storage.py` | creates/verifies the Storage buckets (service-role key, run once) | no |
 | `scripts/check_supabase.py` | end-to-end readiness check of the real project using only the public key | no |
 | `scripts/local-stack/` | offline dev stack: PostgreSQL + PostgREST + static image server, no Supabase account needed | no |
-| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `IMPORT_CENTER.md`, `ADMIN_DATA_MANAGEMENT.md`, `IMAGE_SEARCH.md`, `PDF_REPORT.md`, `LOVABLE_HANDOFF.md` | no |
+| `web/scripts/indexing-audit.ts`, `web/scripts/seo-check.mjs` | SEO tooling: read-only audit of which published records are indexable and why (publishable key; output in `docs/audit/`), and a technical SEO checker for the built `dist` (canonical/hreflang reciprocity, sitemap ↔ pages, titles, images, JSON-LD, internal links) | no |
+| `docs/` | `DEPLOYMENT.md` (runbook), `SCHEMA.md`, `IMPORT_CENTER.md`, `ADMIN_DATA_MANAGEMENT.md`, `IMAGE_SEARCH.md`, `PDF_REPORT.md`, `SEO.md`, `ANALYTICS.md`, `SEARCH_CONSOLE.md`, `SEO_PHASE3_REPORT.md`, `audit/`, `LOVABLE_HANDOFF.md` | no |
 
 ## Data model used by the app
 

@@ -1000,7 +1000,7 @@
           },
           {
             "title": "Usage statistics (only with your consent)",
-            "text": "The website loads Google Tag Manager and Google Analytics 4 only after you allow analytics in the notice shown on your first visit or in the preferences below. Until then nothing is requested from Google, no analytics cookies are set and no usage data is collected; browsers that send a Do Not Track or Global Privacy Control signal are treated as having declined. If you allow analytics, Google Analytics sets cookies (named _ga and _ga_…) that distinguish your browser and records which pages you visit, the searches you start, your language, device and browser type and an approximate location derived from your IP address, which Google does not store. We use these figures only in aggregate to understand how the platform is used; they are processed by Google on our behalf under its data-processing terms. You can withdraw your consent at any time below; this deletes no data already collected but stops further collection."
+            "text": "The website loads Google Tag Manager and Google Analytics 4 only after you allow analytics in the notice shown on your first visit or in the preferences below. Until then nothing is requested from Google, no analytics cookies are set and no usage data is collected; browsers that send a Do Not Track or Global Privacy Control signal are treated as having declined. If you allow analytics, Google Analytics sets cookies (named _ga and _ga_…) that distinguish your browser and records which pages you visit, the searches you start (the mark name you search for, shortened and never e-mail addresses or numbers), the records you open, whether you use the image search (not the image itself), download a record report or send a form (not its contents), your language, device and browser type and an approximate location derived from your IP address, which Google does not store. We use these figures only in aggregate to understand how the platform is used; they are processed by Google on our behalf under its data-processing terms. You can withdraw your consent at any time below; this deletes no data already collected but stops further collection."
           },
           {
             "title": "Hosting and technical logs",
@@ -2723,7 +2723,7 @@
     },
     "record": {
       "title": "{{mark}} ({{serial}}) – Afghanistan Trademark Record | TMistan",
-      "description": "{{mark}}: trademark published in Official Gazette {{gazette}} of Afghanistan{{date}}. Applicant: {{applicant}}. Class {{classes}}: {{goods}}",
+      "description": "{{mark}} ({{serial}}): trademark published in Official Gazette {{gazette}} of Afghanistan{{date}}. Applicant: {{applicant}}. Class {{classes}}: {{goods}}",
       "descriptionShort": "Trademark record {{serial}} as published in Official Gazette {{gazette}} of Afghanistan, shown on TMistan for research purposes.",
       "datePart": " on {{date}}",
       "imageAlt": "Trademark image of {{mark}} as published in Official Gazette {{gazette}} of Afghanistan",
@@ -2745,7 +2745,7 @@
   },
   "consent": {
     "title": "Anonymous usage statistics",
-    "text": "TMistan uses Google Analytics 4 (loaded through Google Tag Manager) to understand how the site is used — pages visited, searches started. No analytics cookies are set and no usage data is sent unless you agree. You can change your choice at any time in the Privacy Policy.",
+    "text": "TMistan uses Google Analytics 4 (loaded through Google Tag Manager) to understand how the site is used — pages visited, searches started, records opened and features used (never what you type into forms). No analytics cookies are set and no usage data is sent unless you agree. You can change your choice at any time in the Privacy Policy.",
     "accept": "Allow analytics",
     "decline": "Decline",
     "privacy": "Privacy Policy",

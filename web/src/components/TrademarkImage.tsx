@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ImageOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { storagePublicUrl } from '@/lib/supabase'
@@ -25,6 +25,12 @@ interface Props {
 /**
  * Renders a trademark logo without distortion (object-contain on a fixed box),
  * with a skeleton while loading and an honest "no image" state on error.
+ *
+ * The skeleton sits *behind* the image and the image is never hidden with CSS: on a
+ * prerendered page the picture usually finishes loading before React hydrates, and
+ * React does not replay `load` events that fired before hydration. The effect below
+ * therefore also reads `img.complete` after mount (Phase 3 audit finding: on slow
+ * connections the record image stayed invisible under the skeleton).
  */
 export function TrademarkImage({
   bucket,
@@ -41,15 +47,25 @@ export function TrademarkImage({
 }: Props) {
   const src = variant === 'thumb' ? (storagePublicUrl(bucket, thumbnailPath) ?? storagePublicUrl(bucket, path)) : storagePublicUrl(bucket, path)
   const [state, setState] = useState<'loading' | 'ok' | 'error'>(src ? 'loading' : 'error')
+  const ref = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
-    setState(src ? 'loading' : 'error')
+    if (!src) {
+      setState('error')
+      return
+    }
+    const el = ref.current
+    // Already complete (loaded before hydration, or from the browser cache): no load event will follow.
+    if (el && el.complete) setState(el.naturalWidth > 0 ? 'ok' : 'error')
+    else setState('loading')
   }, [src])
 
   return (
     <div className={cn('relative flex items-center justify-center overflow-hidden', plain ? 'bg-white' : 'checker', className)}>
+      {state === 'loading' && <div className="absolute inset-0 animate-pulse bg-ink-100" aria-hidden />}
       {src && state !== 'error' && (
         <img
+          ref={ref}
           src={src}
           alt={alt}
           loading={loading}
@@ -57,14 +73,9 @@ export function TrademarkImage({
           decoding="async"
           onLoad={() => setState('ok')}
           onError={() => setState('error')}
-          className={cn(
-            'max-h-full max-w-full object-contain transition-opacity duration-200',
-            state === 'loading' ? 'opacity-0' : 'opacity-100',
-            imgClassName,
-          )}
+          className={cn('relative max-h-full max-w-full object-contain', imgClassName)}
         />
       )}
-      {state === 'loading' && <div className="absolute inset-0 animate-pulse bg-ink-100" aria-hidden />}
       {state === 'error' && (
         <div className="flex flex-col items-center justify-center gap-1 p-2 text-center text-ink-400">
           <ImageOff className="h-5 w-5" aria-hidden />

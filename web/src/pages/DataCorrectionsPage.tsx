@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { ClosingBanner, FeatureCard, NumberedSteps, SectionHeading, SectionLabel, SidePanel, SplitHero } from '@/components/editorial'
 import { PageSeo } from '@/seo/PageSeo'
+import { track } from '@/seo/analytics'
 
 /** Hero image: illuminated frontispiece of the Makhzan al-Asrar, Herat, late 15th century (LACMA, public domain, cropped) — see public/img/CREDITS.md. */
 const HERO_PHOTO_SOURCE = 'https://commons.wikimedia.org/wiki/File:Illuminated_frontispiece_from_the_Makhzan_al-Asrar_(Treasury_of_Mysteries)_LACMA_M.73.5.529.jpg'
@@ -169,9 +170,11 @@ export function DataCorrectionsPage() {
       return { receipt, uploads }
     },
     onSuccess: (o) => {
+      track({ event: 'correction_request', request_status: 'submitted', has_attachment: files.length > 0 ? 'yes' : 'no' })
       setOutcome(o)
       window.setTimeout(() => topRef.current?.scrollIntoView({ block: 'start' }), 20)
     },
+    onError: () => track({ event: 'correction_request', request_status: 'failed', has_attachment: files.length > 0 ? 'yes' : 'no' }),
     onSettled: () => setPhase('idle'),
   })
 

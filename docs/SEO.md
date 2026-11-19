@@ -37,9 +37,12 @@ URL requested            Render serves               why
 * Canonicals are absolute, slash-less (except `/`), on the canonical origin (`SITE_CANONICAL_URL`,
   default `https://tmistan.com`; `www.` 301s to the apex at the DNS/Render level).
 * Every page lists all three alternates plus `x-default` → English. Record pages and English-only
-  Knowledge Center articles use **`canonical: 'english'`** — the `/fa` and `/ps` versions point
-  their canonical at the English URL and are not prerendered or listed in the sitemap, because the
-  record data (and the article bodies) are not translated.
+  Knowledge Center articles and guides use **`canonical: 'english'`** — the `/fa` and `/ps` versions
+  point their canonical at the English URL and are not listed in the sitemap, because the record
+  data (and the article bodies) are not translated. Since Phase 3 the `/fa` and `/ps` copies of
+  articles and guides *are* prerendered (72 pages) so that the links from Dari/Pashto pages resolve
+  to real HTML with that canonical instead of the app shell; record pages remain English-only
+  documents (`/fa/trademark/…` is served by the shell and canonicalises client-side).
 * Language choice: the path is authoritative. The language switcher navigates to the alternate
   path and stores the choice (`localStorage.i18nextLng`). On a **first visit to a bare English
   path** with a stored or browser preference for `fa`/`ps`, `main.tsx` performs a client-side
@@ -134,7 +137,14 @@ changes materially; article dates come from `written`/`updated` in `web/src/cont
 * Tesseract.js (image-search OCR) is a dynamic import — it was 350 kB of the old main bundle.
 * Knowledge Center content is its own chunk.
 * Main bundle after the change: ≈ 398 kB (124 kB gzip) vs 743 kB before.
-* Images below the fold use `loading="lazy"`; the record's main image is `eager`.
+* Images below the fold use `loading="lazy"`; the record's main image is `eager` with
+  `fetchPriority="high"` (React emits a matching `<link rel="preload">`).
+* `TrademarkImage` never hides the picture with CSS while "loading" (the skeleton sits behind it)
+  and reads `img.complete` after mount: on prerendered pages the image usually finishes before React
+  hydrates, and React does not replay `load` events (Phase 3 fix — the record image used to stay
+  invisible on slow connections).
+* Header/footer logos are 480 px derivatives (`/brand/logo-480.png`, 26 KB) of the 1,600 px brand
+  files (105 KB), which remain for Open Graph, structured data and the PDF report.
 
 ## 8. Knowledge Center content rules
 
@@ -193,13 +203,35 @@ remain opt-in: every page carries the Consent Mode defaults and the Google Tag M
 **Bundles.** Main chunk 386 kB (120 kB gzip); guide bodies (75 kB), law series (74 kB) and launch
 articles (57 kB) are separate chunks loaded only on those pages.
 
-## 10. Checklist after any change
+## 10. Phase 3 (2026-11-19): audit, analytics events, checker
+
+* `web/scripts/indexing-audit.ts` → `docs/audit/` (why 1,118 of 4,713 records are excluded; see
+  `docs/audit/README.md` for the analysis — the main lever is the missing publication date of
+  gazettes 1344/1437, an owner data fix, not a policy change). The policy in `recordPolicy.ts` is
+  unchanged.
+* Record `<title>` shortens mark names longer than 60 characters (H1/description/JSON-LD keep the
+  full name); the record meta description now contains the serial number (no two record pages share
+  a description — previously 55 groups of same-mark filings did) and a 90-character goods excerpt.
+* Five early Knowledge Center articles got specific `metaDescription`s (they fell back to generic
+  70–80-character summaries).
+* Interaction events (`view_search_results`, `select_result`, `view_record`, `image_search`,
+  `language_select`, `report_download`, `contact_enquiry`, `correction_request`, `contact_click`,
+  `cta_click`) — see `docs/ANALYTICS.md`; consent-gated, identifiers and counts only.
+* `web/scripts/seo-check.mjs` (step 3 below) and `docs/SEARCH_CONSOLE.md` (what Search Console
+  should show, monthly routine, objectives). Full findings: `docs/SEO_PHASE3_REPORT.md`.
+
+## 11. Checklist after any change
 
 1. `cd web && npm run check` (typecheck, lint, full build incl. prerender) — needs the two Supabase
    variables in the environment (`web/.env.local` locally).
 2. `grep -rl "sb_secret_\|service_role" web/dist/` → must print nothing.
-3. Spot-check `dist/index.html`, `dist/fa/index.html`, one record page, one article, one guide:
-   title, canonical, 4 hreflang links (translated pages) or none (English-only pages), JSON-LD.
+3. `node scripts/seo-check.mjs dist` (from `web/`, ~4 s): one title/description/canonical per
+   page, canonical on the apex and self or English, complete and reciprocal hreflang sets, `<html
+   lang/dir>` vs URL language, one `<h1>`, `img` alt, JSON-LD parses, duplicate titles/descriptions
+   across different canonicals, every internal link resolves to a prerendered page/asset/app route,
+   sitemap URLs == indexable self-canonical pages, robots.txt. Exit 1 on any error; warnings list
+   long titles/descriptions. Then spot-check `dist/index.html`, `dist/fa/index.html`, one record
+   page, one article, one guide by eye.
 4. `node scripts/serve-dist.mjs 4180` and run the Playwright smoke script (hydration warnings,
    language switching, redirects, robots tags).
 5. After deploy: `curl -I https://tmistan.com/robots.txt`, `/sitemap.xml`, a record URL, and an

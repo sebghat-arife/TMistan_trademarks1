@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { PageHero } from '@/components/PageHero'
 import { PageSeo } from '@/seo/PageSeo'
+import { track } from '@/seo/analytics'
 import { MASNAD_URL, SITE_CONTACT } from '@/lib/site'
 import { cn } from '@/lib/utils'
 import {
@@ -177,9 +178,11 @@ export function ContactPage() {
         honeypot: values.website,
       }),
     onSuccess: (r) => {
+      track({ event: 'contact_enquiry', enquiry_type: type, enquiry_status: 'submitted' })
       setReceipt(r)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
+    onError: () => track({ event: 'contact_enquiry', enquiry_type: type, enquiry_status: 'failed' }),
   })
 
   const onSubmit = (ev: FormEvent) => {
@@ -467,13 +470,13 @@ export function ContactPage() {
                 {SITE_CONTACT.email && (
                   <li className="flex items-start gap-3">
                     <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-                    <a href={`mailto:${SITE_CONTACT.email}`} className="font-medium text-brand-600 hover:underline" dir="ltr">{SITE_CONTACT.email}</a>
+                    <a href={`mailto:${SITE_CONTACT.email}`} onClick={() => track({ event: 'contact_click', contact_method: 'email', location: 'contact_page' })} className="font-medium text-brand-600 hover:underline" dir="ltr">{SITE_CONTACT.email}</a>
                   </li>
                 )}
                 {SITE_CONTACT.phone && (
                   <li className="flex items-start gap-3">
                     <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^\d+]/g, '')}`} className="font-medium text-brand-600 hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
+                    <a href={`tel:${SITE_CONTACT.phone.replace(/[^\d+]/g, '')}`} onClick={() => track({ event: 'contact_click', contact_method: 'phone', location: 'contact_page' })} className="font-medium text-brand-600 hover:underline" dir="ltr">{SITE_CONTACT.phone}</a>
                   </li>
                 )}
               </ul>

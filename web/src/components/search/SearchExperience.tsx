@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Trans, useTranslation } from 'react-i18next'
@@ -8,6 +8,7 @@ import { CLEARED_FILTERS, countActiveFilters, hasAnyCriteria, parseSearchParams,
 import { cn, formatNumber } from '@/lib/utils'
 import { CornerAccent, GirihMotif } from '@/components/ornament'
 import { Seo } from '@/seo/Seo'
+import { resultsBucket, sanitizeSearchTerm, track } from '@/seo/analytics'
 import { homeGraph } from '@/seo/jsonld'
 import type { SiteLocaleCode } from '@/seo/locales'
 import { Pagination, ResultGrid, ResultTable } from '@/components/ResultCards'
@@ -90,6 +91,45 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
   const data = page?.items
   const total = page?.total ?? 0
   const pages = Math.max(1, Math.ceil(total / state.perPage))
+
+  // Analytics: one `view_search_results` per distinct search state once its results are in
+  // (criteria names and counts only — see docs/ANALYTICS.md), one `search_error` per failure.
+  const trackedKey = useRef<string | null>(null)
+  useEffect(() => {
+    if (!enabled || imageMode) return
+    const key = `${urlKey}|${isError ? 'error' : page ? 'ok' : ''}`
+    if (!page && !isError) return
+    if (trackedKey.current === key) return
+    trackedKey.current = key
+    if (isError) {
+      track({ event: 'search_error', search_mode: 'text', error_kind: 'request_failed' })
+      return
+    }
+    const fields = (Object.keys(CLEARED_FILTERS) as (keyof SearchState)[]).filter((k) => {
+      const v = state[k]
+      return Array.isArray(v) ? v.length > 0 : typeof v === 'string' && v.trim() !== ''
+    })
+    if (state.q.trim()) fields.unshift('q')
+    track({
+      event: 'view_search_results',
+      search_mode: 'text',
+      search_term: sanitizeSearchTerm(state.q),
+      search_fields: fields.join(','),
+      search_filter_count: countActiveFilters(state),
+      search_page: state.page,
+      search_sort: state.sort,
+      search_view: state.view,
+      search_fuzzy: state.fuzzy ? 'yes' : 'no',
+      results_total: total,
+      results_bucket: resultsBucket(total),
+      results_shown: page?.items.length ?? 0,
+    })
+  }, [enabled, imageMode, urlKey, page, isError, state, total])
+  const onSelectResult = useCallback(
+    (r: { serial_number: string }, position: number) =>
+      track({ event: 'select_result', search_mode: 'text', result_serial: r.serial_number, result_position: position, result_page: state.page, result_view: state.view }),
+    [state.page, state.view],
+  )
 
   // Head metadata. The landing page is the indexable document; a search (any
   // query parameter) or the image mode is the same URL with a different state,
@@ -287,9 +327,9 @@ export function SearchExperience({ landing }: { landing?: ReactNode }) {
               ) : data.length === 0 ? (
                 <EmptyState title={t('search.noResults')} hint={t('search.noResultsHint')} />
               ) : state.view === 'table' ? (
-                <ResultTable results={data} query={state.q} />
+                <ResultTable results={data} query={state.q} onSelect={onSelectResult} />
               ) : (
-                <ResultGrid results={data} query={state.q} detailed />
+                <ResultGrid results={data} query={state.q} detailed onSelect={onSelectResult} />
               )}
             </div>
 
