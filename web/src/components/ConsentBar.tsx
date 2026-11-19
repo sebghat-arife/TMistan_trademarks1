@@ -1,23 +1,19 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { analyticsConfigured, saveConsent, storedConsent, trackingOptedOut, type ConsentChoice } from '@/seo/analytics'
+import { analyticsConfigured, saveConsent, trackingOptedOut, useConsentChoice } from '@/seo/analytics'
 import { useIsClient } from '@/lib/useIsClient'
 
 /**
- * Small, dismissible analytics consent notice. Rendered only when a GA4
- * measurement ID is configured for the build, the visitor has not decided yet
- * and the browser does not already signal an opt-out. Never prerendered.
+ * Small, dismissible analytics consent notice. Rendered only when the Google Tag
+ * Manager container is part of the build, the visitor has not decided yet and the
+ * browser does not already signal an opt-out (DNT / GPC). Never prerendered. The
+ * choice can be changed later on the Privacy Policy page (AnalyticsPreferences).
  */
 export function ConsentBar() {
   const { t } = useTranslation()
   const isClient = useIsClient()
-  const [choice, setChoice] = useState<ConsentChoice | null>(null)
-  if (!isClient || !analyticsConfigured() || trackingOptedOut() || choice || storedConsent()) return null
-  const decide = (c: ConsentChoice) => {
-    saveConsent(c)
-    setChoice(c)
-  }
+  const choice = useConsentChoice()
+  if (!isClient || !analyticsConfigured() || trackingOptedOut() || choice) return null
   return (
     <aside
       role="region"
@@ -31,8 +27,8 @@ export function ConsentBar() {
         <Link to="/legal/privacy" className="font-medium text-brand-700 underline underline-offset-2">{t('consent.privacy')}</Link>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" onClick={() => decide('granted')} className="btn-primary h-9 px-4 text-[13px]">{t('consent.accept')}</button>
-        <button type="button" onClick={() => decide('denied')} className="btn-secondary h-9 px-4 text-[13px]">{t('consent.decline')}</button>
+        <button type="button" onClick={() => saveConsent('granted')} className="btn-primary h-9 px-4 text-[13px]">{t('consent.accept')}</button>
+        <button type="button" onClick={() => saveConsent('denied')} className="btn-secondary h-9 px-4 text-[13px]">{t('consent.decline')}</button>
       </div>
     </aside>
   )

@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv, type ProxyOptions } from 'vite'
 import { reactPdfTextkitFix } from './vite-plugins/reactPdfTextkitFix.ts'
 import { siteVerification } from './vite-plugins/siteVerification.ts'
+import { resolveGtmContainerId, tagManager } from './vite-plugins/tagManager.ts'
 
 /**
  * Environment variables.
@@ -25,11 +26,15 @@ const DEFAULT_MASNAD_URL = 'https://www.masnadip.af/'
  * the sitemap and links inside generated documents such as the PDF Trademark Publication Report. */
 const DEFAULT_CANONICAL_URL = 'https://tmistan.com'
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env }
   const supabaseUrl = env.SUPABASE_URL ?? env.VITE_SUPABASE_URL ?? ''
   const publishableKey = env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? ''
   const localStorageBase = env.VITE_LOCAL_STORAGE_BASE ?? ''
+  const gtmContainerId = resolveGtmContainerId(env, command)
+  if (env.SITE_GA4_MEASUREMENT_ID) {
+    console.warn('[tmistan] SITE_GA4_MEASUREMENT_ID is no longer used: configure the GA4 tag inside the Google Tag Manager container (docs/ANALYTICS.md).')
+  }
 
   if (publishableKey && /^sb_secret_|"role"\s*:\s*"service_role"/.test(safeDecode(publishableKey))) {
     throw new Error('Refusing to build: a SECRET/service-role key was supplied as the public Supabase key.')
@@ -60,7 +65,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [reactPdfTextkitFix(), react(), tailwindcss(), siteVerification(env)],
+    plugins: [reactPdfTextkitFix(), react(), tailwindcss(), siteVerification(env), tagManager(gtmContainerId)],
     // The PDF engine is only loaded on demand; keep it out of dev pre-bundling so the
     // textkit fix above can also reach it in `vite dev` (the production build is the verified path).
     optimizeDeps: { exclude: ['@react-pdf/renderer'] },
@@ -86,8 +91,9 @@ export default defineConfig(({ mode }) => {
       }),
       // Canonical public origin (no trailing slash). Not a secret.
       __SITE_CANONICAL_URL__: JSON.stringify((env.SITE_CANONICAL_URL || DEFAULT_CANONICAL_URL).replace(/\/+$/, '')),
-      // Google Analytics 4 measurement ID (optional, e.g. G-XXXXXXXXXX). Loaded only after visitor consent — see src/seo/analytics.ts.
-      __SITE_GA4_ID__: JSON.stringify(env.SITE_GA4_MEASUREMENT_ID ?? ''),
+      // Google Tag Manager container id ('' = disabled). GA4 is configured inside the container; tags run under
+      // Consent Mode v2 with analytics denied until the visitor agrees — see index.html and src/seo/analytics.ts.
+      __SITE_GTM_ID__: JSON.stringify(gtmContainerId),
     },
     server: {
       host: '0.0.0.0',

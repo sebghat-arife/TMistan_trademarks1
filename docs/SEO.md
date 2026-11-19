@@ -112,7 +112,7 @@ changes materially; article dates come from `written`/`updated` in `web/src/cont
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | required — the prerenderer reads the public records with the publishable key (RLS, read-only) |
 | `SITE_CANONICAL_URL` | canonical origin; default `https://tmistan.com` |
-| `SITE_GA4_MEASUREMENT_ID` | optional `G-…` id; analytics are **not loaded** until the visitor accepts the consent bar (`web/src/seo/analytics.ts`, `ConsentBar.tsx`). Without the variable no consent bar is shown and nothing is loaded |
+| `SITE_GTM_CONTAINER_ID` | Google Tag Manager container; **default `GTM-T2SXFX3Q`** for production builds (no variable needed). Set to an empty string to ship without Tag Manager, or to another `GTM-…` id. The container (and the GA4 tag configured inside it) is loaded only once the visitor accepts the consent bar — see `docs/ANALYTICS.md` |
 | `PRERENDER_ALLOW_PARTIAL=1` | emergency switch: build the static pages even if Supabase is unreachable (record pages/sitemap-records are skipped and a warning is printed). Do not use routinely |
 
 * Build time: ≈ 45 s for the prerender (4 029 records read in pages of 1 000) on top of the Vite
@@ -187,7 +187,8 @@ descriptions are unchanged (`recordPolicy.ts`).
 (raw token = the `content` value of the meta tag) are injected at build time by
 `web/vite-plugins/siteVerification.ts` into `index.html`, hence into every prerendered page and the
 SPA shell. Unset → nothing emitted. The plugin rejects a value that is not a bare token. Analytics
-remain opt-in (`SITE_GA4_MEASUREMENT_ID` + visitor consent, §6).
+remain opt-in: every page carries the Consent Mode defaults and the Google Tag Manager loader
+(`GTM-T2SXFX3Q`), but `gtm.js` is requested only after the visitor agrees (§6, `docs/ANALYTICS.md`).
 
 **Bundles.** Main chunk 386 kB (120 kB gzip); guide bodies (75 kB), law series (74 kB) and launch
 articles (57 kB) are separate chunks loaded only on those pages.

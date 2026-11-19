@@ -996,7 +996,11 @@
         "sections": [
           {
             "title": "Browsing without an account",
-            "text": "The public pages do not require registration. The website does not use advertising or analytics cookies. Your language choice is stored in your own browser (local storage) so that the interface opens in the same language next time; it is not sent to us."
+            "text": "The public pages do not require registration. The website does not use advertising cookies. Your language choice is stored in your own browser (local storage) so that the interface opens in the same language next time; it is not sent to us."
+          },
+          {
+            "title": "Usage statistics (only with your consent)",
+            "text": "The website loads Google Tag Manager and Google Analytics 4 only after you allow analytics in the notice shown on your first visit or in the preferences below. Until then nothing is requested from Google, no analytics cookies are set and no usage data is collected; browsers that send a Do Not Track or Global Privacy Control signal are treated as having declined. If you allow analytics, Google Analytics sets cookies (named _ga and _ga_…) that distinguish your browser and records which pages you visit, the searches you start, your language, device and browser type and an approximate location derived from your IP address, which Google does not store. We use these figures only in aggregate to understand how the platform is used; they are processed by Google on our behalf under its data-processing terms. You can withdraw your consent at any time below; this deletes no data already collected but stops further collection."
           },
           {
             "title": "Hosting and technical logs",
@@ -2741,10 +2745,19 @@
   },
   "consent": {
     "title": "Anonymous usage statistics",
-    "text": "TMistan uses Google Analytics to understand how the site is used (pages visited, searches started). No analytics cookies are set unless you agree. You can change your choice at any time in the Privacy Policy.",
+    "text": "TMistan uses Google Analytics 4 (loaded through Google Tag Manager) to understand how the site is used — pages visited, searches started. No analytics cookies are set and no usage data is sent unless you agree. You can change your choice at any time in the Privacy Policy.",
     "accept": "Allow analytics",
     "decline": "Decline",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "manage": {
+      "title": "Analytics preferences",
+      "text": "TMistan loads Google Tag Manager and Google Analytics 4 only after you allow it. Your choice is stored in this browser and can be changed here at any time; browsers that send a Do Not Track or Global Privacy Control signal are treated as declined.",
+      "current": "Current choice:",
+      "granted": "analytics allowed.",
+      "denied": "analytics declined.",
+      "unset": "no choice made yet (analytics are off).",
+      "optedOut": "your browser asks not to be tracked, so analytics stay off."
+    }
   },
   "notFound": {
     "eyebrow": "Error 404",

@@ -74,7 +74,7 @@ Operating documentation is in `docs/SEO.md`.
    `SITE_CANONICAL_URL=https://www.tmistan.com` and flip the DNS/Render redirect direction.
 3. Verify the property in Google Search Console and Bing Webmaster Tools; submit
    `https://tmistan.com/sitemap.xml`.
-4. Optionally set `SITE_GA4_MEASUREMENT_ID` (consent-gated analytics).
+4. Analytics: Google Tag Manager container `GTM-T2SXFX3Q` ships in every page (consent-gated, `docs/ANALYTICS.md`); configure the GA4 tag inside the container.
 5. Re-run the build whenever the registry grows: new eligible records are prerendered and added to
    the sitemap automatically on the next deploy (Render redeploys on every push; a manual
    "Clear build cache & deploy" after a large import refreshes record pages without a code change).

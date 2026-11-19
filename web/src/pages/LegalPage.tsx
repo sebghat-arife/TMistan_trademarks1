@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertCircle, ArrowLeft, ArrowRight, Check, Copyright, FileText, Info, Scale, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
 import { ClosingBanner, FeatureCard, InfoBanner, SectionHeading, SidePanel, SplitHero } from '@/components/editorial'
 import { StarDivider } from '@/components/ornament'
+import { AnalyticsPreferences } from '@/components/AnalyticsPreferences'
 import { PageSeo } from '@/seo/PageSeo'
 import { localizePath, type SiteLocaleCode } from '@/seo/locales'
 import { formatDate } from '@/lib/utils'
@@ -22,7 +23,7 @@ const POLICIES = [
 type PolicyKey = (typeof POLICIES)[number]['key']
 
 /** Date the current drafts were prepared (real authoring date, shown as "draft pending approval"). */
-const DRAFT_DATE = '2026-10-13'
+const DRAFT_DATE = '2026-11-19'
 /** Policies whose text was drafted for this release and still awaits Masnad's approval. The Disclaimer is the client's own text. */
 const DRAFT_POLICIES: readonly PolicyKey[] = ['terms', 'privacy', 'ip']
 
@@ -129,6 +130,7 @@ export function LegalPage() {
                 </li>
               ))}
             </ol>
+            {current === 'privacy' && <AnalyticsPreferences className="mt-8" />}
             {policy.note && (
               <InfoBanner Icon={AlertCircle} tone="amber" title={t('legal.ownerNoteTitle')} className="mt-8">
                 {policy.note}

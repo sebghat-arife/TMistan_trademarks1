@@ -48,7 +48,7 @@ export function TrademarkPage() {
   if (!tm) {
     return (
       <div className="container-x py-10">
-        <Seo title={t('seo.record.notFoundTitle')} description={t('seo.record.notFoundDescription')} path={recordPath} canonical="english" robots="noindex,follow" />
+        <Seo title={t('seo.record.notFoundTitle')} description={t('seo.record.notFoundDescription')} path={recordPath} canonical="english" robots="noindex,follow" pageType="not_found" />
         <div className="card p-8 text-center">
           <p className="text-[15px] font-medium text-ink-900">{t('trademark.notFound')}</p>
           <p className="mt-1 font-mono text-xs text-ink-500">{serial}</p>

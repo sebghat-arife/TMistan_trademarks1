@@ -12,7 +12,7 @@ export function NotFoundPage() {
   const { t } = useTranslation()
   return (
     <div className="container-x py-16 md:py-24" data-testid="not-found">
-      <Seo title={t('seo.notFound.title')} description={t('seo.notFound.description')} robots="noindex,follow" canonical="english" />
+      <Seo title={t('seo.notFound.title')} description={t('seo.notFound.description')} robots="noindex,follow" canonical="english" pageType="not_found" />
       <div className="mx-auto max-w-xl text-center">
         <p className="eyebrow">{t('notFound.eyebrow')}</p>
         <h1 className="mt-3 font-serif text-[34px] font-semibold leading-[1.1] tracking-[-0.015em] text-navy-900 sm:text-[42px]">{t('notFound.title')}</h1>

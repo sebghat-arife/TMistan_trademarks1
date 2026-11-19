@@ -3,7 +3,6 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import type { DehydratedState } from '@tanstack/react-query'
 import i18n, { applyDocumentDirection, loadLanguage, rememberLanguage, storedLanguage } from '@/i18n'
 import { resolveClientLocale } from '@/seo/clientLocale'
-import { resumeAnalyticsIfConsented } from '@/seo/analytics'
 import './index.css'
 import App from './App.tsx'
 
@@ -33,7 +32,6 @@ async function start() {
   rememberLanguage(lng)
   await loadLanguage(lng)
   applyDocumentDirection(i18n.resolvedLanguage ?? lng)
-  resumeAnalyticsIfConsented()
 
   const root = document.getElementById('root')!
   const app = (

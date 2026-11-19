@@ -72,9 +72,10 @@ select id, 'admin' from auth.users where email = '<e-mail>' on conflict do nothi
 rewrite `/* → /app.html`, Node 22.12.0. Environment: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`
 (both needed **at build time** — besides being inlined into the bundle they let `scripts/prerender.mjs`
 read the public records and write the prerendered pages, sitemaps and robots.txt; see `docs/SEO.md`).
-Optional: `SITE_CANONICAL_URL` (default `https://tmistan.com`), `SITE_GA4_MEASUREMENT_ID`,
-`SITE_GOOGLE_SITE_VERIFICATION` / `SITE_BING_SITE_VERIFICATION` (search-console ownership tokens,
-injected as meta tags into every page; see `docs/SEO.md` §9).
+Optional: `SITE_CANONICAL_URL` (default `https://tmistan.com`), `SITE_GTM_CONTAINER_ID` (Google Tag
+Manager; defaults to `GTM-T2SXFX3Q`, see `docs/ANALYTICS.md`), `SITE_GOOGLE_SITE_VERIFICATION` /
+`SITE_BING_SITE_VERIFICATION` (search-console ownership tokens, injected as meta tags into every page;
+see `docs/SEO.md` §9).
 Exact click-by-click steps are in the README ("Deploying to Render").
 
 > Since 2026-11-15 the SPA rewrite destination is **`/app.html`**, not `/index.html` (`/index.html` is

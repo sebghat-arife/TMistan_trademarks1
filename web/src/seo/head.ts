@@ -11,6 +11,7 @@
  * ------------------------------------------------------------------------- */
 import { CANONICAL_URL } from '@/lib/site'
 import { alternatePaths, localizePath, normalizePath, siteLocale, type SiteLocaleCode } from './locales'
+import type { PageType } from './analytics'
 
 export const DEFAULT_OG_IMAGE = '/brand/og-default.png'
 export const SITE_NAME = 'TMistan'
@@ -20,6 +21,8 @@ export type SeoProps = {
   /** Full document title (already includes the brand where wanted). */
   title: string
   description: string
+  /** Analytics classification override (dataLayer `page_type`); derived from the path when omitted. */
+  pageType?: PageType
   /**
    * Locale-less route path this page is canonical for ('/services', '/trademark/1427-007').
    * Defaults to the current route. Query strings are never part of a canonical URL.

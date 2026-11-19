@@ -13,8 +13,9 @@
 #                        optional: SITE_CANONICAL_URL (canonical public origin — canonical/hreflang links,
 #                        sitemap, structured data, PDF reports; defaults to https://tmistan.com, the apex
 #                        domain to which www. redirects)
-#                        optional: SITE_GA4_MEASUREMENT_ID (Google Analytics 4 "G-…" id; analytics load only
-#                        after the visitor agrees — see docs/SEO.md)
+#                        optional: SITE_GTM_CONTAINER_ID (Google Tag Manager container; defaults to GTM-T2SXFX3Q,
+#                        empty string = no Tag Manager; GA4 lives inside the container and fires only after
+#                        the visitor agrees — see docs/ANALYTICS.md)
 #
 #   SEO (docs/SEO.md): `npm run build` also prerenders every public page (3 languages), eligible
 #   trademark records, sitemap.xml and robots.txt into dist/ — still a plain static site.
@@ -52,8 +53,8 @@ services:
         sync: false                       # optional: Google Search Console HTML-tag token (content value only) → <meta name="google-site-verification">
       - key: SITE_BING_SITE_VERIFICATION
         sync: false                       # optional: Bing Webmaster Tools token → <meta name="msvalidate.01">
-      - key: SITE_GA4_MEASUREMENT_ID
-        sync: false                       # optional: GA4 measurement ID (G-XXXXXXXXXX); loaded only after visitor consent
+      - key: SITE_GTM_CONTAINER_ID
+        sync: false                       # optional: Google Tag Manager container id (default GTM-T2SXFX3Q; "" disables); GA4 configured inside GTM, consent-gated
     routes:
       - type: rewrite                     # client-side routing: URLs without a prerendered file serve the SPA shell
         source: /*
